@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnnaSim", "src\AnnaSim.csproj", "{665F4D1C-E4EC-4B81-A43B-FBF91FCE0E49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnnaSim.Test", "test\AnnaSim.Test.csproj", "{190E749E-473E-4119-81AF-BFFACCC0A059}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{665F4D1C-E4EC-4B81-A43B-FBF91FCE0E49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{665F4D1C-E4EC-4B81-A43B-FBF91FCE0E49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{665F4D1C-E4EC-4B81-A43B-FBF91FCE0E49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{665F4D1C-E4EC-4B81-A43B-FBF91FCE0E49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{190E749E-473E-4119-81AF-BFFACCC0A059}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{190E749E-473E-4119-81AF-BFFACCC0A059}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{190E749E-473E-4119-81AF-BFFACCC0A059}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{190E749E-473E-4119-81AF-BFFACCC0A059}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
