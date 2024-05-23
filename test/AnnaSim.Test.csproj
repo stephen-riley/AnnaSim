@@ -20,4 +20,10 @@
     <ProjectReference Include="..\src\AnnaSim.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="files\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
