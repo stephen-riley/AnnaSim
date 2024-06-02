@@ -1,8 +1,8 @@
-using System.Dynamic;
+using AnnaSim.Extensions;
 
 public class AnnaMachine
 {
-    public List<Word> Inputs { get; internal set; } = [];
+    public Queue<Word> Inputs { get; internal set; } = [];
     public MemoryFile Memory { get; internal set; } = new();
     public RegisterFile Registers { get; internal set; } = new();
 
@@ -12,7 +12,7 @@ public class AnnaMachine
 
     public AnnaMachine(params int[] inputs)
     {
-        Inputs.AddRange(inputs.Select(n => (Word)(ushort)n));
+        inputs.Select(n => (Word)(ushort)n).ForEach(n => Inputs.Enqueue(n));
     }
 
     public AnnaMachine(params string[] inputs)
@@ -28,7 +28,7 @@ public class AnnaMachine
                     _ => 10
                 };
 
-            Inputs.Add((ushort)Convert.ToInt16(s.Substring(radix == 10 ? 0 : 2), radix));
+            Inputs.Enqueue((ushort)Convert.ToInt16(s.Substring(radix == 10 ? 0 : 2), radix));
         }
     }
 
@@ -102,7 +102,14 @@ public class AnnaMachine
         }
         else if (instruction.Opcode == Opcode.In)
         {
-            throw new NotImplementedException();
+            if (Inputs.TryDequeue(out var result))
+            {
+                Registers[instruction.Rd] = result;
+            }
+            else
+            {
+                throw new NoInputRemainingException();
+            }
         }
         else if (instruction.Opcode == Opcode.Out)
         {

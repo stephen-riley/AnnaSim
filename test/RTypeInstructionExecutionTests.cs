@@ -95,4 +95,31 @@ public class RTypeInstructionExecutionTests
         cpu.ExecuteRType(instruction);
         Assert.AreEqual(20u, cpu.Pc);
     }
+
+    [TestMethod]
+    public void TestGettingInputs()
+    {
+        var cpu = new AnnaMachine(10, 20, 30);
+        var addr = 1u;
+        cpu.ExecuteRType(new Instruction(Opcode.In, (ushort)addr++, 0, 0));
+        cpu.ExecuteRType(new Instruction(Opcode.In, (ushort)addr++, 0, 0));
+        cpu.ExecuteRType(new Instruction(Opcode.In, (ushort)addr, 0, 0));
+
+        Assert.AreEqual((Word)10u, cpu.Registers[1]);
+        Assert.AreEqual((Word)20u, cpu.Registers[2]);
+        Assert.AreEqual((Word)30u, cpu.Registers[3]);
+    }
+
+    [TestMethod]
+    public void TestGettingTooManyInputs()
+    {
+        var cpu = new AnnaMachine(10);
+        cpu.ExecuteRType(new Instruction(Opcode.In, 1, 0, 0));
+
+        Assert.AreEqual((Word)10u, cpu.Registers[1]);
+        Assert.ThrowsException<NoInputRemainingException>(() =>
+        {
+            cpu.ExecuteRType(new Instruction(Opcode.In, 1, 0, 0));
+        });
+    }
 }

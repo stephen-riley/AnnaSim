@@ -1,11 +1,12 @@
 using AnnaSim.Exceptions;
+using AnnaSim.Extensions;
 using static Opcode;
 
 public class Instruction
 {
-    private readonly Word word;
+    private readonly Word bits;
 
-    public Instruction(ushort word) => this.word = word;
+    public Instruction(ushort word) => bits = word;
 
     // RType MathOp constructor
     public Instruction(Opcode opcode, ushort rd, ushort rs1, ushort rs2, MathOp func)
@@ -15,11 +16,11 @@ public class Instruction
             throw new InvalidOpcodeException(opcode, "in Instruction RType math constructor");
         }
 
-        word = (uint)opcode << 12;
-        word |= (rd & 0b111u) << 9;
-        word |= (rs1 & 0b111u) << 6;
-        word |= (rs2 & 0b111u) << 3;
-        word |= (uint)func;
+        bits = (uint)opcode << 12;
+        bits |= (rd & 0b111u) << 9;
+        bits |= (rs1 & 0b111u) << 6;
+        bits |= (rs2 & 0b111u) << 3;
+        bits |= (uint)func;
     }
 
     // RType/Imm6 constructor
@@ -30,17 +31,17 @@ public class Instruction
             throw new InvalidOpcodeException(opcode, "in Instruction RsType/Imm6Type constructor");
         }
 
-        word = (uint)opcode << 12;
-        word |= (rd & 0b111u) << 9;
-        word |= (rs1 & 0b111u) << 6;
+        bits = (uint)opcode << 12;
+        bits |= (rd & 0b111u) << 9;
+        bits |= (rs1 & 0b111u) << 6;
 
         if (opcode.IsRType())
         {
-            word |= (rs2OrImm6 & 0b111u) << 3;
+            bits |= (rs2OrImm6 & 0b111u) << 3;
         }
         else
         {
-            word |= rs2OrImm6 & 0b111111u;
+            bits |= rs2OrImm6 & 0b111111u;
         }
     }
 
@@ -52,20 +53,20 @@ public class Instruction
             throw new InvalidOpcodeException(opcode, "in Instruction Imm8Type constructor");
         }
 
-        word = (uint)opcode << 12;
-        word |= (rd & 0b111u) << 9;
-        word |= imm8 & 0b11111111u;
+        bits = (uint)opcode << 12;
+        bits |= (rd & 0b111u) << 9;
+        bits |= imm8 & 0b11111111u;
     }
 
-    public Opcode Opcode => (Opcode)(word >> 12);
-    public uint Rd => (uint)((word >> 9) & 0b111);
-    public uint Rs1 => !Imm8Type ? (uint)((word >> 6) & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Rs1), "Instruction is not Rtype or I6Type");
-    public uint Rs2 => RType ? (uint)((word >> 3) & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Rs2), "Instruction is not RType");
-    public uint Imm6 => Imm6Type ? (uint)(word & 0b111111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm6), "Instruction is not I6Type");
-    public uint Imm8 => Imm8Type ? (uint)(word & 0b11111111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm8), "Instruction is not I8Type");
-    public MathOp FuncCode => RType && Opcode == _Math ? (MathOp)((ushort)word & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(FuncCode), "Instruction is not RType or not a math operation");
+    public Opcode Opcode => (Opcode)(bits >> 12);
+    public uint Rd => (uint)((bits >> 9) & 0b111);
+    public uint Rs1 => !Imm8Type ? (uint)((bits >> 6) & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Rs1), "Instruction is not Rtype or I6Type");
+    public uint Rs2 => RType ? (uint)((bits >> 3) & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Rs2), "Instruction is not RType");
+    public uint Imm6 => Imm6Type ? (uint)(bits & 0b111111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm6), "Instruction is not I6Type");
+    public uint Imm8 => Imm8Type ? (uint)(bits & 0b11111111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm8), "Instruction is not I8Type");
+    public MathOp FuncCode => RType && Opcode == _Math ? (MathOp)((ushort)bits & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(FuncCode), "Instruction is not RType or not a math operation");
 
-    public bool IsHalt => word == 0xF000;
+    public bool IsHalt => bits == 0xF000;
 
     public InstructionType Type =>
         Opcode.IsRType() ? InstructionType.R
@@ -76,4 +77,6 @@ public class Instruction
     public bool RType => Type == InstructionType.R;
     public bool Imm6Type => Type == InstructionType.Imm6;
     public bool Imm8Type => Type == InstructionType.Imm8;
+
+    public static implicit operator Word(Instruction i) => i.bits;
 }
