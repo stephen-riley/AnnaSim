@@ -1,0 +1,10 @@
+[*.cs]
+
+# CA1050: Declare types in namespaces
+dotnet_diagnostic.CA1050.severity = none
+
+# IDE0021: Use block body for constructor
+dotnet_diagnostic.IDE0021.severity = none
+
+# IDE0290: Use primary constructor
+dotnet_diagnostic.IDE0290.severity = none

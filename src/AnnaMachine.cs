@@ -42,6 +42,8 @@ public class AnnaMachine
                 default:
                     throw new InvalidOperationException();
             }
+
+            maxCyles--;
         }
 
         return this;
@@ -51,8 +53,10 @@ public class AnnaMachine
     {
         if (instruction.Opcode == Opcode._Math)
         {
-            short rs1val = (short)instruction.Rs1;
-            short rx2val = (short)instruction.Rs2;
+            var rs1 = (ushort)instruction.Rs1;
+            var rs2 = (ushort)instruction.Rs2;
+            var rs1val = (short)registers[rs1];
+            var rx2val = (short)registers[rs2];
 
             short rdval = instruction.FuncCode switch
             {

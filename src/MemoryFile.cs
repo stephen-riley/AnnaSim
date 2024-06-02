@@ -1,19 +1,16 @@
 public class MemoryFile
 {
-    internal uint[] memory;
+    internal MachineWord[] memory;
 
-    public MemoryFile(int size = 65_536)
-    {
-        memory = new uint[size];
-    }
+    public MemoryFile(int size = 65_536) => memory = new MachineWord[size];
 
     public ushort this[uint n]
     {
         get { return (ushort)memory[n]; }
-        set { memory[n] = (uint)value; }
+        set { memory[n] = value; }
     }
 
-    public uint Get32bits(int addr) => memory[addr];
+    public Word Get32bits(int addr) => memory[addr];
 
     public uint Set32bits(int addr, uint value) => memory[addr] = value;
 
