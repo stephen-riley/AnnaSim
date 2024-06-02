@@ -17,7 +17,7 @@ public class TwosComplementTests
         cpu.registers[3] = (SignedWord)o2;
 
         var instruction = new Instruction(Opcode._Math, 1, 2, 3, MathOp.Add);
-        cpu.ExecuteTypeR(instruction);
+        cpu.ExecuteRType(instruction);
         Assert.AreEqual((SignedWord)result, (SignedWord)cpu.registers[1]);
     }
 }

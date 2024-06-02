@@ -12,7 +12,7 @@ public class InstructionExecutionTests
 
         // add r1, r2, r3
         var instruction = new Instruction(0b0000_001_010_011_000);
-        cpu.ExecuteTypeR(instruction);
+        cpu.ExecuteRType(instruction);
         Assert.AreEqual((Word)30, cpu.registers[1]);
     }
 }

@@ -31,13 +31,13 @@ public class AnnaMachine
             switch (instruction.Type)
             {
                 case InstructionType.R:
-                    ExecuteTypeR(instruction);
+                    ExecuteRType(instruction);
                     break;
                 case InstructionType.Imm6:
-                    ExecuteTypeImm6(instruction);
+                    ExecuteImm6Type(instruction);
                     break;
                 case InstructionType.Imm8:
-                    ExecuteTypeImm8(instruction);
+                    ExecuteImm8Type(instruction);
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -49,7 +49,7 @@ public class AnnaMachine
         return this;
     }
 
-    internal void ExecuteTypeR(Instruction instruction)
+    internal void ExecuteRType(Instruction instruction)
     {
         if (instruction.Opcode == Opcode._Math)
         {
@@ -72,12 +72,12 @@ public class AnnaMachine
         }
     }
 
-    internal void ExecuteTypeImm6(Instruction instruction)
+    internal void ExecuteImm6Type(Instruction instruction)
     {
         throw new NotImplementedException();
     }
 
-    internal void ExecuteTypeImm8(Instruction instruction)
+    internal void ExecuteImm8Type(Instruction instruction)
     {
         throw new NotImplementedException();
     }
