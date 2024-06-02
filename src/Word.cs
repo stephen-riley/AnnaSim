@@ -1,6 +1,6 @@
 using System.Numerics;
 
-public struct Word : IBitwiseOperators<Word, Word, Word>
+public readonly struct Word : IBitwiseOperators<Word, Word, Word>
 {
     internal readonly ushort bits;
 
@@ -25,5 +25,5 @@ public struct Word : IBitwiseOperators<Word, Word, Word>
 
     public string ToString(string fmt) => bits.ToString(fmt);
 
-    public bool IsBreakpoint => (bits & 0x80000000) != 0;
+    public override string ToString() => bits.ToString();
 }

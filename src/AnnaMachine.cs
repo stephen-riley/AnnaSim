@@ -53,18 +53,18 @@ public class AnnaMachine
     {
         if (instruction.Opcode == Opcode._Math)
         {
-            var rs1 = (ushort)instruction.Rs1;
-            var rs2 = (ushort)instruction.Rs2;
-            var rs1val = (short)registers[rs1];
-            var rx2val = (short)registers[rs2];
+            var rs1 = instruction.Rs1;
+            var rs2 = instruction.Rs2;
+            var rs1val = (SignedWord)registers[rs1];
+            var rs2val = (SignedWord)registers[rs2];
 
-            short rdval = instruction.FuncCode switch
+            SignedWord rdval = instruction.FuncCode switch
             {
-                MathOp.Add => (short)(rs1val + rx2val),
-                MathOp.Sub => (short)(rs1val - rx2val),
-                MathOp.And => (short)(instruction.Rs1 & instruction.Rs2),
-                MathOp.Or => (short)(instruction.Rs1 | instruction.Rs2),
-                MathOp.Not => (short)~instruction.Rs1,
+                MathOp.Add => rs1val + rs2val,
+                MathOp.Sub => rs1val - rs2val,
+                MathOp.And => rs1val & rs2val,
+                MathOp.Or => rs1val | rs2val,
+                MathOp.Not => ~rs1val,
                 _ => throw new InvalidOperationException()
             };
 
