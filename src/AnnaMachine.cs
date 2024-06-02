@@ -2,14 +2,39 @@ using System.Dynamic;
 
 public class AnnaMachine
 {
-    internal MemoryFile memory = new();
-    internal RegisterFile registers = new();
+    public List<Word> Inputs { get; internal set; } = [];
+    public MemoryFile Memory { get; internal set; } = new();
+    public RegisterFile Registers { get; internal set; } = new();
 
-    public ushort Pc { get; internal set; } = 0;
+    public uint Pc { get; internal set; } = 0;
+
+    public AnnaMachine() { }
+
+    public AnnaMachine(params int[] inputs)
+    {
+        Inputs.AddRange(inputs.Select(n => (Word)(ushort)n));
+    }
+
+    public AnnaMachine(params string[] inputs)
+    {
+        foreach (var s in inputs)
+        {
+            var radix = s.Length < 2
+                ? 10
+                : s[0..2] switch
+                {
+                    "0x" or "0X" => 16,
+                    "0b" or "0B" => 2,
+                    _ => 10
+                };
+
+            Inputs.Add((ushort)Convert.ToInt16(s.Substring(radix == 10 ? 0 : 2), radix));
+        }
+    }
 
     public AnnaMachine ReadMemFile(string path)
     {
-        memory.ReadMemFile(path);
+        Memory.ReadMemFile(path);
         return this;
     }
 
@@ -20,7 +45,7 @@ public class AnnaMachine
         while (maxCyles > 0)
         {
             // Fetch and Decode
-            var instruction = new Instruction(memory[Pc]);
+            var instruction = new Instruction(Memory[Pc]);
 
             // Execute (store is handled here)
             if (instruction.IsHalt)
@@ -55,8 +80,8 @@ public class AnnaMachine
         {
             var rs1 = instruction.Rs1;
             var rs2 = instruction.Rs2;
-            var rs1val = (SignedWord)registers[rs1];
-            var rs2val = (SignedWord)registers[rs2];
+            var rs1val = (SignedWord)Registers[rs1];
+            var rs2val = (SignedWord)Registers[rs2];
 
             SignedWord rdval = instruction.FuncCode switch
             {
@@ -68,7 +93,20 @@ public class AnnaMachine
                 _ => throw new InvalidOperationException()
             };
 
-            registers[instruction.Rd] = (ushort)rdval;
+            Registers[instruction.Rd] = (ushort)rdval;
+        }
+        else if (instruction.Opcode == Opcode.Jalr)
+        {
+            Registers[instruction.Rs1] = Pc + 1;
+            Pc = Registers[instruction.Rd];
+        }
+        else if (instruction.Opcode == Opcode.In)
+        {
+            throw new NotImplementedException();
+        }
+        else if (instruction.Opcode == Opcode.Out)
+        {
+            throw new NotImplementedException();
         }
     }
 

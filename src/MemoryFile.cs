@@ -2,6 +2,8 @@ public class MemoryFile
 {
     internal MachineWord[] memory;
 
+    public int Count => memory.Length;
+
     public MemoryFile(int size = 65_536) => memory = new MachineWord[size];
 
     // For the indexers, we will only return a Word representation.

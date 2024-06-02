@@ -7,7 +7,7 @@ public readonly struct SignedWord : IBitwiseOperators<SignedWord, SignedWord, Si
     public SignedWord(short w) => bits = w;
     public SignedWord(int w) => bits = (short)w;
 
-    public static SignedWord operator ~(SignedWord value) => ~value;
+    public static SignedWord operator ~(SignedWord value) => ~value.bits;
 
     public static SignedWord operator &(SignedWord left, SignedWord right) => left.bits & right.bits;
 

@@ -2,6 +2,8 @@ public class RegisterFile
 {
     internal Word[] registers;
 
+    public int Count => registers.Length;
+
     public RegisterFile(int size = 8)
     {
         registers = new Word[size];
