@@ -5,6 +5,7 @@ public class AnnaMachine
     public Queue<Word> Inputs { get; internal set; } = [];
     public MemoryFile Memory { get; internal set; } = new();
     public RegisterFile Registers { get; internal set; } = new();
+    public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
 
     public uint Pc { get; internal set; } = 0;
 
@@ -113,7 +114,8 @@ public class AnnaMachine
         }
         else if (instruction.Opcode == Opcode.Out)
         {
-            throw new NotImplementedException();
+            var value = Registers[instruction.Rd];
+            OutputCallback(value);
         }
     }
 

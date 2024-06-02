@@ -1,3 +1,5 @@
+using AnnaSim.Extensions;
+
 namespace AnnaSim.Test;
 
 [TestClass]
@@ -121,5 +123,27 @@ public class RTypeInstructionExecutionTests
         {
             cpu.ExecuteRType(new Instruction(Opcode.In, 1, 0, 0));
         });
+    }
+
+    [TestMethod]
+    public void TestOutputInstructions()
+    {
+        var queue = new Queue<Word>();
+
+        var cpu = new AnnaMachine
+        {
+            OutputCallback = (w) => queue.Enqueue(w)
+        };
+
+        var expected = new Word[] { 10, 20, 30 };
+
+        expected.ForEach(n =>
+        {
+            cpu.Registers[(uint)(n / 10)] = n;
+            var instruction = new Instruction(Opcode.Out, (ushort)(n / 10), 0, 0);
+            cpu.ExecuteRType(instruction);
+        });
+
+        Assert.IsTrue(Enumerable.SequenceEqual(expected, queue));
     }
 }
