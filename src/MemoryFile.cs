@@ -4,10 +4,14 @@ public class MemoryFile
 
     public MemoryFile(int size = 65_536) => memory = new MachineWord[size];
 
-    public ushort this[uint n]
+    // For the indexers, we will only return a Word representation.
+    // When setting, we do _not_ want to change the high 16 bits
+    //  (which may contain runtime information), so we just set
+    //  the low 16 bits.
+    public Word this[uint n]
     {
-        get { return (ushort)memory[n]; }
-        set { memory[n] = value; }
+        get { return (Word)memory[n]; }
+        set { memory[n] = (memory[n].bits & 0xff00) | value; }
     }
 
     public Word Get32bits(int addr) => memory[addr];

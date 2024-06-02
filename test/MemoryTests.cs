@@ -13,7 +13,7 @@ public class MemoryTests
         var memory = new MemoryFile();
         memory[addr] = word;
 
-        Assert.AreEqual(word, memory[addr]);
+        Assert.AreEqual((Word)word, memory[addr]);
     }
 
     [TestMethod]
