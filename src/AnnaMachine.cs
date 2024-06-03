@@ -128,15 +128,18 @@ public class AnnaMachine
             SignedWord result = rvalue + immvalue;
             Registers[instruction.Rd] = result;
         }
-        else if (instruction.Opcode == Opcode.Addi)
+        else if (instruction.Opcode == Opcode.Shf)
+        {
+            SignedWord rvalue = Registers[instruction.Rs1];
+            SignedWord immvalue = (SignedWord)instruction.Imm6;
+            SignedWord result = immvalue > 0 ? rvalue << immvalue : rvalue >> (-immvalue);
+            Registers[instruction.Rd] = result;
+        }
+        else if (instruction.Opcode == Opcode.Lw)
         {
             throw new NotImplementedException();
         }
-        else if (instruction.Opcode == Opcode.Addi)
-        {
-            throw new NotImplementedException();
-        }
-        else if (instruction.Opcode == Opcode.Addi)
+        else if (instruction.Opcode == Opcode.Sw)
         {
             throw new NotImplementedException();
         }
