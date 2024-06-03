@@ -19,11 +19,11 @@ public class InstructionTests
     [TestMethod]
     public void TestRTypeConstructor()
     {
-        var instruction = Instruction.Jalr(1, 2, 3);
+        var instruction = Instruction.Jalr(1, 2);
         Assert.AreEqual(Opcode.Jalr, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
-        Assert.AreEqual(3u, instruction.Rs2);
+        Assert.AreEqual(0u, instruction.Rs2);
     }
 
     [TestMethod]
