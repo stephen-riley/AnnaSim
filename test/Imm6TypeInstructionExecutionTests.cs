@@ -34,4 +34,35 @@ public class Imm6TypeInstructionExecutionTests
 
         Assert.AreEqual((Word)(ushort)result, cpu.Registers[1]);
     }
+
+    [TestMethod]
+    [DataRow(100, 5, 65535 - 100 - 5)]
+    [DataRow(10, 0, 65525)]
+    [DataRow(1, -2, 0)]
+    [DataRow(65535, 1, 65535)]
+    public void TestLwInstruction(int addrBase, int offset, int expected)
+    {
+        var cpu = new AnnaMachine();
+        cpu.Memory.Initialize(0u, Enumerable.Range(0, cpu.Memory.Length).Reverse().Select(n => (Word)(uint)n).ToArray());
+        cpu.Registers[2] = (uint)addrBase;
+
+        var instruction = new Instruction(Opcode.Lw, 1, 2, (short)offset);
+        cpu.ExecuteImm6Type(instruction);
+
+        Assert.AreEqual(expected, cpu.Registers[1]);
+    }
+
+    [TestMethod]
+    [DataRow(23, 100, 5)]
+    public void TestSwInstruction(int value, int addrBase, int offset)
+    {
+        var cpu = new AnnaMachine();
+        cpu.Registers[1] = (uint)value;
+        cpu.Registers[2] = (uint)addrBase;
+
+        var instruction = new Instruction(Opcode.Sw, 1, 2, (short)offset);
+        cpu.ExecuteImm6Type(instruction);
+
+        Assert.AreEqual(value, cpu.Memory[(uint)(addrBase + offset)]);
+    }
 }

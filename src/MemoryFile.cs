@@ -2,7 +2,7 @@ public class MemoryFile
 {
     internal MachineWord[] memory;
 
-    public int Count => memory.Length;
+    public int Length => memory.Length;
 
     public MemoryFile(int size = 65_536) => memory = new MachineWord[size];
 
@@ -12,13 +12,25 @@ public class MemoryFile
     //  the low 16 bits.
     public Word this[uint n]
     {
-        get { return (Word)memory[n]; }
-        set { memory[n] = (memory[n].bits & 0xff00) | value; }
+        get { return (Word)memory[(n < 0 ? n + Length : n) % Length]; }
+        set
+        {
+            n = (uint)((n < 0 ? n + Length : n) % Length);
+            memory[n] = (memory[n].bits & 0xff00) | value;
+        }
     }
 
     public Word Get32bits(int addr) => memory[addr];
 
     public uint Set32bits(int addr, uint value) => memory[addr] = value;
+
+    public void Initialize(uint baseAddr, params Word[] words)
+    {
+        foreach (var w in words)
+        {
+            memory[baseAddr++] = w;
+        }
+    }
 
     public void ReadMemFile(string path)
     {

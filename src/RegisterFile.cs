@@ -2,7 +2,7 @@ public class RegisterFile
 {
     internal Word[] registers;
 
-    public int Count => registers.Length;
+    public int Length => registers.Length;
 
     public RegisterFile(int size = 8)
     {

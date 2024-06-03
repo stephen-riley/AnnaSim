@@ -10,8 +10,8 @@ public class AnnaMachineConstructorTests
     {
         var cpu = new AnnaMachine();
 
-        Assert.AreEqual(8, cpu.Registers.Count);
-        Assert.AreEqual(65536, cpu.Memory.Count);
+        Assert.AreEqual(8, cpu.Registers.Length);
+        Assert.AreEqual(65536, cpu.Memory.Length);
         Assert.AreEqual(0, cpu.Inputs.Count);
     }
 
@@ -22,8 +22,8 @@ public class AnnaMachineConstructorTests
 
         var cpu = new AnnaMachine(inputs);
 
-        Assert.AreEqual(8, cpu.Registers.Count);
-        Assert.AreEqual(65536, cpu.Memory.Count);
+        Assert.AreEqual(8, cpu.Registers.Length);
+        Assert.AreEqual(65536, cpu.Memory.Length);
         Assert.AreEqual(inputs.Length, cpu.Inputs.Count);
         Assert.IsTrue(Enumerable.SequenceEqual(inputs.Select(n => (Word)(uint)n), cpu.Inputs));
     }
@@ -36,8 +36,8 @@ public class AnnaMachineConstructorTests
 
         var cpu = new AnnaMachine(sinputs);
 
-        Assert.AreEqual(8, cpu.Registers.Count);
-        Assert.AreEqual(65536, cpu.Memory.Count);
+        Assert.AreEqual(8, cpu.Registers.Length);
+        Assert.AreEqual(65536, cpu.Memory.Length);
         Assert.AreEqual(inputs.Length, cpu.Inputs.Count);
         Assert.IsTrue(Enumerable.SequenceEqual(inputs.Select(n => (Word)(uint)n), cpu.Inputs));
     }

@@ -137,11 +137,17 @@ public class AnnaMachine
         }
         else if (instruction.Opcode == Opcode.Lw)
         {
-            throw new NotImplementedException();
+            int addr = Registers[instruction.Rs1];
+            SignedWord immvalue = (SignedWord)instruction.Imm6;
+            addr += immvalue;
+            Registers[instruction.Rd] = Memory[(uint)addr];
         }
         else if (instruction.Opcode == Opcode.Sw)
         {
-            throw new NotImplementedException();
+            int addr = Registers[instruction.Rs1];
+            SignedWord immvalue = (SignedWord)instruction.Imm6;
+            addr += immvalue;
+            Memory[(uint)addr] = Registers[instruction.Rd];
         }
     }
 
