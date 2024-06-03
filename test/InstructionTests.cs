@@ -8,7 +8,7 @@ public class InstructionTests
     [TestMethod]
     public void TestMathRTypeConstructor()
     {
-        var instruction = new Instruction(Opcode._Math, 1, 2, 3, MathOp.Not);
+        var instruction = Instruction.Not(1, 2, 3);
         Assert.AreEqual(Opcode._Math, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
@@ -19,7 +19,7 @@ public class InstructionTests
     [TestMethod]
     public void TestRTypeConstructor()
     {
-        var instruction = new Instruction(Opcode.Jalr, 1, 2, 3);
+        var instruction = Instruction.Jalr(1, 2, 3);
         Assert.AreEqual(Opcode.Jalr, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
@@ -29,7 +29,7 @@ public class InstructionTests
     [TestMethod]
     public void TestImm6Constructor()
     {
-        var instruction = new Instruction(Opcode.Addi, 1, 2, 63);
+        var instruction = Instruction.Addi(1, 2, 63);
         Assert.AreEqual(Opcode.Addi, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
@@ -39,7 +39,7 @@ public class InstructionTests
     [TestMethod]
     public void TestImm8Constructor()
     {
-        var instruction = new Instruction(Opcode.Lui, 1, 255);
+        var instruction = Instruction.Lui(1, 255);
         Assert.AreEqual(Opcode.Lui, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(-1, instruction.Imm8);
@@ -78,7 +78,7 @@ public class InstructionTests
     [TestMethod]
     public void TestInvalidRTypeFieldAccess()
     {
-        var instruction = new Instruction(Opcode._Math, 1, 2, 3, MathOp.Not);
+        var instruction = Instruction.Not(1, 2, 3);
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Imm6; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Imm8; });
     }
@@ -86,7 +86,7 @@ public class InstructionTests
     [TestMethod]
     public void TestInvalidImm6TypeFieldAccess()
     {
-        var instruction = new Instruction(Opcode.Addi, 1, 2, 67);
+        var instruction = Instruction.Addi(1, 2, 67);
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Rs2; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Imm8; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.FuncCode; });
@@ -95,7 +95,7 @@ public class InstructionTests
     [TestMethod]
     public void TestInvalidImm8TypeFieldAccess()
     {
-        var instruction = new Instruction(Opcode.Lli, 1, 255);
+        var instruction = Instruction.Lui(1, 255);
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.FuncCode; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Rs1; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Rs2; });

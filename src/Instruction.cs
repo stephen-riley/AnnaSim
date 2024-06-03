@@ -1,7 +1,6 @@
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
 using AnnaSim.Test;
-using static Opcode;
 
 public class Instruction
 {
@@ -12,7 +11,7 @@ public class Instruction
     // RType MathOp constructor
     public Instruction(Opcode opcode, ushort rd, ushort rs1, ushort rs2, MathOp func)
     {
-        if (opcode is not _Math or Jalr or In or Out)
+        if (opcode is not Opcode._Math or Opcode.Jalr or Opcode.In or Opcode.Out)
         {
             throw new InvalidOpcodeException(opcode, "in Instruction RType math constructor");
         }
@@ -27,7 +26,7 @@ public class Instruction
     // RType/Imm6 constructor
     public Instruction(Opcode opcode, ushort rd, ushort rs1, short rs2orImm6)
     {
-        if (opcode.IsImm8Type() || opcode == _Math)
+        if (opcode.IsImm8Type() || opcode == Opcode._Math)
         {
             throw new InvalidOpcodeException(opcode, "in Instruction RsType/Imm6Type constructor");
         }
@@ -65,7 +64,7 @@ public class Instruction
     public uint Rs2 => RType ? (uint)((bits >> 3) & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Rs2), "Instruction is not RType");
     public int Imm6 => Imm6Type ? ((int)bits & 0b111111).SignExtend(6) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm6), "Instruction is not I6Type");
     public int Imm8 => Imm8Type ? ((int)bits & 0b11111111).SignExtend(8) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm8), "Instruction is not I8Type");
-    public MathOp FuncCode => RType && Opcode == _Math ? (MathOp)((ushort)bits & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(FuncCode), "Instruction is not RType or not a math operation");
+    public MathOp FuncCode => RType && Opcode == Opcode._Math ? (MathOp)((ushort)bits & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(FuncCode), "Instruction is not RType or not a math operation");
 
     public bool IsHalt => bits == 0xF000;
 
@@ -80,4 +79,46 @@ public class Instruction
     public bool Imm8Type => Type == InstructionType.Imm8;
 
     public static implicit operator Word(Instruction i) => i.bits;
+
+    public static Instruction Add(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
+
+    public static Instruction Sub(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
+
+    public static Instruction And(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
+
+    public static Instruction Or(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
+
+    public static Instruction Not(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
+
+    public static Instruction Jalr(ushort rd, ushort rs1) => new(Opcode.Jalr, rd, rs1, 0);
+
+    public static Instruction Jalr(ushort rd) => new(Opcode.Jalr, rd, 0, 0);
+
+    public static Instruction In(ushort rd) => new(Opcode.In, rd, 0, 0);
+
+    public static Instruction Out(ushort rd) => new(Opcode.Out, rd, 0, 0);
+
+    public static Instruction Addi(ushort rd, ushort rs1, SignedWord imm6) => new(Opcode.Addi, rd, rs1, imm6);
+
+    public static Instruction Shf(ushort rd, ushort rs1, SignedWord imm6) => new(Opcode.Shf, rd, rs1, imm6);
+
+    public static Instruction Lw(ushort rd, ushort rs1, SignedWord imm6) => new(Opcode.Lw, rd, rs1, imm6);
+
+    public static Instruction Sw(ushort rd, ushort rs1, SignedWord imm6) => new(Opcode.Sw, rd, rs1, imm6);
+
+    public static Instruction Lli(ushort rd, SignedWord imm8) => new(Opcode.Lli, rd, imm8);
+
+    public static Instruction Lui(ushort rd, SignedWord imm8) => new(Opcode.Lui, rd, imm8);
+
+    public static Instruction Beq(ushort rd, SignedWord imm8) => new(Opcode.Beq, rd, imm8);
+
+    public static Instruction Bne(ushort rd, SignedWord imm8) => new(Opcode.Bne, rd, imm8);
+
+    public static Instruction Bgt(ushort rd, SignedWord imm8) => new(Opcode.Bgt, rd, imm8);
+
+    public static Instruction Bge(ushort rd, SignedWord imm8) => new(Opcode.Bge, rd, imm8);
+
+    public static Instruction Blt(ushort rd, SignedWord imm8) => new(Opcode.Blt, rd, imm8);
+
+    public static Instruction Ble(ushort rd, SignedWord imm8) => new(Opcode.Ble, rd, imm8);
 }

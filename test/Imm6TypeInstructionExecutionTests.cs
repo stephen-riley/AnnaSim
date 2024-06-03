@@ -12,7 +12,7 @@ public class Imm6TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[2] = (ushort)op1;
 
-        var instruction = new Instruction(Opcode.Addi, 1, 2, (short)imm6);
+        var instruction = Instruction.Addi(1, 2, (short)imm6);
         cpu.ExecuteImm6Type(instruction);
 
         Assert.AreEqual((Word)(ushort)result, cpu.Registers[1]);
@@ -29,7 +29,7 @@ public class Imm6TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[2] = (ushort)op1;
 
-        var instruction = new Instruction(Opcode.Shf, 1, 2, (short)imm6);
+        var instruction = Instruction.Shf(1, 2, (short)imm6);
         cpu.ExecuteImm6Type(instruction);
 
         Assert.AreEqual((Word)(ushort)result, cpu.Registers[1]);
@@ -46,7 +46,7 @@ public class Imm6TypeInstructionExecutionTests
         cpu.Memory.Initialize(0u, Enumerable.Range(0, cpu.Memory.Length).Reverse().Select(n => (Word)(uint)n).ToArray());
         cpu.Registers[2] = (uint)addrBase;
 
-        var instruction = new Instruction(Opcode.Lw, 1, 2, (short)offset);
+        var instruction = Instruction.Lw(1, 2, (short)offset);
         cpu.ExecuteImm6Type(instruction);
 
         Assert.AreEqual(expected, cpu.Registers[1]);
@@ -60,7 +60,7 @@ public class Imm6TypeInstructionExecutionTests
         cpu.Registers[1] = (uint)value;
         cpu.Registers[2] = (uint)addrBase;
 
-        var instruction = new Instruction(Opcode.Sw, 1, 2, (short)offset);
+        var instruction = Instruction.Sw(1, 2, (short)offset);
         cpu.ExecuteImm6Type(instruction);
 
         Assert.AreEqual(value, cpu.Memory[(uint)(addrBase + offset)]);
