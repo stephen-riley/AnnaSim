@@ -20,4 +20,14 @@ public class TwosComplementTests
         cpu.ExecuteRType(instruction);
         Assert.AreEqual((SignedWord)result, (SignedWord)cpu.Registers[1]);
     }
+
+    [TestMethod]
+    [DataRow(0b0100_000_000_000000, 0)]
+    [DataRow(0b0100_001_010_111011, -5)]
+    [DataRow(0b0100_001_010_000101, 5)]
+    public void TestImm6Values(int bits, int imm6Value)
+    {
+        var instruction = new Instruction((ushort)bits);
+        Assert.AreEqual(imm6Value, instruction.Imm6);
+    }
 }

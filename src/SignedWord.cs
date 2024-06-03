@@ -7,6 +7,24 @@ public readonly struct SignedWord : IBitwiseOperators<SignedWord, SignedWord, Si
     public SignedWord(short w) => bits = w;
     public SignedWord(int w) => bits = (short)w;
 
+    public SignedWord(short w, int bitLength)
+    {
+        int sh = (sizeof(short) * 8) - bitLength;
+        // push everything up to the top, so sign bit is in high bit
+        short x = (short)(w << sh);
+        // now sign-extend back down
+        bits = (short)(x >> sh);
+    }
+
+    public SignedWord(int w, int bitLength)
+    {
+        int sh = (sizeof(short) * 8) - bitLength;
+        // push everything up to the top, so sign bit is in high bit
+        short x = (short)(w << sh);
+        // now sign-extend back down
+        bits = (short)(x >> sh);
+    }
+
     public static SignedWord operator ~(SignedWord value) => ~value.bits;
 
     public static SignedWord operator &(SignedWord left, SignedWord right) => left.bits & right.bits;

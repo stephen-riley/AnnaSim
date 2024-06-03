@@ -121,7 +121,25 @@ public class AnnaMachine
 
     internal void ExecuteImm6Type(Instruction instruction)
     {
-        throw new NotImplementedException();
+        if (instruction.Opcode == Opcode.Addi)
+        {
+            SignedWord rvalue = Registers[instruction.Rs1];
+            SignedWord immvalue = (SignedWord)instruction.Imm6;
+            SignedWord result = rvalue + immvalue;
+            Registers[instruction.Rd] = result;
+        }
+        else if (instruction.Opcode == Opcode.Addi)
+        {
+            throw new NotImplementedException();
+        }
+        else if (instruction.Opcode == Opcode.Addi)
+        {
+            throw new NotImplementedException();
+        }
+        else if (instruction.Opcode == Opcode.Addi)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     internal void ExecuteImm8Type(Instruction instruction)

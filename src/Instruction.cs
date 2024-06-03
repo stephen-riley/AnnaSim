@@ -1,5 +1,6 @@
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
+using AnnaSim.Test;
 using static Opcode;
 
 public class Instruction
@@ -24,7 +25,7 @@ public class Instruction
     }
 
     // RType/Imm6 constructor
-    public Instruction(Opcode opcode, ushort rd, ushort rs1, ushort rs2OrImm6)
+    public Instruction(Opcode opcode, ushort rd, ushort rs1, short rs2orImm6)
     {
         if (opcode.IsImm8Type() || opcode == _Math)
         {
@@ -37,16 +38,16 @@ public class Instruction
 
         if (opcode.IsRType())
         {
-            bits |= (rs2OrImm6 & 0b111u) << 3;
+            bits |= ((ushort)rs2orImm6 & 0b111u) << 3;
         }
         else
         {
-            bits |= rs2OrImm6 & 0b111111u;
+            bits |= (ushort)rs2orImm6 & 0b111111u;
         }
     }
 
     // Imm8 constructor
-    public Instruction(Opcode opcode, ushort rd, ushort imm8)
+    public Instruction(Opcode opcode, ushort rd, short imm8)
     {
         if (!opcode.IsImm8Type())
         {
@@ -55,15 +56,15 @@ public class Instruction
 
         bits = (uint)opcode << 12;
         bits |= (rd & 0b111u) << 9;
-        bits |= imm8 & 0b11111111u;
+        bits |= (ushort)imm8 & 0b11111111u;
     }
 
     public Opcode Opcode => (Opcode)(bits >> 12);
     public uint Rd => (uint)((bits >> 9) & 0b111);
     public uint Rs1 => !Imm8Type ? (uint)((bits >> 6) & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Rs1), "Instruction is not Rtype or I6Type");
     public uint Rs2 => RType ? (uint)((bits >> 3) & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Rs2), "Instruction is not RType");
-    public uint Imm6 => Imm6Type ? (uint)(bits & 0b111111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm6), "Instruction is not I6Type");
-    public uint Imm8 => Imm8Type ? (uint)(bits & 0b11111111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm8), "Instruction is not I8Type");
+    public int Imm6 => Imm6Type ? ((int)bits & 0b111111).SignExtend(6) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm6), "Instruction is not I6Type");
+    public int Imm8 => Imm8Type ? ((int)bits & 0b11111111).SignExtend(8) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm8), "Instruction is not I8Type");
     public MathOp FuncCode => RType && Opcode == _Math ? (MathOp)((ushort)bits & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(FuncCode), "Instruction is not RType or not a math operation");
 
     public bool IsHalt => bits == 0xF000;

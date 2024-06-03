@@ -33,7 +33,7 @@ public class InstructionTests
         Assert.AreEqual(Opcode.Addi, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
-        Assert.AreEqual(63u, instruction.Imm6);
+        Assert.AreEqual(63, instruction.Imm6);
     }
 
     [TestMethod]
@@ -42,7 +42,7 @@ public class InstructionTests
         var instruction = new Instruction(Opcode.Lui, 1, 255);
         Assert.AreEqual(Opcode.Lui, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
-        Assert.AreEqual(255u, instruction.Imm8);
+        Assert.AreEqual(-1, instruction.Imm8);
     }
 
     [TestMethod]
@@ -62,7 +62,7 @@ public class InstructionTests
         var instruction = new Instruction(0b0100_001_010_011101);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
-        Assert.AreEqual(29u, instruction.Imm6);
+        Assert.AreEqual(29, instruction.Imm6);
         Assert.AreEqual(Opcode.Addi, instruction.Opcode);
     }
 
@@ -71,7 +71,7 @@ public class InstructionTests
     {
         var instruction = new Instruction(0b1010_001_0_10101001);
         Assert.AreEqual(1u, instruction.Rd);
-        Assert.AreEqual(169u, instruction.Imm8);
+        Assert.AreEqual(169, instruction.Imm8);
         Assert.AreEqual(Opcode.Beq, instruction.Opcode);
     }
 
