@@ -80,13 +80,13 @@ public class Instruction
 
     public static implicit operator Word(Instruction i) => i.bits;
 
-    public static Instruction Add(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
+    public static Instruction Add(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Add);
 
-    public static Instruction Sub(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
+    public static Instruction Sub(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Sub);
 
-    public static Instruction And(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
+    public static Instruction And(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.And);
 
-    public static Instruction Or(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
+    public static Instruction Or(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Or);
 
     public static Instruction Not(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
 

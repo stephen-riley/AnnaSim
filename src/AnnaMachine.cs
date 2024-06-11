@@ -16,6 +16,9 @@ public class AnnaMachine
         inputs.Select(n => (Word)(ushort)n).ForEach(n => Inputs.Enqueue(n));
     }
 
+    internal uint NormalizePc(int addr) => (uint)((addr < 0 ? addr + Memory.Length : addr) % Memory.Length);
+    internal uint NormalizePc(uint addr) => (uint)(addr % Memory.Length);
+
     public AnnaMachine(params string[] inputs)
     {
         foreach (var s in inputs)
@@ -75,7 +78,11 @@ public class AnnaMachine
         return this;
     }
 
-    internal void ExecuteRType(Instruction instruction)
+    internal void ExecuteRType(Instruction instruction) => Pc = NormalizePc(ExecuteRTypeImpl(instruction));
+    internal void ExecuteImm6Type(Instruction instruction) => Pc = NormalizePc(ExecuteImm6TypeImpl(instruction));
+    internal void ExecuteImm8Type(Instruction instruction) => Pc = NormalizePc(ExecuteImm8TypeImpl(instruction));
+
+    internal uint ExecuteRTypeImpl(Instruction instruction)
     {
         if (instruction.Opcode == Opcode._Math)
         {
@@ -95,11 +102,12 @@ public class AnnaMachine
             };
 
             Registers[instruction.Rd] = (ushort)rdval;
+            return Pc + 1;
         }
         else if (instruction.Opcode == Opcode.Jalr)
         {
             Registers[instruction.Rs1] = Pc + 1;
-            Pc = Registers[instruction.Rd];
+            return Registers[instruction.Rd];
         }
         else if (instruction.Opcode == Opcode.In)
         {
@@ -111,15 +119,21 @@ public class AnnaMachine
             {
                 throw new NoInputRemainingException();
             }
+            return Pc + 1;
         }
         else if (instruction.Opcode == Opcode.Out)
         {
             var value = Registers[instruction.Rd];
             OutputCallback(value);
+            return Pc + 1;
+        }
+        else
+        {
+            throw new InvalidOperationException();
         }
     }
 
-    internal void ExecuteImm6Type(Instruction instruction)
+    internal uint ExecuteImm6TypeImpl(Instruction instruction)
     {
         if (instruction.Opcode == Opcode.Addi)
         {
@@ -149,10 +163,48 @@ public class AnnaMachine
             addr += immvalue;
             Memory[(uint)addr] = Registers[instruction.Rd];
         }
+
+        return Pc + 1;
     }
 
-    internal void ExecuteImm8Type(Instruction instruction)
+    internal uint ExecuteImm8TypeImpl(Instruction instruction)
     {
-        throw new NotImplementedException();
+        if (instruction.Opcode == Opcode.Lli)
+        {
+            throw new NotImplementedException();
+        }
+
+        if (instruction.Opcode == Opcode.Lui)
+        {
+            throw new NotImplementedException();
+        }
+
+        if (instruction.Opcode.IsBranch())
+        {
+            var condition = instruction.Opcode switch
+            {
+                Opcode.Beq => Registers[instruction.Rd] == 0,
+                Opcode.Bne => Registers[instruction.Rd] != 0,
+                Opcode.Bgt => (SignedWord)Registers[instruction.Rd] > 0,
+                Opcode.Bge => (SignedWord)Registers[instruction.Rd] >= 0,
+                Opcode.Blt => (SignedWord)Registers[instruction.Rd] < 0,
+                Opcode.Ble => (SignedWord)Registers[instruction.Rd] <= 0,
+                _ => false
+            };
+
+            if (condition)
+            {
+                var target = (int)Pc + 1 + instruction.Imm8;
+                return (uint)((uint)((int)Pc + 1 + instruction.Imm8) % Memory.Length);
+            }
+            else
+            {
+                return Pc + 1;
+            }
+        }
+        else
+        {
+            return Pc + 1;
+        }
     }
 }

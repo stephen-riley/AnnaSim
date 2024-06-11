@@ -30,4 +30,16 @@ public class TwosComplementTests
         var instruction = new Instruction((ushort)bits);
         Assert.AreEqual(imm6Value, instruction.Imm6);
     }
+
+    [TestMethod]
+    [DataRow(65535, 1, 0)]
+    [DataRow(0, -5, 65531)]
+    public void TestNormalizePc(int baseAddr, int offset, int expected)
+    {
+        int a_weird_variable = 1;
+        Console.WriteLine(a_weird_variable);
+        var cpu = new AnnaMachine();
+        var addr = cpu.NormalizePc(baseAddr + offset);
+        Assert.AreEqual((uint)expected, addr);
+    }
 }

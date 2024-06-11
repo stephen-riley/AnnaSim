@@ -29,11 +29,12 @@ public class InstructionTests
     [TestMethod]
     public void TestImm6Constructor()
     {
+        // putting an unsigned 63 in imm6 should end up being a -1
         var instruction = Instruction.Addi(1, 2, 63);
         Assert.AreEqual(Opcode.Addi, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
-        Assert.AreEqual(63, instruction.Imm6);
+        Assert.AreEqual(-1, instruction.Imm6);
     }
 
     [TestMethod]
@@ -69,9 +70,10 @@ public class InstructionTests
     [TestMethod]
     public void TestImm8InstructionDecode()
     {
+        // 0b10101001 is 0xA9, 169.  In imm8, that is -87.
         var instruction = new Instruction(0b1010_001_0_10101001);
         Assert.AreEqual(1u, instruction.Rd);
-        Assert.AreEqual(169, instruction.Imm8);
+        Assert.AreEqual(-87, instruction.Imm8);
         Assert.AreEqual(Opcode.Beq, instruction.Opcode);
     }
 
