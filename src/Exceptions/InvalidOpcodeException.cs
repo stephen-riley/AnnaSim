@@ -1,3 +1,5 @@
+using AnnaSim.Cpu.Instructions;
+
 namespace AnnaSim.Exceptions;
 
 public class InvalidOpcodeException : Exception

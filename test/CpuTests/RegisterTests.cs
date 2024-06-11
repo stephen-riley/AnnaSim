@@ -1,4 +1,6 @@
-namespace AnnaSim.Test;
+using AnnaSim.Cpu.Memory;
+
+namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
 public class RegisterTests

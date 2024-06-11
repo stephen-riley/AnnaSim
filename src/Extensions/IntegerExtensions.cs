@@ -1,4 +1,4 @@
-namespace AnnaSim.Test;
+namespace AnnaSim.Extensions;
 
 public static class IntegerExtensions
 {

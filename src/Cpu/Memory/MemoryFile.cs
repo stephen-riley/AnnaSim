@@ -1,3 +1,5 @@
+namespace AnnaSim.Cpu.Memory;
+
 public class MemoryFile
 {
     internal MachineWord[] memory;

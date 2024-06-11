@@ -1,3 +1,5 @@
+namespace AnnaSim.Cpu.Memory;
+
 public class RegisterFile
 {
     internal Word[] registers;

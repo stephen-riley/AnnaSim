@@ -1,5 +1,7 @@
+
 using System.Numerics;
 
+namespace AnnaSim.Cpu.Memory;
 public readonly struct SignedWord : IBitwiseOperators<SignedWord, SignedWord, SignedWord>
 {
     internal readonly short bits;

@@ -1,6 +1,9 @@
+using AnnaSim.Cpu;
+using AnnaSim.Cpu.Instructions;
+using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
 
-namespace AnnaSim.Test;
+namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
 public class RTypeInstructionExecutionTests

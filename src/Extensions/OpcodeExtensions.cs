@@ -1,6 +1,8 @@
-namespace AnnaSim.Extensions;
 
-using static Opcode;
+using AnnaSim.Cpu.Instructions;
+using static AnnaSim.Cpu.Instructions.Opcode;
+
+namespace AnnaSim.Extensions;
 
 public static class OpcodeExtensions
 {

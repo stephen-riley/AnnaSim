@@ -1,4 +1,8 @@
-namespace AnnaSim.Test;
+using AnnaSim.Cpu;
+using AnnaSim.Cpu.Instructions;
+using AnnaSim.Cpu.Memory;
+
+namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
 public class TwosComplementTests

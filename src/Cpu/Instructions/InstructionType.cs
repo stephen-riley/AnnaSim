@@ -1,3 +1,5 @@
+namespace AnnaSim.Cpu.Instructions;
+
 public enum InstructionType
 {
     R,

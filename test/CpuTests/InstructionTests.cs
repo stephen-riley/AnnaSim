@@ -1,6 +1,7 @@
+using AnnaSim.Cpu.Instructions;
 using AnnaSim.Exceptions;
 
-namespace AnnaSim.Test;
+namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
 public class InstructionTests

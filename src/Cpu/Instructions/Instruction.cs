@@ -1,6 +1,9 @@
+
+using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
-using AnnaSim.Test;
+
+namespace AnnaSim.Cpu.Instructions;
 
 public class Instruction
 {

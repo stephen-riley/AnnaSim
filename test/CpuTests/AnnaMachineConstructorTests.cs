@@ -1,6 +1,7 @@
-using System.Security.Cryptography.X509Certificates;
+using AnnaSim.Cpu;
+using AnnaSim.Cpu.Memory;
 
-namespace AnnaSim.Test;
+namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
 public class AnnaMachineConstructorTests

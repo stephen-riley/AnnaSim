@@ -1,3 +1,5 @@
+namespace AnnaSim.Cpu.Instructions;
+
 public enum MathOp
 {
     Add = 0,

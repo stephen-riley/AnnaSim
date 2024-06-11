@@ -1,5 +1,9 @@
+
+using AnnaSim.Cpu.Instructions;
+using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
 
+namespace AnnaSim.Cpu;
 public class AnnaMachine
 {
     public Queue<Word> Inputs { get; internal set; } = [];
