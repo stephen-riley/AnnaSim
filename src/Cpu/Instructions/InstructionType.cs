@@ -2,7 +2,11 @@ namespace AnnaSim.Cpu.Instructions;
 
 public enum InstructionType
 {
-    R,
+    Invalid = -1,
+    R = 0,
     Imm6,
-    Imm8
+    Imm8,
+
+    // used for assembler directives
+    Directive
 }

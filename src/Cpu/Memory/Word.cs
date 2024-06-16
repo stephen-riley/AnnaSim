@@ -27,5 +27,5 @@ public readonly struct Word : IBitwiseOperators<Word, Word, Word>
 
     public string ToString(string fmt) => bits.ToString(fmt);
 
-    public override string ToString() => bits.ToString();
+    public override string ToString() => "0x" + bits.ToString("x4");
 }

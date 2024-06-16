@@ -3,6 +3,8 @@ using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
 
+using static AnnaSim.Cpu.Instructions.InstructionType;
+
 namespace AnnaSim.Cpu.Instructions;
 
 public class Instruction
@@ -26,6 +28,10 @@ public class Instruction
         bits |= (uint)func;
     }
 
+    public static Instruction NewMathRtype(MathOp func, ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, func);
+
+    public static Instruction NewMathRtype(MathOp _, ushort rd, ushort rs1) => new(Opcode._Math, rd, rs1, 0xffff, MathOp.Not);
+
     // RType/Imm6 constructor
     public Instruction(Opcode opcode, ushort rd, ushort rs1, short rs2orImm6)
     {
@@ -48,6 +54,10 @@ public class Instruction
         }
     }
 
+    public static Instruction NewRType(Opcode opcode, ushort rd, ushort rs1, ushort rs2) => new(opcode, rd, rs1, (short)rs2);
+
+    public static Instruction NewImm6(Opcode opcode, ushort rd, ushort rs1, short imm6) => new(opcode, rd, rs1, imm6);
+
     // Imm8 constructor
     public Instruction(Opcode opcode, ushort rd, short imm8)
     {
@@ -60,6 +70,8 @@ public class Instruction
         bits |= (rd & 0b111u) << 9;
         bits |= (ushort)imm8 & 0b11111111u;
     }
+
+    public static Instruction NewImm8(Opcode opcode, ushort rd, short imm8) => new Instruction(opcode, rd, imm8);
 
     public Opcode Opcode => (Opcode)(bits >> 12);
     public uint Rd => (uint)((bits >> 9) & 0b111);
@@ -82,6 +94,45 @@ public class Instruction
     public bool Imm8Type => Type == InstructionType.Imm8;
 
     public static implicit operator Word(Instruction i) => i.bits;
+
+    public override string ToString()
+    {
+        int bits = this.bits;
+
+        if (bits == 0)
+        {
+            return "0x0000";
+        }
+        else if (bits == 0x3000)
+        {
+            return ".halt";
+        }
+
+        var opcode = bits >> 12;
+        var func = bits & 0x07;
+        var rd = bits >> 9 & 0x07;
+        var rs1 = bits >> 6 & 0x07;
+        var rs2 = bits >> 3 & 0x07;
+        var imm6 = (bits & 0x3f).SignExtend(6);
+        var imm8 = (bits & 0xff).SignExtend(8);
+        var imm8u = bits & 0xff;
+
+        var opname = opcode == (uint)Opcode._Math
+            ? ((MathOp)func).ToString().ToLower()
+            : ((Opcode)opcode).ToString().ToLower();
+
+        return (Type, (Opcode)opcode, (MathOp)func) switch
+        {
+            (_, Opcode._Math, MathOp.Not) => $"{opname} r{rd} r{rs1}",
+            (_, Opcode._Math, _) => $"{opname} r{rd} r{rs1} r{rs2}",
+            (R, Opcode.Jalr, _) => rs1 == 0 ? $"{opname} r{rd}" : $"{opname} r{rd} r{rs1}",
+            (R, Opcode.In or Opcode.Out, _) => $"{opname} r{rd}",
+            (InstructionType.Imm6, _, _) => $"{opname} r{rd} r{rs1} {imm6}",
+            (InstructionType.Imm8, Opcode.Lui, _) => $"{opname} r{rd} {imm8u}",
+            (InstructionType.Imm8, _, _) => $"{opname} r{rd} {imm8}",
+            _ => "unknown"
+        };
+    }
 
     public static Instruction Add(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Add);
 

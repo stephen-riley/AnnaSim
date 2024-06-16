@@ -8,6 +8,16 @@ public class MemoryFile
 
     public MemoryFile(int size = 65_536) => memory = new MachineWord[size];
 
+    public MemoryFile(IEnumerable<Word> contents, int size = 65_536)
+        : this(size)
+    {
+        int ptr = 0;
+        foreach (var w in contents)
+        {
+            memory[ptr++] = w;
+        }
+    }
+
     // For the indexers, we will only return a Word representation.
     // When setting, we do _not_ want to change the high 16 bits
     //  (which may contain runtime information), so we just set
@@ -69,5 +79,35 @@ public class MemoryFile
             var s = string.Join(" ", chunk.Select(w => w.ToString("X4")));
             sw.WriteLine(s);
         }
+    }
+
+    public int Compare(MemoryFile mem, int compareLength = -1)
+    {
+        int length = compareLength != -1 ? Length : compareLength;
+
+        for (uint i = 0; i < length; i++)
+        {
+            if (this[i] != mem[i])
+            {
+                return (int)i;
+            }
+        }
+
+        return -1;
+    }
+
+    public int Compare(IEnumerable<Word> contents, uint start = 0u)
+    {
+        var addr = start;
+        foreach (var w in contents)
+        {
+            if (this[addr] != w)
+            {
+                return (int)addr;
+            }
+            addr++;
+        }
+
+        return -1;
     }
 }

@@ -12,4 +12,7 @@ public class InvalidOpcodeException : Exception
 
     public InvalidOpcodeException(Opcode opcode, string message, Exception inner)
         : base($"Invalid opcode {Enum.GetName(opcode)}: {message}", inner) { }
+
+    public InvalidOpcodeException(string message)
+        : base(message) { }
 }

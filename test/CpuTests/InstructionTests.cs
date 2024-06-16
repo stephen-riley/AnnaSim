@@ -104,4 +104,33 @@ public class InstructionTests
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Rs2; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Imm6; });
     }
+
+    [TestMethod]
+    [DataRow("add r1 r2 r3", 0b0000_001_010_011_000u)]
+    [DataRow("sub r1 r2 r3", 0b0000_001_010_011_001u)]
+    [DataRow("and r1 r2 r3", 0b0000_001_010_011_010u)]
+    [DataRow("or r1 r2 r3", 0b0000_001_010_011_011u)]
+    [DataRow("not r1 r2", 0b0000_001_010_111_100u)]
+    [DataRow("jalr r1 r2", 0b0001_001_010_111_000u)]
+    [DataRow("jalr r1", 0b0001_001_000_000_000u)]
+    [DataRow("in r1", 0b0010_001_000_000_000u)]
+    [DataRow("out r1", 0b0011_001_000_000_000u)]
+    [DataRow("addi r1 r2 -15", 0b0100_001_010_110001u)]
+    [DataRow("shf r1 r2 -15", 0b0101_001_010_110001u)]
+    [DataRow("lw r1 r2 -15", 0b0110_001_010_110001u)]
+    [DataRow("sw r1 r2 -15", 0b0111_001_010_110001u)]
+    [DataRow("lli r1 -63", 0b1000_001_0_11000001u)]
+    [DataRow("lui r1 -63", 0b1001_001_0_11000001u)]
+    [DataRow("beq r1 -63", 0b1010_001_0_11000001u)]
+    [DataRow("bne r1 -63", 0b1011_001_0_11000001u)]
+    [DataRow("bgt r1 -63", 0b1100_001_0_11000001u)]
+    [DataRow("bge r1 -63", 0b1101_001_0_11000001u)]
+    [DataRow("blt r1 -63", 0b1110_001_0_11000001u)]
+    [DataRow("ble r1 -63", 0b1111_001_0_11000001u)]
+    [DataRow("0x0000", 0u)]
+    [DataRow(".halt", 0x3000u)]
+    public void TestInstructionToString(string instr, uint bits)
+    {
+        Assert.AreEqual(instr, new Instruction((ushort)bits).ToString());
+    }
 }

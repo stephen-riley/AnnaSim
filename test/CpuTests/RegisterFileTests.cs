@@ -3,7 +3,7 @@ using AnnaSim.Cpu.Memory;
 namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
-public class RegisterTests
+public class RegisterFileTests
 {
     [TestMethod]
     public void ReadWriteR0()

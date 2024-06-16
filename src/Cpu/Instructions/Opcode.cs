@@ -2,7 +2,10 @@ namespace AnnaSim.Cpu.Instructions;
 
 public enum Opcode
 {
+    // for the math ops that use the func code
     _Math = 0,
+
+    // other instructions
     Jalr,
     In,
     Out,
@@ -18,4 +21,9 @@ public enum Opcode
     Bge,
     Blt,
     Ble,
+
+    // assembler directives
+    _Halt,
+    _Fill,
+    _Ralias,
 }
