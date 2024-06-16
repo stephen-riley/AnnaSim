@@ -27,6 +27,17 @@ public partial class AnnaAssembler
         MemoryImage = new MemoryFile(memorySize);
     }
 
+    public AnnaAssembler(string filename, int memorySize = 65536)
+        : this(memorySize)
+    {
+        Assemble(filename);
+    }
+
+    public void Assemble(string filename)
+    {
+        Assemble(File.ReadAllLines(filename));
+    }
+
     public void Assemble(IEnumerable<string> lines)
     {
         foreach (var line in lines.Select(l => Regex.Replace(l, @"#.*", "")))
@@ -38,6 +49,8 @@ public partial class AnnaAssembler
                 AssembleLine(pieces);
             }
         }
+
+        ResolveLabels();
     }
 
     internal void AssembleLine(string[] pieces)
@@ -51,7 +64,7 @@ public partial class AnnaAssembler
 
         (var opcode, var mathop, var instrtype, var numargs) = OpInfo.OpcodeMap[pieces[idx]];
         var opinfo = OpInfo.OpcodeMap[pieces[idx]];
-        var fillOkay = numargs == -1 && pieces[idx..].Length > 0;
+        var fillOkay = numargs == -1 && pieces.Length > 1;
         var mismatch = pieces[idx..].Length - 1 != numargs;
 
         if (!fillOkay && mismatch)
@@ -70,6 +83,51 @@ public partial class AnnaAssembler
         };
     }
 
+    internal void ResolveLabels()
+    {
+        foreach ((var addr, var label) in resolutionToDo)
+        {
+            if (labels.TryGetValue(label, out var targetAddr))
+            {
+                var wordAtAddr = MemoryImage[addr];
+                var instruction = wordAtAddr.ToInstruction();
+
+                if (instruction.Opcode.IsBranch())
+                {
+                    var offset = (int)targetAddr - (int)addr;
+                    if (offset > MemoryImage.Length / 2)
+                    {
+                        offset -= MemoryImage.Length;
+                    }
+                    if (offset is > 127 or < -128)
+                    {
+                        throw new InvalidOpcodeException(instruction.Opcode, "target address is too far away {offset}");
+                    }
+
+                    MemoryImage[addr] = MemoryImage[addr].SetLower(offset);
+                }
+                else if (instruction.Opcode == Lli)
+                {
+                    var targetLowExtended = ((int)targetAddr).SignExtend(8);
+                    MemoryImage[addr] = MemoryImage[addr].SetLower(targetLowExtended);
+                    MemoryImage[addr] = MemoryImage[addr].SetUpper(targetLowExtended);
+                }
+                else if (instruction.Opcode == Lui)
+                {
+                    MemoryImage[addr] = MemoryImage[addr].SetUpper(targetAddr);
+                }
+                else
+                {
+                    throw new InvalidOpcodeException(instruction.Opcode, "cannot use label as operand");
+                }
+            }
+            else
+            {
+                throw new LabelNotFoundException(label);
+            }
+        }
+    }
+
     internal bool HandleDirective(OpInfo opinfo, string[] operands)
     {
         if (opinfo.opcode == _Halt)
@@ -80,7 +138,8 @@ public partial class AnnaAssembler
         {
             foreach (var operand in operands)
             {
-                MemoryImage[Addr++] = (SignedWord)ParseOperand(operand);
+                MemoryImage[Addr] = (SignedWord)ParseOperand(operand);
+                Addr++; // do this after ParseOperand() in case the operand is a label
             }
         }
         else if (opinfo.opcode == _Ralias && operands[0].IsStandardRegisterName() && operands[1].StartsWith('r'))
@@ -106,7 +165,7 @@ public partial class AnnaAssembler
 
     internal bool HandleStandardOpcode(OpInfo opInfo, string[] operands)
     {
-        MemoryImage[Addr++] = (opInfo.type, opInfo.opcode) switch
+        MemoryImage[Addr] = (opInfo.type, opInfo.opcode) switch
         {
             (R, Jalr) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)ParseOperand(operands[1]), 0xff),
             (R, In or Out) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), 0xff, 0xff),
@@ -115,6 +174,8 @@ public partial class AnnaAssembler
             (Imm8, _) => Instruction.NewImm8(opInfo.opcode, (ushort)ParseOperand(operands[0]), (short)ParseOperand(operands[1])),
             _ => throw new InvalidOpcodeException($"Cannot parse line {opInfo.opcode} {string.Join(' ', operands)}")
         };
+
+        Addr++; // do this after ParseOperand() in case the operand is a label
 
         return true;
     }

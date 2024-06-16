@@ -1,4 +1,5 @@
 
+using AnnaSim.Assember;
 using AnnaSim.Cpu.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
@@ -15,13 +16,16 @@ public class AnnaMachine
 
     public AnnaMachine() { }
 
+    public AnnaMachine(string filename, params int[] inputs) : this(inputs)
+    {
+        var asm = new AnnaAssembler(filename);
+        Memory = asm.MemoryImage;
+    }
+
     public AnnaMachine(params int[] inputs)
     {
         inputs.Select(n => (Word)(ushort)n).ForEach(n => Inputs.Enqueue(n));
     }
-
-    internal uint NormalizePc(int addr) => (uint)((addr < 0 ? addr + Memory.Length : addr) % Memory.Length);
-    internal uint NormalizePc(uint addr) => (uint)(addr % Memory.Length);
 
     public AnnaMachine(params string[] inputs)
     {
@@ -46,14 +50,20 @@ public class AnnaMachine
         return this;
     }
 
-    public AnnaMachine Execute(int maxCyles = 10_000)
+    public HaltReason Execute(int maxCycles = 10_000)
     {
         Pc = 0;
 
-        while (maxCyles > 0)
+        while (maxCycles > 0)
         {
             // Fetch and Decode
-            var instruction = new Instruction(Memory[Pc]);
+            var mw = Memory.Get32bits(Pc);
+            if (mw.IsBreakpoint)
+            {
+                return HaltReason.Breakpoint;
+            }
+
+            var instruction = new Instruction((Word)mw);
 
             // Execute (store is handled here)
             if (instruction.IsHalt)
@@ -76,11 +86,19 @@ public class AnnaMachine
                     throw new InvalidOperationException();
             }
 
-            maxCyles--;
+            maxCycles--;
         }
 
-        return this;
+        if (maxCycles == 0)
+        {
+            return HaltReason.CyclesExceeded;
+        }
+
+        return HaltReason.Halt;
     }
+
+    internal uint NormalizePc(int addr) => (uint)((addr < 0 ? addr + Memory.Length : addr) % Memory.Length);
+    internal uint NormalizePc(uint addr) => (uint)(addr % Memory.Length);
 
     internal void ExecuteRType(Instruction instruction) => Pc = NormalizePc(ExecuteRTypeImpl(instruction));
     internal void ExecuteImm6Type(Instruction instruction) => Pc = NormalizePc(ExecuteImm6TypeImpl(instruction));

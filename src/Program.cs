@@ -1,2 +1,5 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using AnnaSim.Cpu;
+
+var cpu = new AnnaMachine("../test/files/fibonacci.asm", 5);
+var reason = cpu.Execute();
+Console.WriteLine(reason);

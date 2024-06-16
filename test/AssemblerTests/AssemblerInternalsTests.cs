@@ -144,4 +144,37 @@ public class AssemblerInternalsTests
         Assert.AreEqual(labels, asm.labels.Count());
         Assert.AreEqual(tbdLabels, asm.resolutionToDo.Count());
     }
+
+    [TestMethod]
+    [DataRow(0xfff0u, 0xf0u)]
+    [DataRow(0x0010u, 0x10u)]
+    public void TestBranchToLabel(uint targetAddr, uint expectedOffset)
+    {
+        var asm = new AnnaAssembler();
+        asm.AssembleLine("beq r1 &label".Split(' '));
+        asm.labels["label"] = targetAddr;
+
+        Assert.AreEqual("label", asm.resolutionToDo[0]);
+        Assert.IsTrue(asm.labels.ContainsKey("label"));
+
+        asm.ResolveLabels();
+
+        uint offset = asm.MemoryImage[0] & 0x00ff;
+        Assert.AreEqual(expectedOffset, offset);
+    }
+
+    [TestMethod]
+    [DataRow(0x1000u)]
+    [DataRow(0xc000u)]
+    public void TestBranchToFarLabel(uint targetAddr)
+    {
+        var asm = new AnnaAssembler();
+        asm.AssembleLine("beq r1 &label".Split(' '));
+        asm.labels["label"] = targetAddr;
+
+        Assert.ThrowsException<InvalidOpcodeException>(() =>
+        {
+            asm.ResolveLabels();
+        });
+    }
 }

@@ -32,9 +32,9 @@ public class MemoryFile
         }
     }
 
-    public Word Get32bits(int addr) => memory[addr];
+    public MachineWord Get32bits(uint addr) => memory[addr];
 
-    public uint Set32bits(int addr, uint value) => memory[addr] = value;
+    public uint Set32bits(uint addr, uint value) => memory[addr] = value;
 
     public void Initialize(uint baseAddr, params Word[] words)
     {

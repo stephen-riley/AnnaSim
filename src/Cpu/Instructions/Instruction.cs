@@ -128,7 +128,7 @@ public class Instruction
             (R, Opcode.Jalr, _) => rs1 == 0 ? $"{opname} r{rd}" : $"{opname} r{rd} r{rs1}",
             (R, Opcode.In or Opcode.Out, _) => $"{opname} r{rd}",
             (InstructionType.Imm6, _, _) => $"{opname} r{rd} r{rs1} {imm6}",
-            (InstructionType.Imm8, Opcode.Lui, _) => $"{opname} r{rd} {imm8u}",
+            (InstructionType.Imm8, Opcode.Lui or Opcode.Lli, _) => $"{opname} r{rd} {imm8u}",
             (InstructionType.Imm8, _, _) => $"{opname} r{rd} {imm8}",
             _ => "unknown"
         };
