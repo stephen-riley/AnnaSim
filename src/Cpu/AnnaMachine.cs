@@ -1,4 +1,5 @@
 
+using System.Net.Http.Headers;
 using AnnaSim.Assember;
 using AnnaSim.Cpu.Instructions;
 using AnnaSim.Cpu.Memory;
@@ -71,7 +72,7 @@ public class AnnaMachine
                 break;
             }
 
-            Console.Error.WriteLine($"registers: {Registers}");
+            Console.Error.WriteLine($"PC:0x{Pc:x4} {Registers}");
             Console.Error.WriteLine($"Executing {instruction}");
 
             switch (instruction.Type)
@@ -206,12 +207,14 @@ public class AnnaMachine
     {
         if (instruction.Opcode == Opcode.Lli)
         {
-            throw new NotImplementedException();
+            Registers[instruction.Rd] = (uint)instruction.Imm8.SignExtend(8);
         }
 
         if (instruction.Opcode == Opcode.Lui)
         {
-            throw new NotImplementedException();
+            var rdvalue = Registers[instruction.Rd];
+            rdvalue = (rdvalue & 0x00ff) | ((uint)instruction.Imm8 << 8);
+            Registers[instruction.Rd] = rdvalue;
         }
 
         if (instruction.Opcode.IsBranch())

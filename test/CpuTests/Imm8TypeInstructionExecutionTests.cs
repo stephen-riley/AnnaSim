@@ -102,4 +102,34 @@ public class Imm8TypeInstructionExecutionTests
 
         Assert.AreEqual((uint)expectedPc, cpu.Pc);
     }
+
+    [TestMethod]
+    [DataRow(0u, 0xc0, 0xffc0u)]
+    [DataRow(0u, -1, 0xffffu)]
+    [DataRow(0u, 0x23, 0x0023u)]
+    public void TestLliInstruction(uint orig, int imm8, uint expected)
+    {
+        var cpu = new AnnaMachine();
+        cpu.Registers[1] = orig;
+        var instruction = Instruction.Lli(1, imm8);
+
+        cpu.ExecuteImm8Type(instruction);
+
+        Assert.AreEqual((Word)expected, cpu.Registers[1]);
+    }
+
+    [TestMethod]
+    [DataRow(0u, 0xc0, 0xc000u)]
+    [DataRow(0u, -1, 0xff00u)]
+    [DataRow(0xffffu, 0x23, 0x23ffu)]
+    public void TestLuiInstruction(uint orig, int imm8, uint expected)
+    {
+        var cpu = new AnnaMachine();
+        cpu.Registers[1] = orig;
+        var instruction = Instruction.Lui(1, imm8);
+
+        cpu.ExecuteImm8Type(instruction);
+
+        Assert.AreEqual((Word)expected, cpu.Registers[1]);
+    }
 }

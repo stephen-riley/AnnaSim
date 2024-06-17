@@ -103,6 +103,8 @@ public class AssemblerInternalsTests
     [DataRow("jalr r2 r5", 0b0001_010_101_111_000u)]    // jalr, r2, r5, -1 (unused RS2), func code 0
     [DataRow("shf r5 r4 -10", 0b0101_101_100_110110u)]  // shf, r5, r4, -10 as imm6
     [DataRow("beq r3 -10", 0b1010_011_0_11110110u)]     // beq, r3, unused bit, -10 as imm8
+    [DataRow("lli r1 0x8000", 0b1000_001_0_00000000u)]  // lli, r1, unused bit, 0x00 as imm8
+    [DataRow("lui r1 0x8000", 0b1001_001_0_10000000u)]  // lui, r1, unused bit, 0x80 as imm8
     public void TestGoodStandardInstructionAssembler(string instruction, uint expected)
     {
         var asm = new AnnaAssembler();
@@ -161,6 +163,20 @@ public class AssemblerInternalsTests
 
         uint offset = asm.MemoryImage[0] & 0x00ff;
         Assert.AreEqual(expectedOffset, offset);
+    }
+
+    [TestMethod]
+    public void TestLliLuiFromLabel()
+    {
+        var asm = new AnnaAssembler();
+        asm.labels["label"] = 0x050c;
+        asm.AssembleLine("lli r1 &label".Split(' '));
+        asm.AssembleLine("lui r1 &label".Split(' '));
+
+        asm.ResolveLabels();
+
+        Assert.AreEqual(0x0c, asm.MemoryImage[0] & 0xff);
+        Assert.AreEqual(0x05, asm.MemoryImage[1] & 0xff);
     }
 
     [TestMethod]

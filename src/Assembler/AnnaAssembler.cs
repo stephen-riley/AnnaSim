@@ -108,13 +108,12 @@ public partial class AnnaAssembler
                 }
                 else if (instruction.Opcode == Lli)
                 {
-                    var targetLowExtended = ((int)targetAddr).SignExtend(8);
-                    MemoryImage[addr] = MemoryImage[addr].SetLower(targetLowExtended);
-                    MemoryImage[addr] = MemoryImage[addr].SetUpper(targetLowExtended);
+                    wordAtAddr = wordAtAddr.SetLower(targetAddr);
+                    MemoryImage[addr] = wordAtAddr;
                 }
                 else if (instruction.Opcode == Lui)
                 {
-                    MemoryImage[addr] = MemoryImage[addr].SetUpper(targetAddr);
+                    MemoryImage[addr] = MemoryImage[addr].SetLower(targetAddr >> 8);
                 }
                 else
                 {
@@ -165,13 +164,26 @@ public partial class AnnaAssembler
 
     internal bool HandleStandardOpcode(OpInfo opInfo, string[] operands)
     {
+        // This is such a hack to handle 16-bit operands for Lui 🤦🏻‍♂️
+        // TODO: fix this eggregiousness (go to a class per instruction?)
+        var operand1 = 0;
+        if (operands.Length > 1)
+        {
+            operand1 = ParseOperand(operands[1]);
+            if (opInfo.opcode == Lui)
+            {
+                operand1 >>= 8;
+            }
+        }
+
         MemoryImage[Addr] = (opInfo.type, opInfo.opcode) switch
         {
-            (R, Jalr) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)ParseOperand(operands[1]), 0xff),
+            (R, Jalr) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)operand1, 0xff),
             (R, In or Out) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), 0xff, 0xff),
-            (R, _) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)ParseOperand(operands[1]), 0xff),
-            (Imm6, _) => Instruction.NewImm6(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)ParseOperand(operands[1]), (short)ParseOperand(operands[2])),
-            (Imm8, _) => Instruction.NewImm8(opInfo.opcode, (ushort)ParseOperand(operands[0]), (short)ParseOperand(operands[1])),
+            (R, _) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)operand1, 0xff),
+            (Imm6, _) => Instruction.NewImm6(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)operand1, (short)ParseOperand(operands[2])),
+            (Imm8, Lui) => Instruction.NewImm8(opInfo.opcode, (ushort)ParseOperand(operands[0]), (short)operand1),
+            (Imm8, _) => Instruction.NewImm8(opInfo.opcode, (ushort)ParseOperand(operands[0]), (short)operand1),
             _ => throw new InvalidOpcodeException($"Cannot parse line {opInfo.opcode} {string.Join(' ', operands)}")
         };
 

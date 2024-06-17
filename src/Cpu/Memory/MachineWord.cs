@@ -23,7 +23,12 @@ public struct MachineWord : IBitwiseOperators<MachineWord, MachineWord, MachineW
 
     public static implicit operator MachineWord(uint v) => new(v);
 
-    public string ToString(string fmt) => bits.ToString(fmt);
+    public readonly string ToString(string fmt) => bits.ToString(fmt);
+
+    public override readonly string ToString()
+    {
+        return (bits >> 16).ToString("x4") + " " + bits.ToString("x4");
+    }
 
     public bool IsBreakpoint => (bits & 0x80000000) != 0;
 
