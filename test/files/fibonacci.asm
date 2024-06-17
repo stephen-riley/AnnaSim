@@ -1,3 +1,8 @@
+        # r1: a
+        # r2: b
+        # r3: c (contains current fib)
+        # r4: n (loop counter)
+
         in      r4          # input n
         add     r1 r0 r0    # a = 0
         addi    r2 r0 1     # b = 1
@@ -10,9 +15,5 @@ loop:   addi    r4 r4 -1    # decrement n
         beq     r0 &loop
 
 end:    out     r3          # print result
-        lli     r7 0x00     # load LED addr
-        lui     r7 0xC0     # load LED addr
-        sw      r3 r7 0     # store in LEDs
-        sw      r3 r7 1     # store in 7-segments
 
         .halt

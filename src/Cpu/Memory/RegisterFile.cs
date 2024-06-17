@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace AnnaSim.Cpu.Memory;
 
 public class RegisterFile
@@ -15,5 +17,19 @@ public class RegisterFile
     {
         get { return n == 0 ? (Word)0 : registers[n]; }
         set { registers[n] = value; }
+    }
+
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+
+        for (int r = 0; r < registers.Length; r++)
+        {
+            sb.Append($"r{r}:");
+            sb.Append(registers[r].ToString());
+            sb.Append(' ');
+        }
+
+        return sb.ToString();
     }
 }

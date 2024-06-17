@@ -71,6 +71,9 @@ public class AnnaMachine
                 break;
             }
 
+            Console.Error.WriteLine($"registers: {Registers}");
+            Console.Error.WriteLine($"Executing {instruction}");
+
             switch (instruction.Type)
             {
                 case InstructionType.R:
@@ -84,6 +87,11 @@ public class AnnaMachine
                     break;
                 default:
                     throw new InvalidOperationException();
+            }
+
+            if (Pc == uint.MaxValue)
+            {
+                return HaltReason.Halt;
             }
 
             maxCycles--;
@@ -100,9 +108,9 @@ public class AnnaMachine
     internal uint NormalizePc(int addr) => (uint)((addr < 0 ? addr + Memory.Length : addr) % Memory.Length);
     internal uint NormalizePc(uint addr) => (uint)(addr % Memory.Length);
 
-    internal void ExecuteRType(Instruction instruction) => Pc = NormalizePc(ExecuteRTypeImpl(instruction));
-    internal void ExecuteImm6Type(Instruction instruction) => Pc = NormalizePc(ExecuteImm6TypeImpl(instruction));
-    internal void ExecuteImm8Type(Instruction instruction) => Pc = NormalizePc(ExecuteImm8TypeImpl(instruction));
+    internal void ExecuteRType(Instruction instruction) => Pc = ExecuteRTypeImpl(instruction);
+    internal void ExecuteImm6Type(Instruction instruction) => Pc = ExecuteImm6TypeImpl(instruction);
+    internal void ExecuteImm8Type(Instruction instruction) => Pc = ExecuteImm8TypeImpl(instruction);
 
     internal uint ExecuteRTypeImpl(Instruction instruction)
     {
@@ -124,11 +132,11 @@ public class AnnaMachine
             };
 
             Registers[instruction.Rd] = (ushort)rdval;
-            return Pc + 1;
+            return NormalizePc(Pc + 1);
         }
         else if (instruction.Opcode == Opcode.Jalr)
         {
-            Registers[instruction.Rs1] = Pc + 1;
+            Registers[instruction.Rs1] = NormalizePc(Pc + 1);
             return Registers[instruction.Rd];
         }
         else if (instruction.Opcode == Opcode.In)
@@ -141,13 +149,18 @@ public class AnnaMachine
             {
                 throw new NoInputRemainingException();
             }
-            return Pc + 1;
+            return NormalizePc(Pc + 1);
         }
         else if (instruction.Opcode == Opcode.Out)
         {
+            if (instruction.Rd == 0)
+            {
+                return uint.MaxValue;
+            }
+
             var value = Registers[instruction.Rd];
             OutputCallback(value);
-            return Pc + 1;
+            return NormalizePc(Pc + 1);
         }
         else
         {
@@ -186,7 +199,7 @@ public class AnnaMachine
             Memory[(uint)addr] = Registers[instruction.Rd];
         }
 
-        return Pc + 1;
+        return NormalizePc(Pc + 1);
     }
 
     internal uint ExecuteImm8TypeImpl(Instruction instruction)
@@ -216,17 +229,16 @@ public class AnnaMachine
 
             if (condition)
             {
-                var target = (int)Pc + 1 + instruction.Imm8;
-                return (uint)((uint)((int)Pc + 1 + instruction.Imm8) % Memory.Length);
+                return NormalizePc((int)Pc + instruction.Imm8);  // + 1
             }
             else
             {
-                return Pc + 1;
+                return NormalizePc(Pc + 1);
             }
         }
         else
         {
-            return Pc + 1;
+            return NormalizePc(Pc + 1);
         }
     }
 }

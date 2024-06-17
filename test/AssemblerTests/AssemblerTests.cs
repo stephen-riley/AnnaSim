@@ -15,6 +15,6 @@ public class AssemblerTests
         asm.Assemble(lines);
         var i = Enumerable.Range(0, 16).Select(addr => asm.MemoryImage[(uint)addr].ToInstruction().ToString());
 
-        Assert.AreEqual(15u, asm.Addr);
+        Assert.AreEqual(11u, asm.Addr);
     }
 }

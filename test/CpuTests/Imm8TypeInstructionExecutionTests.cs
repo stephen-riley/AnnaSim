@@ -8,7 +8,7 @@ namespace AnnaSim.Test.CpuTests;
 public class Imm8TypeInstructionExecutionTests
 {
     [TestMethod]
-    [DataRow(0, 100, 101)]
+    [DataRow(0, 100, 100)]
     [DataRow(0, -10, 0 - 10 + 1 + 65536)]
     [DataRow(1, 100, 1)]
     [DataRow(-1, 100, 1)]
@@ -26,8 +26,8 @@ public class Imm8TypeInstructionExecutionTests
     [TestMethod]
     [DataRow(0, 100, 1)]
     [DataRow(0, -10, 1)]
-    [DataRow(1, 100, 101)]
-    [DataRow(-1, -10, 0 - 10 + 1 + 65536)]
+    [DataRow(1, 100, 100)]
+    [DataRow(-1, -10, 0 - 10 + 65536)]
     public void TestBneInstruction(int testValue, int offset, int expectedPc)
     {
         var cpu = new AnnaMachine();
@@ -42,7 +42,7 @@ public class Imm8TypeInstructionExecutionTests
     [TestMethod]
     [DataRow(0, 100, 1)]
     [DataRow(0, -10, 1)]
-    [DataRow(1, 100, 101)]
+    [DataRow(1, 100, 100)]
     [DataRow(-1, 100, 1)]
     public void TestBgtInstruction(int testValue, int offset, int expectedPc)
     {
@@ -56,9 +56,9 @@ public class Imm8TypeInstructionExecutionTests
     }
 
     [TestMethod]
-    [DataRow(0, 100, 101)]
-    [DataRow(0, -10, 0 - 10 + 1 + 65536)]
-    [DataRow(1, 100, 101)]
+    [DataRow(0, 100, 100)]
+    [DataRow(0, -10, 0 - 10 + 65536)]
+    [DataRow(1, 100, 100)]
     [DataRow(-1, 100, 1)]
     public void TestBgeInstruction(int testValue, int offset, int expectedPc)
     {
@@ -88,10 +88,10 @@ public class Imm8TypeInstructionExecutionTests
     }
 
     [TestMethod]
-    [DataRow(0, 100, 101)]
+    [DataRow(0, 100, 100)]
     [DataRow(0, -10, 0 - 10 + 1 + 65536)]
     [DataRow(1, 100, 1)]
-    [DataRow(-1, -10, 0 - 10 + 1 + 65536)]
+    [DataRow(-1, -10, 0 - 10 + 65536)]
     public void TestBleInstruction(int testValue, int offset, int expectedPc)
     {
         var cpu = new AnnaMachine();
