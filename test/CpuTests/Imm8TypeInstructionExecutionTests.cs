@@ -8,8 +8,9 @@ namespace AnnaSim.Test.CpuTests;
 public class Imm8TypeInstructionExecutionTests
 {
     [TestMethod]
-    [DataRow(0, 100, 100)]
-    [DataRow(0, -10, 0 - 10 + 1 + 65536)]
+    [DataRow(0, 100, 101)]
+    // target is instruction's address (0) + 1 (PC+1 per instruction), + 65536 (normalize negative address)
+    [DataRow(0, -10, 0 + 1 - 10 + 65536)]
     [DataRow(1, 100, 1)]
     [DataRow(-1, 100, 1)]
     public void TestBeqInstruction(int testValue, int offset, int expectedPc)
@@ -18,31 +19,32 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = (Word)(uint)testValue;
 
         var instruction = Instruction.Beq(1, offset);
-        cpu.ExecuteImm8Type(instruction);
+        var newPc = cpu.ExecuteImm8Type(instruction);
 
-        Assert.AreEqual((uint)expectedPc, cpu.Pc);
+        Assert.AreEqual((uint)expectedPc, newPc);
     }
 
     [TestMethod]
     [DataRow(0, 100, 1)]
     [DataRow(0, -10, 1)]
-    [DataRow(1, 100, 100)]
-    [DataRow(-1, -10, 0 - 10 + 65536)]
+    [DataRow(1, 100, 101)]
+    // target is instruction's address (0) + 1 (PC+1 per instruction), + 65536 (normalize negative address)
+    [DataRow(-1, -10, 0 + 1 - 10 + 65536)]
     public void TestBneInstruction(int testValue, int offset, int expectedPc)
     {
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
         var instruction = Instruction.Bne(1, offset);
-        cpu.ExecuteImm8Type(instruction);
+        var newPc = cpu.ExecuteImm8Type(instruction);
 
-        Assert.AreEqual((uint)expectedPc, cpu.Pc);
+        Assert.AreEqual((uint)expectedPc, newPc);
     }
 
     [TestMethod]
     [DataRow(0, 100, 1)]
     [DataRow(0, -10, 1)]
-    [DataRow(1, 100, 100)]
+    [DataRow(1, 100, 101)]
     [DataRow(-1, 100, 1)]
     public void TestBgtInstruction(int testValue, int offset, int expectedPc)
     {
@@ -50,15 +52,17 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = (Word)(uint)testValue;
 
         var instruction = Instruction.Bgt(1, offset);
-        cpu.ExecuteImm8Type(instruction);
+        var newPc = cpu.ExecuteImm8Type(instruction);
 
-        Assert.AreEqual((uint)expectedPc, cpu.Pc);
+        Assert.AreEqual((uint)expectedPc, newPc);
     }
 
     [TestMethod]
-    [DataRow(0, 100, 100)]
-    [DataRow(0, -10, 0 - 10 + 65536)]
-    [DataRow(1, 100, 100)]
+    [DataRow(0, 100, 101)]
+    [DataRow(-1, -10, 1)]
+    // target is instruction's address (0) + 1 (PC+1 per instruction), + 65536 (normalize negative address)
+    [DataRow(0, -10, 0 + 1 - 10 + 65536)]
+    [DataRow(1, 100, 101)]
     [DataRow(-1, 100, 1)]
     public void TestBgeInstruction(int testValue, int offset, int expectedPc)
     {
@@ -66,9 +70,9 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = (Word)(uint)testValue;
 
         var instruction = Instruction.Bge(1, offset);
-        cpu.ExecuteImm8Type(instruction);
+        var newPc = cpu.ExecuteImm8Type(instruction);
 
-        Assert.AreEqual((uint)expectedPc, cpu.Pc);
+        Assert.AreEqual((uint)expectedPc, newPc);
     }
 
     [TestMethod]
@@ -82,25 +86,27 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = (Word)(uint)testValue;
 
         var instruction = Instruction.Blt(1, offset);
-        cpu.ExecuteImm8Type(instruction);
+        var newPc = cpu.ExecuteImm8Type(instruction);
 
-        Assert.AreEqual((uint)expectedPc, cpu.Pc);
+        Assert.AreEqual((uint)expectedPc, newPc);
     }
 
     [TestMethod]
-    [DataRow(0, 100, 100)]
-    [DataRow(0, -10, 0 - 10 + 1 + 65536)]
+    [DataRow(0, 100, 101)]
+    // target is instruction's address (0) + 1 (PC+1 per instruction), + 65536 (normalize negative address)
+    [DataRow(-1, -10, 0 + 1 - 10 + 65536)]
     [DataRow(1, 100, 1)]
-    [DataRow(-1, -10, 0 - 10 + 65536)]
+    // target is instruction's address (0) + 1 (PC+1 per instruction), + 65536 (normalize negative address)
+    [DataRow(-1, -10, 0 + 1 - 10 + 65536)]
     public void TestBleInstruction(int testValue, int offset, int expectedPc)
     {
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
         var instruction = Instruction.Ble(1, offset);
-        cpu.ExecuteImm8Type(instruction);
+        var newPc = cpu.ExecuteImm8Type(instruction);
 
-        Assert.AreEqual((uint)expectedPc, cpu.Pc);
+        Assert.AreEqual((uint)expectedPc, newPc);
     }
 
     [TestMethod]
@@ -113,7 +119,7 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = orig;
         var instruction = Instruction.Lli(1, imm8);
 
-        cpu.ExecuteImm8Type(instruction);
+        var newPc = cpu.ExecuteImm8Type(instruction);
 
         Assert.AreEqual((Word)expected, cpu.Registers[1]);
     }
@@ -128,7 +134,7 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = orig;
         var instruction = Instruction.Lui(1, imm8);
 
-        cpu.ExecuteImm8Type(instruction);
+        var newPc = cpu.ExecuteImm8Type(instruction);
 
         Assert.AreEqual((Word)expected, cpu.Registers[1]);
     }

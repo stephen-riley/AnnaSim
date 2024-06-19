@@ -44,6 +44,8 @@ public class MemoryFile
         }
     }
 
+    public void SetBreakpoint(uint addr) => Set32bits(addr, (uint)Get32bits(addr) | 0x80000000);
+
     public void ReadMemFile(string path)
     {
         var addr = 0u;

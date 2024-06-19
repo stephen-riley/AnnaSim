@@ -54,8 +54,8 @@ public class AssemblerInternalsTests
     }
 
     [TestMethod]
-    [DataRow("jalr r2 r5", 0b0001_010_101_111_000u)]    // jalr, r2, r5, -1 (unused RS2), func code 0
-    [DataRow("in r2", 0b0010_010_111_111_000u)]         // in, r2, -1 (unused RS1) -1 (unused RS2), func code 0
+    [DataRow("jalr r2 r5", 0b0001_010_101_000_000u)]    // jalr, r2, r5, 0 (unused RS2), func code 0
+    [DataRow("in r2", 0b0010_010_000_000_000u)]         // in, r2, 0 (unused RS1), 0 (unused RS2), func code 0
     [DataRow("shf r5 r4 -10", 0b0101_101_100_110110u)]  // shf, r5, r4, -10 as imm6
     [DataRow("beq r3 -10", 0b1010_011_0_11110110u)]     // beq, r3, unused bit, -10 as imm8
     public void TestGoodStandardInstructionHandler(string instruction, uint expected)
@@ -100,7 +100,7 @@ public class AssemblerInternalsTests
     }
 
     [TestMethod]
-    [DataRow("jalr r2 r5", 0b0001_010_101_111_000u)]    // jalr, r2, r5, -1 (unused RS2), func code 0
+    [DataRow("jalr r2 r5", 0b0001_010_101_000_000u)]    // jalr, r2, r5, 0 (unused RS2), func code 0
     [DataRow("shf r5 r4 -10", 0b0101_101_100_110110u)]  // shf, r5, r4, -10 as imm6
     [DataRow("beq r3 -10", 0b1010_011_0_11110110u)]     // beq, r3, unused bit, -10 as imm8
     [DataRow("lli r1 0x8000", 0b1000_001_0_00000000u)]  // lli, r1, unused bit, 0x00 as imm8
@@ -143,13 +143,18 @@ public class AssemblerInternalsTests
 
         asm.AssembleLine(instruction.Split(' '));
 
-        Assert.AreEqual(labels, asm.labels.Count());
-        Assert.AreEqual(tbdLabels, asm.resolutionToDo.Count());
+        Assert.AreEqual(labels, asm.labels.Count);
+        Assert.AreEqual(tbdLabels, asm.resolutionToDo.Count);
     }
 
     [TestMethod]
-    [DataRow(0xfff0u, 0xf0u)]
-    [DataRow(0x0010u, 0x10u)]
+    // Goal is to get last 8 bits of the (negative) offset:
+    //  1. Calculate offset: 0 (instr addr) + 1 (PC+1 per instruction definition) - 0xfff0 (target addr)
+    //  2. Bitwise negate it and add 1 for 2s complement
+    //  3. Mask that with uint 0xff for last 8 bits as uint
+    // This should come out to 0xef (239)
+    [DataRow(0xfff0u, (~(0 + 1 - 0xfff0) + 1) & (uint)0xff)]
+    [DataRow(0x0010u, 0x0fu)]
     public void TestBranchToLabel(uint targetAddr, uint expectedOffset)
     {
         var asm = new AnnaAssembler();
@@ -192,5 +197,21 @@ public class AssemblerInternalsTests
         {
             asm.ResolveLabels();
         });
+    }
+
+    [TestMethod]
+    [DataRow(0x4u, "beq r4 &target", 0x0009u, 0xa804u)]
+    [DataRow(0x8u, "beq r0 &target", 0x0003u, 0xa0fau)]
+    [DataRow(0x0u, "beq r0 &target", 0xfff0u, 0xa0efu)]
+    public void TestBranchOffsetCalculation(uint instrAddr, string instruction, uint labelAddr, uint expected)
+    {
+        var asm = new AnnaAssembler();
+        asm.labels["target"] = labelAddr;
+        asm.Addr = instrAddr;
+
+        asm.AssembleLine(instruction.Split(' '));
+        asm.ResolveLabels();
+
+        Assert.AreEqual(expected, (uint)asm.MemoryImage[instrAddr]);
     }
 }

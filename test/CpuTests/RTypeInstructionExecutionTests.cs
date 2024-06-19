@@ -83,13 +83,13 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[rd] = 20;
 
         var instruction = Instruction.Jalr(rd, rs1);
-        cpu.ExecuteRType(instruction);
-        Assert.AreEqual(20u, cpu.Pc);
+        var newPc = cpu.ExecuteRType(instruction);
+        Assert.AreEqual(20u, newPc);
         Assert.AreEqual((Word)11, cpu.Registers[rs1]);
     }
 
     [TestMethod]
-    public void TestJumpAndLinkRegisterAsJumpl()
+    public void TestJumpAndLinkRegisterAsJump()
     {
         // Assume PC @10, jumping @20
         var cpu = new AnnaMachine { Pc = 10 };
@@ -97,8 +97,8 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[rd] = 20;
 
         var instruction = Instruction.Jalr(rd);
-        cpu.ExecuteRType(instruction);
-        Assert.AreEqual(20u, cpu.Pc);
+        var newPc = cpu.ExecuteRType(instruction);
+        Assert.AreEqual(20u, newPc);
     }
 
     [TestMethod]
@@ -122,10 +122,10 @@ public class RTypeInstructionExecutionTests
         cpu.ExecuteRType(Instruction.In(1));
 
         Assert.AreEqual((Word)10u, cpu.Registers[1]);
-        Assert.ThrowsException<NoInputRemainingException>(() =>
+        Assert.ThrowsException<NoInputRemainingException>((Action)(() =>
         {
             cpu.ExecuteRType(Instruction.In(1));
-        });
+        }));
     }
 
     [TestMethod]
@@ -140,12 +140,12 @@ public class RTypeInstructionExecutionTests
 
         var expected = new Word[] { 10, 20, 30 };
 
-        expected.ForEach(n =>
+        expected.ForEach((Action<Word>)(n =>
         {
             cpu.Registers[(uint)(n / 10)] = n;
             var instruction = Instruction.Out((ushort)(n / 10));
             cpu.ExecuteRType(instruction);
-        });
+        }));
 
         Assert.IsTrue(Enumerable.SequenceEqual(expected, queue));
     }

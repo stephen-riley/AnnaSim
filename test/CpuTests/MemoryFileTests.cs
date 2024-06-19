@@ -67,4 +67,13 @@ public class MemoryFileTests
 
         Assert.AreEqual(-1, memory.Compare(array));
     }
+
+    [TestMethod]
+    public void TestSetAndGetBreakpoint()
+    {
+        var memory = new MemoryFile();
+        Assert.IsFalse(memory.Get32bits(0x1000).IsBreakpoint);
+        memory.SetBreakpoint(0x1000);
+        Assert.IsTrue(memory.Get32bits(0x1000).IsBreakpoint);
+    }
 }

@@ -94,7 +94,7 @@ public partial class AnnaAssembler
 
                 if (instruction.Opcode.IsBranch())
                 {
-                    var offset = (int)targetAddr - (int)addr;
+                    var offset = (int)targetAddr - ((int)addr + 1);
                     if (offset > MemoryImage.Length / 2)
                     {
                         offset -= MemoryImage.Length;
@@ -178,9 +178,9 @@ public partial class AnnaAssembler
 
         MemoryImage[Addr] = (opInfo.type, opInfo.opcode) switch
         {
-            (R, Jalr) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)operand1, 0xff),
-            (R, In or Out) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), 0xff, 0xff),
-            (R, _) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)operand1, 0xff),
+            (R, Jalr) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)operand1, 0x0),
+            (R, In or Out) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), 0x0, 0x0),
+            (R, _) => Instruction.NewRType(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)operand1, 0x0),
             (Imm6, _) => Instruction.NewImm6(opInfo.opcode, (ushort)ParseOperand(operands[0]), (ushort)operand1, (short)ParseOperand(operands[2])),
             (Imm8, Lui) => Instruction.NewImm8(opInfo.opcode, (ushort)ParseOperand(operands[0]), (short)operand1),
             (Imm8, _) => Instruction.NewImm8(opInfo.opcode, (ushort)ParseOperand(operands[0]), (short)operand1),

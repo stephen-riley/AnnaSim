@@ -12,20 +12,44 @@ public class AnnaMachine
     public MemoryFile Memory { get; internal set; } = new();
     public RegisterFile Registers { get; internal set; } = new();
     public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
+    public CpuStatus Status { get; internal set; } = CpuStatus.Initialized;
+    public string CurrentFile { get; internal set; } = "";
 
     public uint Pc { get; internal set; } = 0;
 
+    internal static int ParseInputString(string o)
+    {
+        if (o.StartsWith("0b"))
+        {
+            return Convert.ToInt32(o[2..], 2);
+        }
+        else if (o.StartsWith("0x"))
+        {
+            return Convert.ToInt32(o[2..], 16);
+        }
+        else
+        {
+            return Convert.ToInt32(o);
+        }
+    }
+
     public AnnaMachine() { }
+
+    public AnnaMachine(string filename, params string[] inputs)
+        : this(filename, inputs.Select(i => ParseInputString(i)).ToArray())
+    {
+    }
 
     public AnnaMachine(string filename, params int[] inputs) : this(inputs)
     {
+        CurrentFile = filename;
         var asm = new AnnaAssembler(filename);
         Memory = asm.MemoryImage;
     }
 
     public AnnaMachine(params int[] inputs)
     {
-        inputs.Select(n => (Word)(ushort)n).ForEach(n => Inputs.Enqueue(n));
+        inputs.Select(n => (Word)(ushort)n).ForEach(Inputs.Enqueue);
     }
 
     public AnnaMachine(params string[] inputs)
@@ -45,15 +69,42 @@ public class AnnaMachine
         }
     }
 
+    public void Reset()
+    {
+        Inputs = [];
+        Memory = new();
+        Registers = new();
+        if (CurrentFile != "")
+        {
+            var asm = new AnnaAssembler(CurrentFile);
+            Memory = asm.MemoryImage;
+        }
+        Status = CpuStatus.Initialized;
+    }
+
     public AnnaMachine ReadMemFile(string path)
     {
         Memory.ReadMemFile(path);
         return this;
     }
 
+    public HaltReason ExecuteSingleInstruction()
+    {
+        var status = Execute(1);
+        return status switch
+        {
+            HaltReason.CyclesExceeded => HaltReason.DebuggerStep,
+            _ => status
+        };
+    }
+
     public HaltReason Execute(int maxCycles = 10_000)
     {
-        Pc = 0;
+        if (Status == CpuStatus.Initialized)
+        {
+            Pc = 0;
+            Status = CpuStatus.Running;
+        }
 
         while (maxCycles > 0)
         {
@@ -78,13 +129,13 @@ public class AnnaMachine
             switch (instruction.Type)
             {
                 case InstructionType.R:
-                    ExecuteRType(instruction);
+                    Pc = ExecuteRType(instruction);
                     break;
                 case InstructionType.Imm6:
-                    ExecuteImm6Type(instruction);
+                    Pc = ExecuteImm6Type(instruction);
                     break;
                 case InstructionType.Imm8:
-                    ExecuteImm8Type(instruction);
+                    Pc = ExecuteImm8Type(instruction);
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -109,11 +160,7 @@ public class AnnaMachine
     internal uint NormalizePc(int addr) => (uint)((addr < 0 ? addr + Memory.Length : addr) % Memory.Length);
     internal uint NormalizePc(uint addr) => (uint)(addr % Memory.Length);
 
-    internal void ExecuteRType(Instruction instruction) => Pc = ExecuteRTypeImpl(instruction);
-    internal void ExecuteImm6Type(Instruction instruction) => Pc = ExecuteImm6TypeImpl(instruction);
-    internal void ExecuteImm8Type(Instruction instruction) => Pc = ExecuteImm8TypeImpl(instruction);
-
-    internal uint ExecuteRTypeImpl(Instruction instruction)
+    internal uint ExecuteRType(Instruction instruction)
     {
         if (instruction.Opcode == Opcode._Math)
         {
@@ -169,7 +216,7 @@ public class AnnaMachine
         }
     }
 
-    internal uint ExecuteImm6TypeImpl(Instruction instruction)
+    internal uint ExecuteImm6Type(Instruction instruction)
     {
         if (instruction.Opcode == Opcode.Addi)
         {
@@ -203,7 +250,7 @@ public class AnnaMachine
         return NormalizePc(Pc + 1);
     }
 
-    internal uint ExecuteImm8TypeImpl(Instruction instruction)
+    internal uint ExecuteImm8Type(Instruction instruction)
     {
         if (instruction.Opcode == Opcode.Lli)
         {
@@ -232,7 +279,7 @@ public class AnnaMachine
 
             if (condition)
             {
-                return NormalizePc((int)Pc + instruction.Imm8);  // + 1
+                return NormalizePc((int)Pc + 1 + instruction.Imm8);
             }
             else
             {
