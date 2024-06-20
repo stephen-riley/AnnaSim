@@ -1,10 +1,10 @@
 using System.Text.RegularExpressions;
-using AnnaSim.Cpu.Instructions;
+using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 
-using static AnnaSim.Cpu.Instructions.InstructionType;
-using static AnnaSim.Cpu.Instructions.Opcode;
-using static AnnaSim.Cpu.Instructions.MathOp;
+using static AnnaSim.Instructions.InstructionType;
+using static AnnaSim.Instructions.Opcode;
+using static AnnaSim.Instructions.MathOperation;
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
 
@@ -75,8 +75,8 @@ public partial class AnnaAssembler
         _ = (instrtype, mathop) switch
         {
             (Directive, _) => HandleDirective(opinfo, pieces[(idx + 1)..]),
-            (R, _Unused) => HandleStandardOpcode(opinfo, pieces[(idx + 1)..]),
-            (R, not _Unused) => HandleMathOpcode(opinfo, pieces[(idx + 1)..]),
+            (R, NA) => HandleStandardOpcode(opinfo, pieces[(idx + 1)..]),
+            (R, not NA) => HandleMathOpcode(opinfo, pieces[(idx + 1)..]),
             (Imm6, _) => HandleStandardOpcode(opinfo, pieces[(idx + 1)..]),
             (Imm8, _) => HandleStandardOpcode(opinfo, pieces[(idx + 1)..]),
             _ => throw new InvalidOpcodeException($"Cannot parse line {string.Join(' ', pieces)}")
@@ -243,7 +243,7 @@ public partial class AnnaAssembler
         throw new InvalidOperationException($"'{r}' is not a valid register designator");
     }
 
-    internal static void ValidateOperandCount(Opcode opcode, MathOp mathop, int count)
+    internal static void ValidateOperandCount(Opcode opcode, MathOperation mathop, int count)
     {
         var requiredCount = opcode.RequiredOperands(mathop);
         if (requiredCount != count)

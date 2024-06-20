@@ -1,4 +1,4 @@
-namespace AnnaSim.Cpu.Instructions;
+namespace AnnaSim.Instructions;
 
 public enum Opcode
 {

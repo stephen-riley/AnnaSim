@@ -3,9 +3,9 @@ using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
 
-using static AnnaSim.Cpu.Instructions.InstructionType;
+using static AnnaSim.Instructions.InstructionType;
 
-namespace AnnaSim.Cpu.Instructions;
+namespace AnnaSim.Instructions;
 
 public class Instruction
 {
@@ -14,7 +14,7 @@ public class Instruction
     public Instruction(ushort word) => bits = word;
 
     // RType MathOp constructor
-    public Instruction(Opcode opcode, ushort rd, ushort rs1, ushort rs2, MathOp func)
+    public Instruction(Opcode opcode, ushort rd, ushort rs1, ushort rs2, MathOperation func)
     {
         if (opcode is not Opcode._Math or Opcode.Jalr or Opcode.In or Opcode.Out)
         {
@@ -28,9 +28,9 @@ public class Instruction
         bits |= (uint)func;
     }
 
-    public static Instruction NewMathRtype(MathOp func, ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, func);
+    public static Instruction NewMathRtype(MathOperation func, ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, func);
 
-    public static Instruction NewMathRtype(MathOp _, ushort rd, ushort rs1) => new(Opcode._Math, rd, rs1, 0xffff, MathOp.Not);
+    public static Instruction NewMathRtype(MathOperation _, ushort rd, ushort rs1) => new(Opcode._Math, rd, rs1, 0xffff, MathOperation.Not);
 
     // RType/Imm6 constructor
     public Instruction(Opcode opcode, ushort rd, ushort rs1, short rs2orImm6)
@@ -79,7 +79,7 @@ public class Instruction
     public uint Rs2 => RType ? (uint)((bits >> 3) & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Rs2), "Instruction is not RType");
     public int Imm6 => Imm6Type ? ((int)bits & 0b111111).SignExtend(6) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm6), "Instruction is not I6Type");
     public int Imm8 => Imm8Type ? ((int)bits & 0b11111111).SignExtend(8) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(Imm8), "Instruction is not I8Type");
-    public MathOp FuncCode => RType && Opcode == Opcode._Math ? (MathOp)((ushort)bits & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(FuncCode), "Instruction is not RType or not a math operation");
+    public MathOperation FuncCode => RType && Opcode == Opcode._Math ? (MathOperation)((ushort)bits & 0b111) : throw new InvalidInstructionFieldAccessException(Opcode, nameof(FuncCode), "Instruction is not RType or not a math operation");
 
     public bool IsHalt => bits == 0xF000;
 
@@ -118,12 +118,12 @@ public class Instruction
         var imm8u = bits & 0xff;
 
         var opname = opcode == (uint)Opcode._Math
-            ? ((MathOp)func).ToString().ToLower()
+            ? ((MathOperation)func).ToString().ToLower()
             : ((Opcode)opcode).ToString().ToLower();
 
-        return (Type, (Opcode)opcode, (MathOp)func) switch
+        return (Type, (Opcode)opcode, (MathOperation)func) switch
         {
-            (_, Opcode._Math, MathOp.Not) => $"{opname} r{rd} r{rs1}",
+            (_, Opcode._Math, MathOperation.Not) => $"{opname} r{rd} r{rs1}",
             (_, Opcode._Math, _) => $"{opname} r{rd} r{rs1} r{rs2}",
             (R, Opcode.Jalr, _) => rs1 == 0 ? $"{opname} r{rd}" : $"{opname} r{rd} r{rs1}",
             (R, Opcode.In or Opcode.Out, _) => $"{opname} r{rd}",
@@ -134,15 +134,15 @@ public class Instruction
         };
     }
 
-    public static Instruction Add(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Add);
+    public static Instruction Add(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOperation.Add);
 
-    public static Instruction Sub(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Sub);
+    public static Instruction Sub(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOperation.Sub);
 
-    public static Instruction And(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.And);
+    public static Instruction And(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOperation.And);
 
-    public static Instruction Or(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Or);
+    public static Instruction Or(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOperation.Or);
 
-    public static Instruction Not(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOp.Not);
+    public static Instruction Not(ushort rd, ushort rs1, ushort rs2) => new(Opcode._Math, rd, rs1, rs2, MathOperation.Not);
 
     public static Instruction Jalr(ushort rd, ushort rs1) => new(Opcode.Jalr, rd, rs1, 0);
 

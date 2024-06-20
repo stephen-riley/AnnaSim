@@ -1,5 +1,5 @@
 using AnnaSim.Assember;
-using AnnaSim.Cpu.Instructions;
+using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 

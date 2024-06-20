@@ -1,5 +1,5 @@
 using AnnaSim.Assember;
-using AnnaSim.Cpu.Instructions;
+using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
 
@@ -170,11 +170,11 @@ public class AnnaMachine
 
             SignedWord rdval = instruction.FuncCode switch
             {
-                MathOp.Add => rs1val + rs2val,
-                MathOp.Sub => rs1val - rs2val,
-                MathOp.And => rs1val & rs2val,
-                MathOp.Or => rs1val | rs2val,
-                MathOp.Not => ~rs1val,
+                MathOperation.Add => rs1val + rs2val,
+                MathOperation.Sub => rs1val - rs2val,
+                MathOperation.And => rs1val & rs2val,
+                MathOperation.Or => rs1val | rs2val,
+                MathOperation.Not => ~rs1val,
                 _ => throw new InvalidOperationException()
             };
 

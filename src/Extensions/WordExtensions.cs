@@ -1,4 +1,4 @@
-using AnnaSim.Cpu.Instructions;
+using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 
 namespace AnnaSim.Extensions;

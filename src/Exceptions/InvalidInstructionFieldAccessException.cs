@@ -1,4 +1,4 @@
-using AnnaSim.Cpu.Instructions;
+using AnnaSim.Instructions;
 
 namespace AnnaSim.Exceptions;
 

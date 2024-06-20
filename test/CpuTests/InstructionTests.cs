@@ -1,4 +1,4 @@
-using AnnaSim.Cpu.Instructions;
+using AnnaSim.Instructions;
 using AnnaSim.Exceptions;
 
 namespace AnnaSim.Test.CpuTests;
@@ -14,7 +14,7 @@ public class InstructionTests
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
         Assert.AreEqual(3u, instruction.Rs2);
-        Assert.AreEqual(MathOp.Not, instruction.FuncCode);
+        Assert.AreEqual(MathOperation.Not, instruction.FuncCode);
     }
 
     [TestMethod]
@@ -54,7 +54,7 @@ public class InstructionTests
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
         Assert.AreEqual(3u, instruction.Rs2);
-        Assert.AreEqual(MathOp.Not, instruction.FuncCode);
+        Assert.AreEqual(MathOperation.Not, instruction.FuncCode);
         Assert.AreEqual(Opcode._Math, instruction.Opcode);
     }
 

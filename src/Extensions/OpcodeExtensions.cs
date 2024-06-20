@@ -1,7 +1,7 @@
 
-using AnnaSim.Cpu.Instructions;
-using static AnnaSim.Cpu.Instructions.Opcode;
-using static AnnaSim.Cpu.Instructions.MathOp;
+using AnnaSim.Instructions;
+using static AnnaSim.Instructions.Opcode;
+using static AnnaSim.Instructions.MathOperation;
 
 namespace AnnaSim.Extensions;
 
@@ -18,7 +18,7 @@ public static class OpcodeExtensions
                 : opcode.IsImm8Type() ? InstructionType.Imm8
                     : InstructionType.Invalid;
 
-    public static int RequiredOperands(this Opcode opcode, MathOp mathOp) =>
+    public static int RequiredOperands(this Opcode opcode, MathOperation mathOp) =>
         (opcode, mathOp) switch
         {
             (_Math, Not) => 2,
