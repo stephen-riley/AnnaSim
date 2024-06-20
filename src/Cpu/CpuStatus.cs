@@ -4,4 +4,5 @@ public enum CpuStatus
 {
     Initialized = 0,
     Running,
+    Halted,
 }

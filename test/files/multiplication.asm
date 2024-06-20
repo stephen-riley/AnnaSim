@@ -1,5 +1,6 @@
 # Multiplication program
-#  from http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
+#  From http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
+#  Note some mnemonics have changed since this was published.
 
 # Register usage:
 # r1: constant one
@@ -17,21 +18,22 @@
         in r3
         
         # check for negative numbers
-        bgz r2 &posA
+        bgt r2 &posA
         not r5 r5           # flip sign
         sub r2 r0 r2        # negate
-        posA: bgz r3 &loop
+posA:   bgt r3 &loop
         not r5 r5           # flip sign
         sub r3 r0 r3        # negate
         
         # main loop: while r3 > 0
-loop:   bez r3 &done
+loop:   beq r3 &done
         add r4 r4 r2        # add another r2 to r4
         sub r3 r3 r1        # decrement r3
-        bez r0 &loop
+        beq r0 &loop
         
         # output answer with proper sign
-done:   bez r5 &disp
+done:   beq r5 &disp
         sub r4 r0 r4        # negate
+        
 disp:   out r4
         .halt

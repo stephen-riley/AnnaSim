@@ -1,5 +1,3 @@
-
-using System.Net.Http.Headers;
 using AnnaSim.Assember;
 using AnnaSim.Cpu.Instructions;
 using AnnaSim.Cpu.Memory;
@@ -8,6 +6,8 @@ using AnnaSim.Extensions;
 namespace AnnaSim.Cpu;
 public class AnnaMachine
 {
+    // TODO: move OrigInputs to the debugger
+    private Queue<Word> OrigInputs { get; set; } = [];
     public Queue<Word> Inputs { get; internal set; } = [];
     public MemoryFile Memory { get; internal set; } = new();
     public RegisterFile Registers { get; internal set; } = new();
@@ -47,12 +47,12 @@ public class AnnaMachine
         Memory = asm.MemoryImage;
     }
 
-    public AnnaMachine(params int[] inputs)
+    public AnnaMachine(params int[] inputs) : this()
     {
-        inputs.Select(n => (Word)(ushort)n).ForEach(Inputs.Enqueue);
+        inputs.Select(n => (Word)(ushort)n).ForEach(OrigInputs.Enqueue);
     }
 
-    public AnnaMachine(params string[] inputs)
+    public AnnaMachine(params string[] inputs) : this()
     {
         foreach (var s in inputs)
         {
@@ -65,20 +65,23 @@ public class AnnaMachine
                     _ => 10
                 };
 
-            Inputs.Enqueue((ushort)Convert.ToInt16(s.Substring(radix == 10 ? 0 : 2), radix));
+            OrigInputs.Enqueue((ushort)Convert.ToInt16(s.Substring(radix == 10 ? 0 : 2), radix));
         }
     }
 
     public void Reset()
     {
-        Inputs = [];
+        Inputs = new Queue<Word>(OrigInputs);
         Memory = new();
         Registers = new();
+
         if (CurrentFile != "")
         {
             var asm = new AnnaAssembler(CurrentFile);
             Memory = asm.MemoryImage;
         }
+
+        Pc = 0;
         Status = CpuStatus.Initialized;
     }
 
@@ -88,6 +91,7 @@ public class AnnaMachine
         return this;
     }
 
+    // NOTE: Reset() must be called first!
     public HaltReason ExecuteSingleInstruction()
     {
         var status = Execute(1);
@@ -100,9 +104,13 @@ public class AnnaMachine
 
     public HaltReason Execute(int maxCycles = 10_000)
     {
-        if (Status == CpuStatus.Initialized)
+        if (Status == CpuStatus.Halted)
         {
-            Pc = 0;
+            return HaltReason.Halt;
+        }
+        else if (Status == CpuStatus.Initialized)
+        {
+            Reset();
             Status = CpuStatus.Running;
         }
 
@@ -123,25 +131,15 @@ public class AnnaMachine
                 break;
             }
 
-            Console.Error.WriteLine($"PC:0x{Pc:x4} {Registers}");
-            Console.Error.WriteLine($"Executing {instruction}");
-
-            switch (instruction.Type)
+            Pc = instruction.Type switch
             {
-                case InstructionType.R:
-                    Pc = ExecuteRType(instruction);
-                    break;
-                case InstructionType.Imm6:
-                    Pc = ExecuteImm6Type(instruction);
-                    break;
-                case InstructionType.Imm8:
-                    Pc = ExecuteImm8Type(instruction);
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
+                InstructionType.R => ExecuteRType(instruction),
+                InstructionType.Imm6 => ExecuteImm6Type(instruction),
+                InstructionType.Imm8 => ExecuteImm8Type(instruction),
+                _ => throw new InvalidOperationException(),
+            };
 
-            if (Pc == uint.MaxValue)
+            if (Status == CpuStatus.Halted)
             {
                 return HaltReason.Halt;
             }
@@ -203,7 +201,8 @@ public class AnnaMachine
         {
             if (instruction.Rd == 0)
             {
-                return uint.MaxValue;
+                Status = CpuStatus.Halted;
+                return Pc;
             }
 
             var value = Registers[instruction.Rd];

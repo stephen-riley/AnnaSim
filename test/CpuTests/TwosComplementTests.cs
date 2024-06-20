@@ -36,14 +36,15 @@ public class TwosComplementTests
     }
 
     [TestMethod]
-    [DataRow(65535, 1, 0)]
-    [DataRow(0, -5, 65531)]
-    public void TestNormalizePc(int baseAddr, int offset, int expected)
+    [DataRow(65535u, 1, 0u)]
+    [DataRow(0u, -5, 65531u)]
+    [DataRow(4294967295u, 0, 65535u)]
+    public void TestNormalizePc(uint baseAddr, int offset, uint expected)
     {
         int a_weird_variable = 1;
         Console.WriteLine(a_weird_variable);
         var cpu = new AnnaMachine();
-        var addr = cpu.NormalizePc(baseAddr + offset);
+        var addr = cpu.NormalizePc((int)baseAddr + offset);
         Assert.AreEqual((uint)expected, addr);
     }
 }

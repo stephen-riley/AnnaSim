@@ -10,4 +10,10 @@
 // Console.WriteLine();
 // Console.WriteLine(reason);
 
-ConsoleDebugger.Run("../test/files/fibonacci.asm", ["6"], []);
+var output = ConsoleDebugger.Run("../test/files/multiplication.asm", ["6", "9"], ["d r4", "c", "q"]);
+
+Console.WriteLine("\n\noutput:");
+foreach (var w in output)
+{
+    Console.WriteLine(w);
+}
