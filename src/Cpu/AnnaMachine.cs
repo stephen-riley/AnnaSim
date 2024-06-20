@@ -69,7 +69,7 @@ public class AnnaMachine
         }
     }
 
-    public void Reset()
+    public AnnaMachine Reset()
     {
         Inputs = new Queue<Word>(OrigInputs);
         Memory = new();
@@ -83,6 +83,7 @@ public class AnnaMachine
 
         Pc = 0;
         Status = CpuStatus.Initialized;
+        return this;
     }
 
     public AnnaMachine ReadMemFile(string path)

@@ -22,7 +22,7 @@ public class MemoryFileTests
     public void ReadMemFile()
     {
         var memory = new MemoryFile();
-        memory.ReadMemFile("files/single_offset.mem");
+        memory.ReadMemFile("fixtures/single_offset.mem");
 
         foreach (var addr in Enumerable.Range(0, 0x7fff))
         {
@@ -39,7 +39,7 @@ public class MemoryFileTests
     public void CompareEquivalentMemoryFiles()
     {
         var memory = new MemoryFile();
-        memory.ReadMemFile("files/simple.mem");
+        memory.ReadMemFile("fixtures/simple.mem");
 
         var memory2 = new MemoryFile(Enumerable.Range(1, 6).Select(n => new Word((ushort)n)));
 
@@ -50,7 +50,7 @@ public class MemoryFileTests
     public void CompareDifferentMemoryFiles()
     {
         var memory = new MemoryFile();
-        memory.ReadMemFile("files/simple.mem");
+        memory.ReadMemFile("fixtures/simple.mem");
 
         var memory2 = new MemoryFile(Enumerable.Range(1, 7).Select(n => new Word((ushort)n)));
 
@@ -61,7 +61,7 @@ public class MemoryFileTests
     public void CompareMemoryFilesWithWordArray()
     {
         var memory = new MemoryFile();
-        memory.ReadMemFile("files/simple.mem");
+        memory.ReadMemFile("fixtures/simple.mem");
 
         var array = new Word[] { 1, 2, 3, 4, 5, 6 };
 

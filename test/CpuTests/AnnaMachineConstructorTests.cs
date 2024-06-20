@@ -21,7 +21,7 @@ public class AnnaMachineConstructorTests
     {
         var inputs = new int[] { -1, 0, 1, 2, 3 };
 
-        var cpu = new AnnaMachine(inputs);
+        var cpu = new AnnaMachine(inputs).Reset();
 
         Assert.AreEqual(8, cpu.Registers.Length);
         Assert.AreEqual(65536, cpu.Memory.Length);
@@ -35,7 +35,7 @@ public class AnnaMachineConstructorTests
         var sinputs = new string[] { "-1", "0x00", "0X01", "0b010", "0B0011", "4" };
         var inputs = new int[] { -1, 0, 1, 2, 3, 4 };
 
-        var cpu = new AnnaMachine(sinputs);
+        var cpu = new AnnaMachine(sinputs).Reset();
 
         Assert.AreEqual(8, cpu.Registers.Length);
         Assert.AreEqual(65536, cpu.Memory.Length);

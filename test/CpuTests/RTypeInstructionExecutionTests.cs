@@ -104,7 +104,7 @@ public class RTypeInstructionExecutionTests
     [TestMethod]
     public void TestGettingInputs()
     {
-        var cpu = new AnnaMachine(10, 20, 30);
+        var cpu = new AnnaMachine(10, 20, 30).Reset();
         var addr = 1u;
         cpu.ExecuteRType(Instruction.In((ushort)addr++));
         cpu.ExecuteRType(Instruction.In((ushort)addr++));
@@ -118,7 +118,7 @@ public class RTypeInstructionExecutionTests
     [TestMethod]
     public void TestGettingTooManyInputs()
     {
-        var cpu = new AnnaMachine(10);
+        var cpu = new AnnaMachine(10).Reset();
         cpu.ExecuteRType(Instruction.In(1));
 
         Assert.AreEqual((Word)10u, cpu.Registers[1]);
