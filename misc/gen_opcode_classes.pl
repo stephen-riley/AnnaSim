@@ -44,14 +44,15 @@ while( <DATA> ) {
     my $opcode = $opcodes{$mnemonic} // 0;
     $mathop = 'NA' if $mathop eq '_Unused';
 
-    open my $out, '>', "tmp/$name.cs";
+    mkdir 'src/Instructions/Definitions';
+
+    open my $out, '>', "src/Instructions/Definitions/$name.cs";
     say $out <<"EOC";
-using AnnaSim.Assember;
 using AnnaSim.Cpu;
 
-namespace AnnaSim.Instructions;
+namespace AnnaSim.Instructions.Definitions;
 
-public class $name : AbstractInstruction
+public partial class $name : AbstractInstruction
 {
     public $name() : base()
     {
@@ -61,17 +62,44 @@ public class $name : AbstractInstruction
         Type = InstructionType.$type;
         MathOp = MathOperation.$mathop;
     }
-
-    public override void Assemble(AnnaAssembler asm)
-    {
-    }
-
-    public override uint Execute(AnnaMachine cpu)
-    {
-        return 0xffff;
-    }
 }
 EOC
+    close $out;
+
+    mkdir 'src/Assembler/InstructionHandlers';
+
+    open $out, '>', "src/Assembler/InstructionHandlers/$name.cs";
+    say $out <<"EOASM";
+using AnnaSim.Assember;
+
+namespace AnnaSim.Instructions.Definitions;
+
+public partial class $name
+{
+    public override void Assemble(AnnaAssembler asm)
+    {
+        throw new NotImplementedException(\$"$name.{nameof(Assemble)}");
+    }
+}
+EOASM
+    close $out;
+
+    mkdir 'src/Cpu/InstructionHandlers';
+
+    open $out, '>', "src/Cpu/InstructionHandlers/$name.cs";
+    say $out <<"EOCPU";
+using AnnaSim.Cpu;
+
+namespace AnnaSim.Instructions.Definitions;
+
+public partial class $name
+{
+    public override uint Execute(AnnaMachine cpu, params string[] operands)
+    {
+        throw new NotImplementedException(\$"$name.{nameof(Execute)}");
+    }
+}
+EOCPU
     close $out;
 }
 __DATA__

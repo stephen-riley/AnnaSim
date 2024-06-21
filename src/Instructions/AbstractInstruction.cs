@@ -14,5 +14,5 @@ public abstract class AbstractInstruction
     public AbstractInstruction() { }
 
     public abstract void Assemble(AnnaAssembler asm);
-    public abstract uint Execute(AnnaMachine cpu);
+    public abstract uint Execute(AnnaMachine cpu, params string[] operands);
 }

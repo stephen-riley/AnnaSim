@@ -8,7 +8,7 @@ public static class Instructions
 
     static Instructions()
     {
-        IEnumerable<AbstractInstruction?> classes = typeof(AbstractInstruction)
+        var classes = typeof(AbstractInstruction)
             .Assembly.GetTypes()
             .Where(t => t.IsSubclassOf(typeof(AbstractInstruction)) && !t.IsAbstract)
             .Select(t => (AbstractInstruction?)Activator.CreateInstance(t));

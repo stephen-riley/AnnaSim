@@ -185,6 +185,19 @@ public class AssemblerInternalsTests
     }
 
     [TestMethod]
+    public void TestLliLuiFromLConstant()
+    {
+        var asm = new AnnaAssembler();
+        asm.AssembleLine("lli r1 1".Split(' '));
+        asm.AssembleLine("lui r1 1".Split(' '));
+
+        asm.ResolveLabels();
+
+        Assert.AreEqual(1, asm.MemoryImage[0] & 0xff);
+        Assert.AreEqual(0, asm.MemoryImage[1] & 0xff);
+    }
+
+    [TestMethod]
     [DataRow(0x1000u)]
     [DataRow(0xc000u)]
     public void TestBranchToFarLabel(uint targetAddr)
