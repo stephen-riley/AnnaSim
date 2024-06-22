@@ -16,7 +16,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[3] = 20;
 
         // add r1, r2, r3
-        var instruction = Instruction.Add(1, 2, 3);
+        var instruction = I.Lookup["add"].ToInstruction(1, 2, 3);
         cpu.ExecuteRType(instruction);
         Assert.AreEqual((Word)30, cpu.Registers[1]);
     }
@@ -29,7 +29,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[3] = 15;
 
         // add r1, r2, r3
-        var instruction = Instruction.Sub(1, 2, 3);
+        var instruction = I.Lookup["sub"].ToInstruction(1, 2, 3);
         cpu.ExecuteRType(instruction);
         Assert.AreEqual((Word)5, cpu.Registers[1]);
     }
@@ -42,7 +42,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[3] = 0xcafe;
 
         // add r1, r2, r3
-        var instruction = Instruction.And(1, 2, 3);
+        var instruction = I.Lookup["and"].ToInstruction(1, 2, 3);
         cpu.ExecuteRType(instruction);
         Assert.AreEqual((Word)0xcafe, cpu.Registers[1]);
     }
@@ -67,7 +67,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[2] = 0xaaaa;
 
         // add r1, r2, r3
-        var instruction = Instruction.Not(1, 2, 0);
+        var instruction = I.Lookup["not"].ToInstruction(1, 2, 0);
         cpu.ExecuteRType(instruction);
         Assert.AreEqual((Word)0x5555, cpu.Registers[1]);
     }
@@ -143,7 +143,7 @@ public class RTypeInstructionExecutionTests
         expected.ForEach((Action<Word>)(n =>
         {
             cpu.Registers[(uint)(n / 10)] = n;
-            var instruction = Instruction.Out((ushort)(n / 10));
+            var instruction = I.Lookup["out"].ToInstruction((ushort)(n / 10));
             cpu.ExecuteRType(instruction);
         }));
 

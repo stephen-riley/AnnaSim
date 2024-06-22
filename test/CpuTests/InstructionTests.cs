@@ -9,7 +9,7 @@ public class InstructionTests
     [TestMethod]
     public void TestMathRTypeConstructor()
     {
-        var instruction = Instruction.Not(1, 2, 3);
+        var instruction = I.Lookup["not"].ToInstruction(1, 2, 3);
         Assert.AreEqual(Opcode._Math, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
@@ -41,7 +41,7 @@ public class InstructionTests
     [TestMethod]
     public void TestImm8Constructor()
     {
-        var instruction = Instruction.Lui(1, 255);
+        var instruction = I.Lookup["lui"].ToInstruction(1, 255);
         Assert.AreEqual(Opcode.Lui, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(-1, instruction.Imm8);
@@ -81,7 +81,7 @@ public class InstructionTests
     [TestMethod]
     public void TestInvalidRTypeFieldAccess()
     {
-        var instruction = Instruction.Not(1, 2, 3);
+        var instruction = I.Lookup["not"].ToInstruction(1, 2, 3);
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Imm6; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Imm8; });
     }
@@ -98,7 +98,7 @@ public class InstructionTests
     [TestMethod]
     public void TestInvalidImm8TypeFieldAccess()
     {
-        var instruction = Instruction.Lui(1, 255);
+        var instruction = I.Lookup["lui"].ToInstruction(1, 255);
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.FuncCode; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Rs1; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Rs2; });

@@ -1,8 +1,6 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class RaliasDirective : AbstractInstruction
+public partial class RaliasDirective : InstructionDefinition
 {
     public RaliasDirective() : base()
     {

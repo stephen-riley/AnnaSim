@@ -18,7 +18,8 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = Instruction.Beq(1, offset);
+        // var instruction = I.Lookup["beq"].ToInstruction(1, offset);
+        var instruction = I.Lookup["beq"].ToInstruction(1, offset);
         var newPc = cpu.ExecuteImm8Type(instruction);
 
         Assert.AreEqual((uint)expectedPc, newPc);
@@ -35,7 +36,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = Instruction.Bne(1, offset);
+        var instruction = I.Lookup["bne"].ToInstruction(1, offset);
         var newPc = cpu.ExecuteImm8Type(instruction);
 
         Assert.AreEqual((uint)expectedPc, newPc);
@@ -51,7 +52,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = Instruction.Bgt(1, offset);
+        var instruction = I.Lookup["bgt"].ToInstruction(1, offset);
         var newPc = cpu.ExecuteImm8Type(instruction);
 
         Assert.AreEqual((uint)expectedPc, newPc);
@@ -69,7 +70,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = Instruction.Bge(1, offset);
+        var instruction = I.Lookup["bge"].ToInstruction(1, offset);
         var newPc = cpu.ExecuteImm8Type(instruction);
 
         Assert.AreEqual((uint)expectedPc, newPc);
@@ -85,7 +86,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = Instruction.Blt(1, offset);
+        var instruction = I.Lookup["blt"].ToInstruction(1, offset);
         var newPc = cpu.ExecuteImm8Type(instruction);
 
         Assert.AreEqual((uint)expectedPc, newPc);
@@ -103,7 +104,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = Instruction.Ble(1, offset);
+        var instruction = I.Lookup["ble"].ToInstruction(1, offset);
         var newPc = cpu.ExecuteImm8Type(instruction);
 
         Assert.AreEqual((uint)expectedPc, newPc);
@@ -117,7 +118,7 @@ public class Imm8TypeInstructionExecutionTests
     {
         var cpu = new AnnaMachine();
         cpu.Registers[1] = orig;
-        var instruction = Instruction.Lli(1, imm8);
+        var instruction = I.Lookup["lli"].ToInstruction(1, imm8);
 
         var newPc = cpu.ExecuteImm8Type(instruction);
 
@@ -132,7 +133,7 @@ public class Imm8TypeInstructionExecutionTests
     {
         var cpu = new AnnaMachine();
         cpu.Registers[1] = orig;
-        var instruction = Instruction.Lui(1, imm8);
+        var instruction = I.Lookup["lui"].ToInstruction(1, imm8);
 
         var newPc = cpu.ExecuteImm8Type(instruction);
 

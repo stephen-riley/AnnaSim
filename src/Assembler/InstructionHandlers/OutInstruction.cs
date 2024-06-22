@@ -1,12 +1,17 @@
-using AnnaSim.Assember;
+using AnnaSim.Assembler;
 
 namespace AnnaSim.Instructions.Definitions;
 
 public partial class OutInstruction
 {
-    public override void Assemble(AnnaAssembler asm)
+    protected override void AssembleImpl(params Operand[] operands)
     {
-        throw new NotImplementedException($"OutInstruction.{nameof(Assemble)}");
+        MemoryImage[Addr++] = ToInstruction(operands);
+    }
+
+    public override Instruction ToInstruction(params Operand[] operands)
+    {
+        return Instruction.NewRType(this, (ushort)operands[0], 0x0, 0x0);
     }
 }
 

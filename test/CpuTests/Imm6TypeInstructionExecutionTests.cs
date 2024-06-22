@@ -33,7 +33,7 @@ public class Imm6TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[2] = (ushort)op1;
 
-        var instruction = Instruction.Shf(1, 2, (short)imm6);
+        var instruction = I.Lookup["shf"].ToInstruction(1, 2, (short)imm6);
         cpu.ExecuteImm6Type(instruction);
 
         Assert.AreEqual((Word)(ushort)result, cpu.Registers[1]);

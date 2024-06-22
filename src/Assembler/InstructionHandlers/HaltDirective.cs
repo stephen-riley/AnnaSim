@@ -1,12 +1,14 @@
-using AnnaSim.Assember;
+using AnnaSim.Assembler;
 
 namespace AnnaSim.Instructions.Definitions;
 
 public partial class HaltDirective
 {
-    public override void Assemble(AnnaAssembler asm)
+    protected override void AssembleImpl(params Operand[] operands)
     {
-        throw new NotImplementedException($"HaltDirective.{nameof(Assemble)}");
+        MemoryImage[Addr++] = I.Lookup["out"].ToInstruction(0);
     }
+
+    public override Instruction ToInstruction(params Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
 }
 

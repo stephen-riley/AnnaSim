@@ -1,8 +1,6 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class NotInstruction : AbstractInstruction
+public partial class NotInstruction : InstructionDefinition
 {
     public NotInstruction() : base()
     {
@@ -11,6 +9,7 @@ public partial class NotInstruction : AbstractInstruction
         OperandCount = 2;
         Type = InstructionType.R;
         MathOp = MathOperation.Not;
+        FormatString = "md1";
     }
 }
 

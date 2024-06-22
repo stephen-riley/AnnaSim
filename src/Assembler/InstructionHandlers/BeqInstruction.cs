@@ -1,12 +1,17 @@
-using AnnaSim.Assember;
+using AnnaSim.Assembler;
 
 namespace AnnaSim.Instructions.Definitions;
 
 public partial class BeqInstruction
 {
-    public override void Assemble(AnnaAssembler asm)
+    protected override void AssembleImpl(params Operand[] operands)
     {
-        throw new NotImplementedException($"BeqInstruction.{nameof(Assemble)}");
+        MemoryImage[Addr++] = ToInstruction(operands);
+    }
+
+    public override Instruction ToInstruction(params Operand[] operands)
+    {
+        return Instruction.NewImm8(this, (ushort)operands[0], (short)operands[0]);
     }
 }
 

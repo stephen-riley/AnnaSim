@@ -33,6 +33,8 @@ my %opcodes = (
     '.ralias' => -1,    
 );
 
+die "THIS SCRIPT IS OUT OF DATE.  Please see current definition of src/Instructions/InstructionDefinition.cs\n";
+
 while( <DATA> ) {
     chomp;
     my( $mnemonic, $identifier, $mathop, $type, $opcount ) = split( /\t/ );
@@ -76,7 +78,7 @@ namespace AnnaSim.Instructions.Definitions;
 
 public partial class $name
 {
-    public override void Assemble(AnnaAssembler asm)
+    protected override void AssembleImpl(params Operand[] operands)
     {
         throw new NotImplementedException(\$"$name.{nameof(Assemble)}");
     }
@@ -94,7 +96,7 @@ namespace AnnaSim.Instructions.Definitions;
 
 public partial class $name
 {
-    public override uint Execute(AnnaMachine cpu, params string[] operands)
+    protected override uint ExecuteImpl(Instruction instruction)
     {
         throw new NotImplementedException(\$"$name.{nameof(Execute)}");
     }

@@ -1,8 +1,6 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class AddiInstruction : AbstractInstruction
+public partial class AddiInstruction : InstructionDefinition
 {
     public AddiInstruction() : base()
     {
@@ -11,6 +9,7 @@ public partial class AddiInstruction : AbstractInstruction
         OperandCount = 3;
         Type = InstructionType.Imm6;
         MathOp = MathOperation.NA;
+        FormatString = "md16";
     }
 }
 

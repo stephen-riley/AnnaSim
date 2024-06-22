@@ -20,7 +20,7 @@ public class TwosComplementTests
         cpu.Registers[2] = (SignedWord)o1;
         cpu.Registers[3] = (SignedWord)o2;
 
-        var instruction = Instruction.Add(1, 2, 3);
+        var instruction = I.Lookup["add"].ToInstruction(1, 2, 3);
         cpu.ExecuteRType(instruction);
         Assert.AreEqual((SignedWord)result, (SignedWord)cpu.Registers[1]);
     }

@@ -1,8 +1,6 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class OrInstruction : AbstractInstruction
+public partial class OrInstruction : InstructionDefinition
 {
     public OrInstruction() : base()
     {
@@ -11,6 +9,7 @@ public partial class OrInstruction : AbstractInstruction
         OperandCount = 3;
         Type = InstructionType.R;
         MathOp = MathOperation.Or;
+        FormatString = "md12";
     }
 }
 

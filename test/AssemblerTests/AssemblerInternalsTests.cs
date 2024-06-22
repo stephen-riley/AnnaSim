@@ -1,4 +1,3 @@
-using AnnaSim.Assember;
 using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;

@@ -1,8 +1,6 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class JalrInstruction : AbstractInstruction
+public partial class JalrInstruction : InstructionDefinition
 {
     public JalrInstruction() : base()
     {
@@ -11,6 +9,7 @@ public partial class JalrInstruction : AbstractInstruction
         OperandCount = 2;
         Type = InstructionType.R;
         MathOp = MathOperation.NA;
+        FormatString = "md1";
     }
 }
 

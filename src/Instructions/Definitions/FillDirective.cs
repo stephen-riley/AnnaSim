@@ -1,8 +1,6 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class FillDirective : AbstractInstruction
+public partial class FillDirective : InstructionDefinition
 {
     public FillDirective() : base()
     {

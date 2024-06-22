@@ -1,13 +1,11 @@
-using AnnaSim.Assember;
 using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
+using AnnaSim.Assembler;
 
 namespace AnnaSim.Cpu;
 public class AnnaMachine
 {
-    // TODO: move OrigInputs to the debugger
-    private Queue<Word> OrigInputs { get; set; } = [];
     public Queue<Word> Inputs { get; internal set; } = [];
     public MemoryFile Memory { get; internal set; } = new();
     public RegisterFile Registers { get; internal set; } = new();
@@ -17,44 +15,44 @@ public class AnnaMachine
 
     public uint Pc { get; internal set; } = 0;
 
-    internal static int ParseInputString(string o)
+    public static uint ParseInputString(string o)
     {
         if (o.StartsWith("0b"))
         {
-            return Convert.ToInt32(o[2..], 2);
+            return Convert.ToUInt32(o[2..], 2);
         }
         else if (o.StartsWith("0x"))
         {
-            return Convert.ToInt32(o[2..], 16);
+            return Convert.ToUInt32(o[2..], 16);
         }
         else
         {
-            return Convert.ToInt32(o);
+            return Convert.ToUInt32(o);
         }
     }
 
     public AnnaMachine() { }
 
     public AnnaMachine(string filename, params string[] inputs)
-        : this(filename, inputs.Select(i => ParseInputString(i)).ToArray())
+        : this(filename, inputs.Select(ParseInputString).ToArray())
     {
     }
 
-    public AnnaMachine(string filename, params int[] inputs) : this(inputs)
+    public AnnaMachine(string filename, params uint[] inputs) : this(inputs)
     {
         CurrentFile = filename;
         var asm = new AnnaAssembler(filename);
         Memory = asm.MemoryImage;
     }
 
-    public AnnaMachine(params int[] inputs) : this()
+    public AnnaMachine(params uint[] inputs) : this()
     {
-        inputs.Select(n => (Word)(ushort)n).ForEach(OrigInputs.Enqueue);
+        inputs.Select(n => (Word)(ushort)n).ForEach(Inputs.Enqueue);
     }
 
-    public AnnaMachine(params string[] inputs) : this()
+    internal static IEnumerable<Word> ParseMachineInputs(params string[] inputs)
     {
-        foreach (var s in inputs)
+        return (IEnumerable<Word>)inputs.Select(s =>
         {
             var radix = s.Length < 2
                 ? 10
@@ -65,13 +63,16 @@ public class AnnaMachine
                     _ => 10
                 };
 
-            OrigInputs.Enqueue((ushort)Convert.ToInt16(s.Substring(radix == 10 ? 0 : 2), radix));
-        }
+            return (ushort)Convert.ToInt16(s.Substring(radix == 10 ? 0 : 2), radix);
+        });
     }
+
+    public AnnaMachine(params string[] inputs) : this() => ParseMachineInputs(inputs).ForEach(Inputs.Enqueue);
 
     public AnnaMachine Reset()
     {
-        Inputs = new Queue<Word>(OrigInputs);
+        InstructionDefinition.SetCpu(this);
+
         Memory = new();
         Registers = new();
 
@@ -83,6 +84,13 @@ public class AnnaMachine
 
         Pc = 0;
         Status = CpuStatus.Initialized;
+        return this;
+    }
+
+    public AnnaMachine Reset(params uint[] inputs)
+    {
+        Reset();
+        inputs.ForEach(i => Inputs.Enqueue(i));
         return this;
     }
 
@@ -124,7 +132,7 @@ public class AnnaMachine
                 return HaltReason.Breakpoint;
             }
 
-            var instruction = new Instruction((Word)mw);
+            var instruction = I.Instruction((Word)mw);
 
             // Execute (store is handled here)
             if (instruction.IsHalt)
@@ -132,13 +140,7 @@ public class AnnaMachine
                 break;
             }
 
-            Pc = instruction.Type switch
-            {
-                InstructionType.R => ExecuteRType(instruction),
-                InstructionType.Imm6 => ExecuteImm6Type(instruction),
-                InstructionType.Imm8 => ExecuteImm8Type(instruction),
-                _ => throw new InvalidOperationException(),
-            };
+            Pc = instruction.Execute();
 
             if (Status == CpuStatus.Halted)
             {
@@ -154,141 +156,5 @@ public class AnnaMachine
         }
 
         return HaltReason.Halt;
-    }
-
-    internal uint NormalizePc(int addr) => (uint)((addr < 0 ? addr + Memory.Length : addr) % Memory.Length);
-    internal uint NormalizePc(uint addr) => (uint)(addr % Memory.Length);
-
-    internal uint ExecuteRType(Instruction instruction)
-    {
-        if (instruction.Opcode == Opcode._Math)
-        {
-            var rs1 = instruction.Rs1;
-            var rs2 = instruction.Rs2;
-            var rs1val = (SignedWord)Registers[rs1];
-            var rs2val = (SignedWord)Registers[rs2];
-
-            SignedWord rdval = instruction.FuncCode switch
-            {
-                MathOperation.Add => rs1val + rs2val,
-                MathOperation.Sub => rs1val - rs2val,
-                MathOperation.And => rs1val & rs2val,
-                MathOperation.Or => rs1val | rs2val,
-                MathOperation.Not => ~rs1val,
-                _ => throw new InvalidOperationException()
-            };
-
-            Registers[instruction.Rd] = (ushort)rdval;
-            return NormalizePc(Pc + 1);
-        }
-        else if (instruction.Opcode == Opcode.Jalr)
-        {
-            Registers[instruction.Rs1] = NormalizePc(Pc + 1);
-            return Registers[instruction.Rd];
-        }
-        else if (instruction.Opcode == Opcode.In)
-        {
-            if (Inputs.TryDequeue(out var result))
-            {
-                Registers[instruction.Rd] = result;
-            }
-            else
-            {
-                throw new NoInputRemainingException();
-            }
-            return NormalizePc(Pc + 1);
-        }
-        else if (instruction.Opcode == Opcode.Out)
-        {
-            if (instruction.Rd == 0)
-            {
-                Status = CpuStatus.Halted;
-                return Pc;
-            }
-
-            var value = Registers[instruction.Rd];
-            OutputCallback(value);
-            return NormalizePc(Pc + 1);
-        }
-        else
-        {
-            throw new InvalidOperationException();
-        }
-    }
-
-    internal uint ExecuteImm6Type(Instruction instruction)
-    {
-        if (instruction.Opcode == Opcode.Addi)
-        {
-            SignedWord rvalue = Registers[instruction.Rs1];
-            SignedWord immvalue = (SignedWord)instruction.Imm6;
-            SignedWord result = rvalue + immvalue;
-            Registers[instruction.Rd] = result;
-        }
-        else if (instruction.Opcode == Opcode.Shf)
-        {
-            SignedWord rvalue = Registers[instruction.Rs1];
-            SignedWord immvalue = (SignedWord)instruction.Imm6;
-            SignedWord result = immvalue > 0 ? rvalue << immvalue : rvalue >> (-immvalue);
-            Registers[instruction.Rd] = result;
-        }
-        else if (instruction.Opcode == Opcode.Lw)
-        {
-            int addr = Registers[instruction.Rs1];
-            SignedWord immvalue = (SignedWord)instruction.Imm6;
-            addr += immvalue;
-            Registers[instruction.Rd] = Memory[(uint)addr];
-        }
-        else if (instruction.Opcode == Opcode.Sw)
-        {
-            int addr = Registers[instruction.Rs1];
-            SignedWord immvalue = (SignedWord)instruction.Imm6;
-            addr += immvalue;
-            Memory[(uint)addr] = Registers[instruction.Rd];
-        }
-
-        return NormalizePc(Pc + 1);
-    }
-
-    internal uint ExecuteImm8Type(Instruction instruction)
-    {
-        if (instruction.Opcode == Opcode.Lli)
-        {
-            Registers[instruction.Rd] = (uint)instruction.Imm8.SignExtend(8);
-        }
-
-        if (instruction.Opcode == Opcode.Lui)
-        {
-            var rdvalue = Registers[instruction.Rd];
-            rdvalue = (rdvalue & 0x00ff) | ((uint)instruction.Imm8 << 8);
-            Registers[instruction.Rd] = rdvalue;
-        }
-
-        if (instruction.Opcode.IsBranch())
-        {
-            var condition = instruction.Opcode switch
-            {
-                Opcode.Beq => Registers[instruction.Rd] == 0,
-                Opcode.Bne => Registers[instruction.Rd] != 0,
-                Opcode.Bgt => (SignedWord)Registers[instruction.Rd] > 0,
-                Opcode.Bge => (SignedWord)Registers[instruction.Rd] >= 0,
-                Opcode.Blt => (SignedWord)Registers[instruction.Rd] < 0,
-                Opcode.Ble => (SignedWord)Registers[instruction.Rd] <= 0,
-                _ => false
-            };
-
-            if (condition)
-            {
-                return NormalizePc((int)Pc + 1 + instruction.Imm8);
-            }
-            else
-            {
-                return NormalizePc(Pc + 1);
-            }
-        }
-        else
-        {
-            return NormalizePc(Pc + 1);
-        }
     }
 }

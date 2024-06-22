@@ -1,12 +1,13 @@
-using AnnaSim.Cpu;
+using AnnaSim.Extensions;
 
 namespace AnnaSim.Instructions.Definitions;
 
 public partial class LliInstruction
 {
-    public override uint Execute(AnnaMachine cpu, params string[] operands)
+    protected override uint ExecuteImpl(Instruction instruction)
     {
-        throw new NotImplementedException($"LliInstruction.{nameof(Execute)}");
+        Registers[instruction.Rd] = (uint)instruction.Imm8.SignExtend(8);
+        return NormalizePc(Pc + 1);
     }
 }
 

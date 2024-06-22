@@ -4,13 +4,12 @@ public static class IntegerExtensions
 {
     public static int SignExtend(this int n, int bitLength)
     {
+        // Push bitLength bits up to the top, then shift down to extend the sign
         int sh = (sizeof(int) * 8) - bitLength;
-        // push everything up to the top, so sign bit is in high bit
-        int x = (n << sh);
-        // now sign-extend back down
-        int value = (x >> sh);
+        int x = n << sh;
+        int value = x >> sh;
         return value;
     }
 
-    public static int SignExtend(this short n, int bitLength) => (int)n.SignExtend(bitLength);
+    public static int SignExtend(this short n, int bitLength) => n.SignExtend(bitLength);
 }

@@ -1,12 +1,20 @@
-using AnnaSim.Cpu;
+using AnnaSim.Exceptions;
 
 namespace AnnaSim.Instructions.Definitions;
 
 public partial class InInstruction
 {
-    public override uint Execute(AnnaMachine cpu, params string[] operands)
+    protected override uint ExecuteImpl(Instruction instruction)
     {
-        throw new NotImplementedException($"InInstruction.{nameof(Execute)}");
+        if (Cpu.Inputs.TryDequeue(out var result))
+        {
+            Registers[instruction.Rd] = result;
+        }
+        else
+        {
+            throw new NoInputRemainingException();
+        }
+        return NormalizePc(Pc + 1);
     }
 }
 

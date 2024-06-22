@@ -1,8 +1,6 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class BgtInstruction : AbstractInstruction
+public partial class BgtInstruction : InstructionDefinition
 {
     public BgtInstruction() : base()
     {
@@ -11,6 +9,7 @@ public partial class BgtInstruction : AbstractInstruction
         OperandCount = 2;
         Type = InstructionType.Imm8;
         MathOp = MathOperation.NA;
+        FormatString = "md18";
     }
 }
 

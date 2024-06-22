@@ -1,12 +1,13 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
 public partial class LuiInstruction
 {
-    public override uint Execute(AnnaMachine cpu, params string[] operands)
+    protected override uint ExecuteImpl(Instruction instruction)
     {
-        throw new NotImplementedException($"LuiInstruction.{nameof(Execute)}");
+        var rdvalue = Registers[instruction.Rd];
+        rdvalue = (rdvalue & 0x00ff) | ((uint)instruction.Imm8 << 8);
+        Registers[instruction.Rd] = rdvalue;
+        return NormalizePc(Pc + 1);
     }
 }
 

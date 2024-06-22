@@ -1,12 +1,13 @@
 using AnnaSim.Cpu;
 using AnnaSim.Cpu.Memory;
-using AnnaSim.Exceptions;
-using AnnaSim.Extensions;
+using AnnaSim.Instructions;
 
 namespace AnnaSim.Debugger;
 
 public class ConsoleDebugger
 {
+    private static uint[] origInputs = [];
+
     public static IEnumerable<Word> Run(string fname) => Run(fname, [], []);
 
     public static IEnumerable<Word> Run(string fname, string[] inputs, string[] argv)
@@ -15,7 +16,9 @@ public class ConsoleDebugger
 
         var output = new List<Word>();
 
-        var cpu = new AnnaMachine(fname, inputs)
+        origInputs = inputs.Select(AnnaMachine.ParseInputString).ToArray();
+
+        var cpu = new AnnaMachine(fname, origInputs)
         {
             OutputCallback = (w) =>
             {
@@ -40,7 +43,8 @@ public class ConsoleDebugger
                 Console.Error.WriteLine(string.Join(" ", registersToDisplay.Select(r => $"r{r}:{cpu.Registers[r]:x4)}")));
             }
 
-            Console.Error.Write($"PC:0x{cpu.Pc:x4} ({cpu.Memory[cpu.Pc].ToInstruction()}) > ");
+            var instr = I.Instruction(cpu.Memory[cpu.Pc]);
+            Console.Error.Write($"PC:0x{cpu.Pc:x4} ({instr}) > ");
 
             string cmd = "";
             if (readFromConsole)
@@ -85,7 +89,7 @@ public class ConsoleDebugger
             }
             else if (cmd == "R")
             {
-                cpu.Reset();
+                cpu.Reset(origInputs);
                 status = HaltReason.Running;
             }
             else if (cmd is "" or "n")

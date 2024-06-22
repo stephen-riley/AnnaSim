@@ -1,8 +1,6 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class LuiInstruction : AbstractInstruction
+public partial class LuiInstruction : InstructionDefinition
 {
     public LuiInstruction() : base()
     {
@@ -11,6 +9,7 @@ public partial class LuiInstruction : AbstractInstruction
         OperandCount = 2;
         Type = InstructionType.Imm8;
         MathOp = MathOperation.NA;
+        FormatString = "md18";
     }
 }
 

@@ -1,12 +1,16 @@
-using AnnaSim.Cpu;
+using AnnaSim.Cpu.Memory;
 
 namespace AnnaSim.Instructions.Definitions;
 
 public partial class AddiInstruction
 {
-    public override uint Execute(AnnaMachine cpu, params string[] operands)
+    protected override uint ExecuteImpl(Instruction instruction)
     {
-        throw new NotImplementedException($"AddiInstruction.{nameof(Execute)}");
+        SignedWord rvalue = Registers[instruction.Rs1];
+        SignedWord immvalue = (SignedWord)instruction.Imm6;
+        SignedWord result = rvalue + immvalue;
+        Registers[instruction.Rd] = result;
+        return NormalizePc(Pc + 1);
     }
 }
 

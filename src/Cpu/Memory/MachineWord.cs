@@ -2,6 +2,7 @@
 using System.Numerics;
 
 namespace AnnaSim.Cpu.Memory;
+
 public struct MachineWord : IBitwiseOperators<MachineWord, MachineWord, MachineWord>
 {
     internal uint bits;

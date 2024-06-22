@@ -1,8 +1,6 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class HaltDirective : AbstractInstruction
+public partial class HaltDirective : InstructionDefinition
 {
     public HaltDirective() : base()
     {

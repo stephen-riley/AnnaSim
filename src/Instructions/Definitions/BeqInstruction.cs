@@ -1,8 +1,6 @@
-using AnnaSim.Cpu;
-
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class BeqInstruction : AbstractInstruction
+public partial class BeqInstruction : InstructionDefinition
 {
     public BeqInstruction() : base()
     {
@@ -11,6 +9,7 @@ public partial class BeqInstruction : AbstractInstruction
         OperandCount = 2;
         Type = InstructionType.Imm8;
         MathOp = MathOperation.NA;
+        FormatString = "md18";
     }
 }
 
