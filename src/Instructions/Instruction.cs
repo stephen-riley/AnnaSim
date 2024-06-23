@@ -2,7 +2,7 @@
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
-using AnnaSim.Instructions.Definitions;
+
 using static AnnaSim.Instructions.InstructionType;
 
 namespace AnnaSim.Instructions;
@@ -39,7 +39,7 @@ public class Instruction
     // Imm6 constructor
     public Instruction(InstructionDefinition idef, ushort rd, ushort rs1, short rs2orImm6) : this(idef)
     {
-        Bits = (uint)idef.Opcode << 12;
+        Bits = idef.Opcode << 12;
         Bits |= (rd & 0b111u) << 9;
         Bits |= (rs1 & 0b111u) << 6;
 
@@ -53,7 +53,7 @@ public class Instruction
         }
     }
 
-    public static Instruction NewRType(InstructionDefinition idef, ushort rd, ushort rs1, ushort rs2) => new(idef, rd, rs1, (short)rs2);
+    public static Instruction NewRType(InstructionDefinition idef, ushort rd, ushort rs1, ushort rs2) => new(idef, rd, rs1, rs2);
 
     public static Instruction NewImm6(InstructionDefinition idef, ushort rd, ushort rs1, short imm6) => new(idef, rd, rs1, imm6);
 
@@ -92,27 +92,44 @@ public class Instruction
 
     public override string ToString()
     {
-        int bits = this.Bits;
+        int bits = Bits;
 
         if (bits == 0)
         {
             return "0x0000";
         }
-        else if (Idef is HaltDirective)
+        else if (bits == 0x3000)
         {
             return ".halt";
         }
 
         var opcode = bits >> 12;
         var func = bits & 0x07;
-        var res = string.Join(' ', Idef.FormatString.Select((char c) => c switch
+        var imm8x = 0;
+        if (Type == InstructionType.Imm8)
+        {
+            imm8x = Imm8;
+            if (Idef.ToStringUnsigned && Imm8 < 0)
+            {
+                imm8x = 256 - -Imm8;
+            }
+        }
+
+        var fmt = Idef.FormatString;
+        if (fmt.EndsWith('I') && Rs1 == 0)
+        {
+            fmt = fmt[0..^1];
+        }
+
+        var res = string.Join(' ', fmt.Select((char c) => c switch
         {
             'm' => Idef.Mnemonic,
-            'd' => Rd.ToString(),
-            '1' => Rs1.ToString(),
-            '2' => Rs2.ToString(),
+            'd' => $"r{Rd}",
+            '1' => $"r{Rs1}",
+            'I' => $"r{Rs1}",
+            '2' => $"r{Rs2}",
             '6' => Imm6.ToString(),
-            '8' => Imm8.ToString(),
+            '8' => imm8x.ToString(),
             _ => throw new InvalidOperationException($"unknown format character '{c}")
         }));
 

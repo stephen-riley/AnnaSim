@@ -11,7 +11,7 @@ public partial class LwInstruction
 
     public override Instruction ToInstruction(params Operand[] operands)
     {
-        return Instruction.NewImm6(this, (ushort)operands[0], (ushort)operands[1], (short)operands[2]);
+        return Instruction.NewImm6(this, Asm.Register(operands[0]), Asm.Register(operands[1]), (short)operands[2]);
     }
 }
 

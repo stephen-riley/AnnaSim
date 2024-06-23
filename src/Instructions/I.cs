@@ -36,5 +36,5 @@ public static class I
         return defs[0];
     }
 
-    public static Instruction Instruction(ushort bits) => new Instruction(GetIdef(bits, bits));
+    public static Instruction Instruction(ushort bits) => new(GetIdef(bits >> 12, bits & 0x07), bits);
 }

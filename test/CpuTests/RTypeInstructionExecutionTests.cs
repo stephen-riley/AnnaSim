@@ -18,7 +18,7 @@ public class RTypeInstructionExecutionTests
 
         // add r1, r2, r3
         var idef = I.Lookup["add"];
-        var instruction = idef.ToInstruction(1, 2, 3);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
         idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)30, cpu.Registers[1]);
@@ -33,14 +33,14 @@ public class RTypeInstructionExecutionTests
 
         // sub r1, r2, r3
         var idef = I.Lookup["sub"];
-        var instruction = idef.ToInstruction(1, 2, 3);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
         idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)5, cpu.Registers[1]);
     }
 
     [TestMethod]
-    public void TestMultiplication()
+    public void TestBitwiseAnd()
     {
         var cpu = new AnnaMachine();
         cpu.Registers[2] = 0xffff;
@@ -48,14 +48,14 @@ public class RTypeInstructionExecutionTests
 
         // and r1, r2, r3
         var idef = I.Lookup["and"];
-        var instruction = idef.ToInstruction(1, 2, 3);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
         idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)0xcafe, cpu.Registers[1]);
     }
 
     [TestMethod]
-    public void TestDivision()
+    public void TestBitwiseOr()
     {
         var cpu = new AnnaMachine();
         cpu.Registers[2] = 0xff00;
@@ -63,7 +63,7 @@ public class RTypeInstructionExecutionTests
 
         // or r1, r2, r3
         var idef = I.Lookup["or"];
-        var instruction = idef.ToInstruction(1, 2, 3);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
         idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)0xffff, cpu.Registers[1]);
@@ -77,7 +77,7 @@ public class RTypeInstructionExecutionTests
 
         // not r1, r2
         var idef = I.Lookup["not"];
-        var instruction = idef.ToInstruction(1, 2);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2);
         idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)0x5555, cpu.Registers[1]);
@@ -94,7 +94,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[rd] = 20;
 
         var idef = I.Lookup["jalr"];
-        var instruction = idef.ToInstruction(rd, rs1);
+        var instruction = idef.ToInstruction(rd: rd, rs1: rs1);
         var newPc = idef.Execute(cpu, instruction);
 
         Assert.AreEqual(20u, newPc);
@@ -110,7 +110,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[rd] = 20;
 
         var idef = I.Lookup["jalr"];
-        var instruction = idef.ToInstruction(rd);
+        var instruction = idef.ToInstruction(rd: rd);
         var newPc = idef.Execute(cpu, instruction);
 
         Assert.AreEqual(20u, newPc);
@@ -123,9 +123,9 @@ public class RTypeInstructionExecutionTests
         var addr = 1u;
 
         var idef = I.Lookup["in"];
-        idef.Execute(cpu, idef.ToInstruction((ushort)addr++));
-        idef.Execute(cpu, idef.ToInstruction((ushort)addr++));
-        idef.Execute(cpu, idef.ToInstruction((ushort)addr));
+        idef.Execute(cpu, idef.ToInstruction(rd: (ushort)addr++));
+        idef.Execute(cpu, idef.ToInstruction(rd: (ushort)addr++));
+        idef.Execute(cpu, idef.ToInstruction(rd: (ushort)addr));
 
         Assert.AreEqual((Word)10u, cpu.Registers[1]);
         Assert.AreEqual((Word)20u, cpu.Registers[2]);
@@ -137,15 +137,15 @@ public class RTypeInstructionExecutionTests
     {
         var cpu = new AnnaMachine([10]).Reset();
         var idef = I.Lookup["in"];
-        var instruction = idef.ToInstruction(1);
+        var instruction = idef.ToInstruction(rd: 1);
 
         idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)10u, cpu.Registers[1]);
-        Assert.ThrowsException<NoInputRemainingException>((Action)(() =>
+        Assert.ThrowsException<NoInputRemainingException>(() =>
         {
-            idef.Execute(cpu, idef.ToInstruction(1));
-        }));
+            idef.Execute(cpu, idef.ToInstruction(rd: 1));
+        });
     }
 
     [TestMethod]
@@ -164,7 +164,7 @@ public class RTypeInstructionExecutionTests
         expected.ForEach(n =>
         {
             cpu.Registers[(uint)(n / 10)] = n;
-            var instruction = idef.ToInstruction((ushort)(n / 10));
+            var instruction = idef.ToInstruction(rd: (ushort)(n / 10));
             idef.Execute(cpu, instruction);
         });
 

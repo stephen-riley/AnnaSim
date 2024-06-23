@@ -21,7 +21,7 @@ public class TwosComplementTests
         cpu.Registers[3] = (SignedWord)o2;
 
         var idef = I.Lookup["add"];
-        var instruction = idef.ToInstruction(1, 2, 3);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
         idef.Execute(cpu, instruction);
 
         Assert.AreEqual((SignedWord)result, (SignedWord)cpu.Registers[1]);
@@ -43,10 +43,13 @@ public class TwosComplementTests
     [DataRow(4294967295u, 0, 65535u)]
     public void TestNormalizePc(uint baseAddr, int offset, uint expected)
     {
-        int a_weird_variable = 1;
-        Console.WriteLine(a_weird_variable);
+        // grab a random idef
         var idef = I.Lookup["add"];
+        var cpu = new AnnaMachine();
+        idef.Cpu = cpu;
+
         var addr = idef.NormalizePc((int)baseAddr + offset);
+
         Assert.AreEqual(expected, addr);
     }
 }

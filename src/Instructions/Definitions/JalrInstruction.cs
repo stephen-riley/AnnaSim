@@ -9,7 +9,7 @@ public partial class JalrInstruction : InstructionDefinition
         OperandCount = 2;
         Type = InstructionType.R;
         MathOp = MathOperation.NA;
-        FormatString = "md1";
+        FormatString = "mdI";
     }
 }
 

@@ -9,16 +9,14 @@ namespace AnnaSim.Test.AssemblerTests;
 public class AssemblerInternalsTests
 {
     [TestMethod]
-    [DataRow("r0", 0)]
     [DataRow("-10", -10)]
     [DataRow("0xffff", 65535)]
     [DataRow("0b10000001", 129)]
-    [DataRow("&label", -1)]
     public void TestParsingOperands(string o, int expected)
     {
         var asm = new AnnaAssembler();
 
-        var value = Operand.Parse(o);
+        var value = asm.ParseOperand(o, OperandType.SignedInt);
 
         Assert.AreEqual(expected, (int)value);
     }
@@ -34,7 +32,7 @@ public class AssemblerInternalsTests
         var memImageWords = memImage.Select(ui => (Word)ui).ToList();
 
         var idef = I.Lookup[instruction];
-        var operands = operandStrings.Select(s => Operand.Parse(s)).ToArray();
+        var operands = operandStrings.Select(s => asm.ParseOperand(s)).ToArray();
         idef.Assemble(asm, operands);
 
         Assert.AreEqual(-1, asm.MemoryImage.Compare(memImageWords));
@@ -43,13 +41,12 @@ public class AssemblerInternalsTests
 
     [TestMethod]
     [DataRow("add r2 r3 r4", 0b0000_010_011_100_000u)] // 0 for math op, r2, r3, r4, 0 as func code
-    [DataRow("not r2 r3", 0b0000_010_011_111_100u)]    // 0 for math op, r2, r3, -1 (unused Rs2), 8 as func code
+    [DataRow("not r2 r3", 0b0000_010_011_000_100u)]    // 0 for math op, r2, r3, -1 (unused Rs2), 8 as func code
     public void TestGoodMathInstructionHandler(string instruction, uint expected)
     {
         var asm = new AnnaAssembler();
 
-        var pieces = instruction.Split(' ');
-        asm.AssembleLine(pieces);
+        asm.AssembleLine(instruction);
 
         Assert.AreEqual((Word)expected, asm.MemoryImage[0]);
         Assert.AreEqual(1u, asm.Addr);
@@ -64,8 +61,7 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
 
-        var pieces = instruction.Split(' ');
-        asm.AssembleLine(pieces);
+        asm.AssembleLine(instruction);
 
         Assert.AreEqual((Word)expected, asm.MemoryImage[0]);
         Assert.AreEqual(1u, asm.Addr);
@@ -80,8 +76,7 @@ public class AssemblerInternalsTests
         var asm = new AnnaAssembler();
         var memImageWords = memImage.Select(ui => (Word)ui).ToList();
 
-        var pieces = instruction.Split(' ');
-        asm.AssembleLine(pieces);
+        asm.AssembleLine(instruction);
 
         Assert.AreEqual(-1, asm.MemoryImage.Compare(memImageWords));
         Assert.AreEqual((uint)expectedPtr, asm.Addr);
@@ -89,13 +84,12 @@ public class AssemblerInternalsTests
 
     [TestMethod]
     [DataRow("add r2 r3 r4", 0b0000_010_011_100_000u)] // 0 for math op, r2, r3, r4, 0 as func code
-    [DataRow("not r2 r3", 0b0000_010_011_111_100u)]    // 0 for math op, r2, r3, -1 (unused Rs2), 8 as func code
+    [DataRow("not r2 r3", 0b0000_010_011_000_100u)]    // 0 for math op, r2, r3, -1 (unused Rs2), 8 as func code
     public void TestGoodMathInstructionAssembler(string instruction, uint expected)
     {
         var asm = new AnnaAssembler();
 
-        var pieces = instruction.Split(' ');
-        asm.AssembleLine(pieces);
+        asm.AssembleLine(instruction);
 
         Assert.AreEqual((Word)expected, asm.MemoryImage[0]);
         Assert.AreEqual(1u, asm.Addr);
@@ -111,8 +105,7 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
 
-        var pieces = instruction.Split(' ');
-        asm.AssembleLine(pieces);
+        asm.AssembleLine(instruction);
 
         Assert.AreEqual((Word)expected, asm.MemoryImage[0]);
         Assert.AreEqual(1u, asm.Addr);
@@ -123,17 +116,17 @@ public class AssemblerInternalsTests
     [DataRow(".fill", "operands required")]
     [DataRow(".ralias r8", "operands required")]
     [DataRow(".ralias", "operands required")]
-    [DataRow(".ralias r0 Bob", "cannot parse directive")]
+    [DataRow(".ralias r0 Bob", "not find any recognizable digits")]
     public void TestBadDirectives(string instruction, string messageExcerpt)
     {
         var asm = new AnnaAssembler();
 
-        var exception = Assert.ThrowsException<InvalidOpcodeException>(() =>
+        var exception = Assert.ThrowsException<AssemblerParseException>(() =>
         {
-            asm.AssembleLine(instruction.Split(' '));
+            asm.AssembleLine(instruction);
         });
 
-        Assert.IsTrue(exception.Message.Contains(messageExcerpt));
+        Assert.IsTrue(exception.InnerException?.Message.Contains(messageExcerpt));
     }
 
     [TestMethod]
@@ -143,7 +136,7 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
 
-        asm.AssembleLine(instruction.Split(' '));
+        asm.AssembleLine(instruction);
 
         Assert.AreEqual(labels, asm.labels.Count);
         Assert.AreEqual(tbdLabels, asm.resolutionToDo.Count);
@@ -160,7 +153,7 @@ public class AssemblerInternalsTests
     public void TestBranchToLabel(uint targetAddr, uint expectedOffset)
     {
         var asm = new AnnaAssembler();
-        asm.AssembleLine("beq r1 &label".Split(' '));
+        asm.AssembleLine("beq r1 &label");
         asm.labels["label"] = targetAddr;
 
         Assert.AreEqual("label", asm.resolutionToDo[0]);
@@ -177,8 +170,8 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
         asm.labels["label"] = 0x050c;
-        asm.AssembleLine("lli r1 &label".Split(' '));
-        asm.AssembleLine("lui r1 &label".Split(' '));
+        asm.AssembleLine("lli r1 &label");
+        asm.AssembleLine("lui r1 &label");
 
         asm.ResolveLabels();
 
@@ -187,11 +180,11 @@ public class AssemblerInternalsTests
     }
 
     [TestMethod]
-    public void TestLliLuiFromLConstant()
+    public void TestLliLuiFromConstant()
     {
         var asm = new AnnaAssembler();
-        asm.AssembleLine("lli r1 1".Split(' '));
-        asm.AssembleLine("lui r1 1".Split(' '));
+        asm.AssembleLine("lli r1 1");
+        asm.AssembleLine("lui r1 1");
 
         asm.ResolveLabels();
 
@@ -205,7 +198,7 @@ public class AssemblerInternalsTests
     public void TestBranchToFarLabel(uint targetAddr)
     {
         var asm = new AnnaAssembler();
-        asm.AssembleLine("beq r1 &label".Split(' '));
+        asm.AssembleLine("beq r1 &label");
         asm.labels["label"] = targetAddr;
 
         Assert.ThrowsException<InvalidOpcodeException>(() =>

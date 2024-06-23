@@ -43,19 +43,29 @@ public class Operand
         }
     }
 
+    public uint AsUInt()
+    {
+        return Type switch
+        {
+            OperandType.UnsignedInt => UnsignedInt,
+            OperandType.SignedInt => (uint)SignedInt,
+            _ => throw new InvalidCastException($"Operand is of type {Type}, requested (uint) or (int)")
+        };
+    }
+
     public static implicit operator Operand(int n) => new(n);
 
     public static implicit operator Operand(uint n) => new(n);
 
-    public static implicit operator ushort(Operand o) => o.Type == OperandType.UnsignedInt ? (ushort)o.UnsignedInt : throw new InvalidCastException();
+    public static explicit operator ushort(Operand o) => o.Type == OperandType.UnsignedInt ? (ushort)o.UnsignedInt : throw new InvalidCastException($"Operand is of type {o.Type}, requested (ushort)");
 
-    public static implicit operator short(Operand o) => o.Type == OperandType.SignedInt ? (short)o.SignedInt : throw new InvalidCastException();
+    public static explicit operator short(Operand o) => o.Type == OperandType.SignedInt ? (short)o.SignedInt : throw new InvalidCastException($"Operand is of type {o.Type}, requested (short)");
 
-    public static implicit operator uint(Operand o) => o.Type == OperandType.UnsignedInt ? o.UnsignedInt : throw new InvalidCastException();
+    public static explicit operator uint(Operand o) => o.Type == OperandType.UnsignedInt ? o.UnsignedInt : throw new InvalidCastException($"Operand is of type {o.Type}, requested (uint)");
 
-    public static implicit operator int(Operand o) => o.Type == OperandType.SignedInt ? o.SignedInt : throw new InvalidCastException();
+    public static explicit operator int(Operand o) => o.Type == OperandType.SignedInt ? o.SignedInt : throw new InvalidCastException($"Operand is of type {o.Type}, requested (int)");
 
-    public static implicit operator string(Operand o) => o.Type == OperandType.Label ? o.Str : throw new InvalidCastException();
+    public static explicit operator string(Operand o) => o.Type is OperandType.Label or OperandType.Register ? o.Str : throw new InvalidCastException($"Operand is of type {o.Type}, requested (string)");
 
     public static Operand Register(string r) => new(r, OperandType.Register);
 
@@ -73,19 +83,20 @@ public class Operand
         }
 
         int negative = s.StartsWith('-') ? 1 : 0;
-        int radix = s[negative..].StartsWith("0x") ? 16 : 10;
-        int value = Convert.ToInt32(s[(negative + 2)..], radix);
+        int radix = s[negative..].StartsWith("0x") ? 16 : s[negative..].StartsWith("0b") ? 2 : 10;
+        int value = Convert.ToInt32(s[(negative + (radix != 10 ? 2 : 0))..], radix);
+        value = negative == 1 ? -value : value;
 
         return type == OperandType.SignedInt ? new Operand(value) : new Operand((uint)value);
     }
 
-    public bool IsStandardRegisterName() => Type == OperandType.Label ? Str.IsStandardRegisterName() : throw new InvalidCastException();
+    public bool IsStandardRegisterName() => Type == OperandType.Register ? Str.IsStandardRegisterName() : throw new InvalidCastException();
 
     public override string ToString() => Type switch
     {
         OperandType.SignedInt => SignedInt.ToString(),
         OperandType.UnsignedInt => UnsignedInt.ToString(),
-        OperandType.Label => Str,
+        OperandType.Label or OperandType.Register => Str,
         _ => throw new InvalidOperationException("ToString() on an Operand of type Unknown")
     };
 }

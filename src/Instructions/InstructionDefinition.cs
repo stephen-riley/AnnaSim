@@ -12,15 +12,15 @@ public abstract partial class InstructionDefinition
     public MathOperation MathOp { get; set; } = MathOperation.NA;
     public InstructionType Type { get; set; }
     public int OperandCount { get; set; }
+    public string FormatString { get; internal set; } = string.Empty;
+    public bool ToStringUnsigned { get; internal set; } = false;
 
     public InstructionDefinition() { }
-
-    public string FormatString { get; internal set; } = string.Empty;
 
     public void ValidateOperands(params Operand[] operands)
     {
         var fillOkay = OperandCount == -1 && operands.Length > 1;
-        var mismatch = operands.Length - 1 != OperandCount;
+        var mismatch = operands.Length != OperandCount;
 
         if (!fillOkay && mismatch)
         {

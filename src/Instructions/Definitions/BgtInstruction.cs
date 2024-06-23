@@ -9,7 +9,7 @@ public partial class BgtInstruction : InstructionDefinition
         OperandCount = 2;
         Type = InstructionType.Imm8;
         MathOp = MathOperation.NA;
-        FormatString = "md18";
+        FormatString = "md8";
     }
 }
 

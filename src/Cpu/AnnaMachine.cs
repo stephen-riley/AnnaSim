@@ -58,7 +58,9 @@ public class AnnaMachine
 
     internal static IEnumerable<Word> ParseMachineInputs(params string[] inputs)
     {
-        return (IEnumerable<Word>)inputs.Select(s =>
+        var words = new List<Word>();
+
+        foreach (var s in inputs)
         {
             var radix = s.Length < 2
                 ? 10
@@ -69,8 +71,12 @@ public class AnnaMachine
                     _ => 10
                 };
 
-            return (ushort)Convert.ToInt16(s.Substring(radix == 10 ? 0 : 2), radix);
-        });
+            var w = Convert.ToInt16(s.Substring(radix == 10 ? 0 : 2), radix);
+
+            words.Add((ushort)w);
+        }
+
+        return words;
     }
 
     public AnnaMachine(params string[] inputs) : this() => ParseMachineInputs(inputs).ForEach(Inputs.Enqueue);

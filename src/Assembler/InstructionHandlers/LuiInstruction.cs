@@ -11,7 +11,7 @@ public partial class LuiInstruction
 
     public override Instruction ToInstruction(params Operand[] operands)
     {
-        return Instruction.NewImm8(this, (ushort)operands[0], (short)(operands[1] >> 8));
+        return Instruction.NewImm8(this, Asm.Register(operands[0]), (short)(operands[1].SignedInt >> 8));
     }
 }
 

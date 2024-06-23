@@ -9,7 +9,7 @@ public partial class RaliasDirective
     {
         if (operands[0].IsStandardRegisterName() && ((string)operands[1]).StartsWith('r'))
         {
-            Asm.registerAliases[operands[1]] = operands[0];
+            Asm.registerAliases[(string)operands[1]] = (string)operands[0];
         }
         else
         {

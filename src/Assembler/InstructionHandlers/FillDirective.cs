@@ -8,7 +8,7 @@ public partial class FillDirective
     {
         foreach (var operand in operands)
         {
-            MemoryImage[Addr++] = (uint)operand;
+            MemoryImage[Addr++] = operand.AsUInt();
         }
     }
 

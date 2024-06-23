@@ -11,7 +11,7 @@ public partial class SubInstruction
 
     public override Instruction ToInstruction(params Operand[] operands)
     {
-        return Instruction.NewRType(this, (ushort)operands[0], (ushort)operands[1], (ushort)operands[2]);
+        return Instruction.NewRType(this, Asm.Register(operands[0]), Asm.Register(operands[1]), Asm.Register(operands[2]));
     }
 }
 

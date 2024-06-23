@@ -19,7 +19,7 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = (Word)(uint)testValue;
 
         InstructionDefinition idef = I.Lookup["beq"];
-        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
         Assert.AreEqual((uint)expectedPc, newPc);
@@ -37,7 +37,7 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = (Word)(uint)testValue;
 
         InstructionDefinition idef = I.Lookup["bne"];
-        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
         Assert.AreEqual((uint)expectedPc, newPc);
@@ -54,7 +54,7 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = (Word)(uint)testValue;
 
         InstructionDefinition idef = I.Lookup["bgt"];
-        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
 
@@ -74,7 +74,7 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = (Word)(uint)testValue;
 
         InstructionDefinition idef = I.Lookup["bge"];
-        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
 
@@ -92,7 +92,7 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = (Word)(uint)testValue;
 
         InstructionDefinition idef = I.Lookup["blt"];
-        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
 
@@ -112,7 +112,7 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = (Word)(uint)testValue;
 
         InstructionDefinition idef = I.Lookup["ble"];
-        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
 
@@ -129,24 +129,24 @@ public class Imm8TypeInstructionExecutionTests
         cpu.Registers[1] = orig;
 
         InstructionDefinition idef = I.Lookup["lli"];
-        var instruction = idef.ToInstruction(1, 2, (short)imm8);
-        idef.Execute(instruction);
+        var instruction = idef.ToInstruction(rd: 1, imm8: (short)imm8);
+        idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)expected, cpu.Registers[1]);
     }
 
     [TestMethod]
-    [DataRow(0u, 0xc0, 0xc000u)]
+    [DataRow(0u, 0xc000, 0xc000u)]
     [DataRow(0u, -1, 0xff00u)]
-    [DataRow(0xffffu, 0x23, 0x23ffu)]
+    [DataRow(0xffffu, 0x2300, 0x23ffu)]
     public void TestLuiInstruction(uint orig, int imm8, uint expected)
     {
         var cpu = new AnnaMachine();
         cpu.Registers[1] = orig;
 
         InstructionDefinition idef = I.Lookup["lui"];
-        var instruction = idef.ToInstruction(1, 2, (short)imm8);
-        idef.Execute(instruction);
+        var instruction = idef.ToInstruction(rd: 1, imm8: (short)imm8);
+        idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)expected, cpu.Registers[1]);
     }

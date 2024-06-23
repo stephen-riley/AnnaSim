@@ -10,11 +10,11 @@ public class InstructionTests
     public void TestMathRTypeConstructor()
     {
         var idef = I.Lookup["not"];
-        var instruction = idef.ToInstruction(1, 2, 3);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 0);
         Assert.AreEqual(idef.Opcode, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
-        Assert.AreEqual(3u, instruction.Rs2);
+        Assert.AreEqual(0u, instruction.Rs2);
         Assert.AreEqual(MathOperation.Not, instruction.FuncCode);
     }
 
@@ -22,7 +22,7 @@ public class InstructionTests
     public void TestRTypeConstructor()
     {
         var idef = I.Lookup["not"];
-        var instruction = idef.ToInstruction(1, 2);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2);
         Assert.AreEqual(idef.Opcode, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
@@ -34,7 +34,7 @@ public class InstructionTests
     {
         // putting an unsigned 63 in imm6 should end up being a -1
         var idef = I.Lookup["addi"];
-        var instruction = idef.ToInstruction(1, 2, 63);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: 63);
         Assert.AreEqual(idef.Opcode, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
@@ -45,19 +45,19 @@ public class InstructionTests
     public void TestImm8Constructor()
     {
         var idef = I.Lookup["lui"];
-        var instruction = idef.ToInstruction(1, 255);
+        var instruction = idef.ToInstruction(rd: 1, imm8: 255);
         Assert.AreEqual(idef.Opcode, instruction.Opcode);
         Assert.AreEqual(1u, instruction.Rd);
-        Assert.AreEqual(-1, instruction.Imm8);
+        Assert.AreEqual(0, instruction.Imm8);
     }
 
     [TestMethod]
     public void TestRTypeInstructionDecode()
     {
-        var instruction = I.Instruction(0b0000_001_010_011_100);
+        var instruction = I.Instruction(0b0000_001_010_000_100);
         Assert.AreEqual(1u, instruction.Rd);
         Assert.AreEqual(2u, instruction.Rs1);
-        Assert.AreEqual(3u, instruction.Rs2);
+        Assert.AreEqual(0u, instruction.Rs2);
         Assert.AreEqual(MathOperation.Not, instruction.FuncCode);
         Assert.AreEqual(I.Lookup["not"].Opcode, instruction.Opcode);
     }
@@ -85,7 +85,7 @@ public class InstructionTests
     [TestMethod]
     public void TestInvalidRTypeFieldAccess()
     {
-        var instruction = I.Lookup["not"].ToInstruction(1, 2, 3);
+        var instruction = I.Lookup["not"].ToInstruction(rd: 1, rs1: 2, rs2: 3);
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Imm6; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Imm8; });
     }
@@ -93,7 +93,7 @@ public class InstructionTests
     [TestMethod]
     public void TestInvalidImm6TypeFieldAccess()
     {
-        var instruction = I.Lookup["addi"].ToInstruction(1, 2, 67);
+        var instruction = I.Lookup["addi"].ToInstruction(rd: 1, rs1: 2, imm6: 67);
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Rs2; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Imm8; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.FuncCode; });
@@ -102,7 +102,7 @@ public class InstructionTests
     [TestMethod]
     public void TestInvalidImm8TypeFieldAccess()
     {
-        var instruction = I.Lookup["lui"].ToInstruction(1, 255);
+        var instruction = I.Lookup["lui"].ToInstruction(rd: 1, imm8: 255);
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.FuncCode; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Rs1; });
         Assert.ThrowsException<InvalidInstructionFieldAccessException>(() => { _ = instruction.Rs2; });

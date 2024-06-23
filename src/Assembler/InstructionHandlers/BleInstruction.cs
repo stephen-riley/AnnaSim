@@ -11,7 +11,7 @@ public partial class BleInstruction
 
     public override Instruction ToInstruction(params Operand[] operands)
     {
-        return Instruction.NewImm8(this, (ushort)operands[0], (short)operands[0]);
+        return Instruction.NewImm8(this, Asm.Register(operands[0]), (short)operands[1]);
     }
 }
 

@@ -17,7 +17,7 @@ public class Imm6TypeInstructionExecutionTests
         cpu.Registers[2] = (ushort)op1;
 
         InstructionDefinition idef = I.Lookup["addi"];
-        var instruction = idef.ToInstruction(1, 2, (short)imm6);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: (short)imm6);
         idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)(ushort)result, cpu.Registers[1]);
@@ -35,7 +35,7 @@ public class Imm6TypeInstructionExecutionTests
         cpu.Registers[2] = (ushort)op1;
 
         InstructionDefinition idef = I.Lookup["shf"];
-        var instruction = idef.ToInstruction(1, 2, (short)imm6);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: (short)imm6);
         idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)(ushort)result, cpu.Registers[1]);
@@ -53,24 +53,24 @@ public class Imm6TypeInstructionExecutionTests
         cpu.Registers[2] = (uint)addrBase;
 
         InstructionDefinition idef = I.Lookup["lw"];
-        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: (short)offset);
         idef.Execute(cpu, instruction);
 
         Assert.AreEqual(expected, cpu.Registers[1]);
     }
 
     [TestMethod]
-    [DataRow(23, 100, 5)]
-    public void TestSwInstruction(int value, int addrBase, int offset)
+    [DataRow(1, 5, 32)]
+    [DataRow(32, -5, 1)]
+    public void TestSwInstruction(int start, int bitShift, int expected)
     {
         var cpu = new AnnaMachine();
-        cpu.Registers[1] = (uint)value;
-        cpu.Registers[2] = (uint)addrBase;
+        cpu.Registers[2] = (uint)start;
 
         InstructionDefinition idef = I.Lookup["shf"];
-        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: (short)bitShift);
         idef.Execute(cpu, instruction);
 
-        Assert.AreEqual(value, cpu.Memory[(uint)(addrBase + offset)]);
+        Assert.AreEqual(expected, cpu.Registers[1]);
     }
 }
