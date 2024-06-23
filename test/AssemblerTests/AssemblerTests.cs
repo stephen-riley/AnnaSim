@@ -1,4 +1,6 @@
+using AnnaSim.Assembler;
 using AnnaSim.Cpu.Memory;
+using AnnaSim.Instructions;
 
 namespace AnnaSim.Test.AssemblerTests;
 
@@ -33,7 +35,7 @@ public class AssemblerTests
         var asm = new AnnaAssembler();
 
         asm.Assemble(src);
-        var i = Enumerable.Range(0, 11).Select(addr => asm.MemoryImage[(uint)addr].ToInstruction().ToString());
+        var i = Enumerable.Range(0, 11).Select(addr => I.Instruction(asm.MemoryImage[(uint)addr]).ToString());
 
         Assert.AreEqual(-1, asm.MemoryImage.Compare(assembled));
     }

@@ -33,19 +33,25 @@ public class AnnaMachine
 
     public AnnaMachine() { }
 
-    public AnnaMachine(string filename, params string[] inputs)
-        : this(filename, inputs.Select(ParseInputString).ToArray())
-    {
-    }
-
-    public AnnaMachine(string filename, params uint[] inputs) : this(inputs)
+    public AnnaMachine(string filename) : this()
     {
         CurrentFile = filename;
         var asm = new AnnaAssembler(filename);
         Memory = asm.MemoryImage;
     }
 
-    public AnnaMachine(params uint[] inputs) : this()
+    public AnnaMachine(string filename, params string[] inputs)
+        : this(filename: filename)
+    {
+        ParseMachineInputs(inputs).ForEach(Inputs.Enqueue);
+    }
+
+    public AnnaMachine(string filename, params uint[] inputs) : this(filename: filename)
+    {
+        inputs.Select(n => (Word)(ushort)n).ForEach(Inputs.Enqueue);
+    }
+
+    internal AnnaMachine(int[] inputs)
     {
         inputs.Select(n => (Word)(ushort)n).ForEach(Inputs.Enqueue);
     }

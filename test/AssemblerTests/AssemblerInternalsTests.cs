@@ -1,6 +1,7 @@
-using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
+using AnnaSim.Assembler;
+using AnnaSim.Instructions;
 
 namespace AnnaSim.Test.AssemblerTests;
 
@@ -17,22 +18,24 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
 
-        var value = asm.ParseOperand(o);
+        var value = Operand.Parse(o);
 
-        Assert.AreEqual(expected, value);
+        Assert.AreEqual(expected, (int)value);
     }
 
     [TestMethod]
-    [DataRow(".halt", new string[0], new uint[] { 0x3000 }, 1, 1)]
-    [DataRow(".fill", new string[] { "1", "0b10", "0x03", "&label" }, new uint[] { 1, 2, 3, 0xffff }, 4, 4)]
-    [DataRow(".ralias", new string[] { "r7", "rSP" }, new uint[] { 0 }, 1, 0)]
+    [DataRow(".halt", new string[0], new uint[] { 0x3000 }, 1)]
+    [DataRow(".fill", new string[] { "1", "0b10", "0x03", "&label" }, new uint[] { 1, 2, 3, 0xffff }, 4)]
+    [DataRow(".ralias", new string[] { "r7", "rSP" }, new uint[] { 0 }, 0)]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Attributes have weird rules about arrays as parameters")]
-    public void TestGoodDirectiveHandler(string instruction, string[] operands, uint[] memImage, int memLength, int expectedPtr)
+    public void TestGoodDirectiveHandler(string instruction, string[] operandStrings, uint[] memImage, int expectedPtr)
     {
         var asm = new AnnaAssembler();
         var memImageWords = memImage.Select(ui => (Word)ui).ToList();
 
-        asm.HandleDirective(OpInfo.OpcodeMap[instruction], operands);
+        var idef = I.Lookup[instruction];
+        var operands = operandStrings.Select(s => Operand.Parse(s)).ToArray();
+        idef.Assemble(asm, operands);
 
         Assert.AreEqual(-1, asm.MemoryImage.Compare(memImageWords));
         Assert.AreEqual((uint)expectedPtr, asm.Addr);
@@ -46,7 +49,7 @@ public class AssemblerInternalsTests
         var asm = new AnnaAssembler();
 
         var pieces = instruction.Split(' ');
-        asm.HandleMathOpcode(OpInfo.OpcodeMap[pieces[0]], pieces[1..]);
+        asm.AssembleLine(pieces);
 
         Assert.AreEqual((Word)expected, asm.MemoryImage[0]);
         Assert.AreEqual(1u, asm.Addr);
@@ -62,7 +65,7 @@ public class AssemblerInternalsTests
         var asm = new AnnaAssembler();
 
         var pieces = instruction.Split(' ');
-        asm.HandleStandardOpcode(OpInfo.OpcodeMap[pieces[0]], pieces[1..]);
+        asm.AssembleLine(pieces);
 
         Assert.AreEqual((Word)expected, asm.MemoryImage[0]);
         Assert.AreEqual(1u, asm.Addr);

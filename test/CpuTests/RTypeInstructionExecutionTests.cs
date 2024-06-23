@@ -2,6 +2,7 @@ using AnnaSim.Cpu;
 using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
+using AnnaSim.Exceptions;
 
 namespace AnnaSim.Test.CpuTests;
 
@@ -16,8 +17,10 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[3] = 20;
 
         // add r1, r2, r3
-        var instruction = I.Lookup["add"].ToInstruction(1, 2, 3);
-        cpu.ExecuteRType(instruction);
+        var idef = I.Lookup["add"];
+        var instruction = idef.ToInstruction(1, 2, 3);
+        idef.Execute(cpu, instruction);
+
         Assert.AreEqual((Word)30, cpu.Registers[1]);
     }
 
@@ -28,9 +31,11 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[2] = 20;
         cpu.Registers[3] = 15;
 
-        // add r1, r2, r3
-        var instruction = I.Lookup["sub"].ToInstruction(1, 2, 3);
-        cpu.ExecuteRType(instruction);
+        // sub r1, r2, r3
+        var idef = I.Lookup["sub"];
+        var instruction = idef.ToInstruction(1, 2, 3);
+        idef.Execute(cpu, instruction);
+
         Assert.AreEqual((Word)5, cpu.Registers[1]);
     }
 
@@ -41,9 +46,11 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[2] = 0xffff;
         cpu.Registers[3] = 0xcafe;
 
-        // add r1, r2, r3
-        var instruction = I.Lookup["and"].ToInstruction(1, 2, 3);
-        cpu.ExecuteRType(instruction);
+        // and r1, r2, r3
+        var idef = I.Lookup["and"];
+        var instruction = idef.ToInstruction(1, 2, 3);
+        idef.Execute(cpu, instruction);
+
         Assert.AreEqual((Word)0xcafe, cpu.Registers[1]);
     }
 
@@ -54,9 +61,11 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[2] = 0xff00;
         cpu.Registers[3] = 0x00ff;
 
-        // add r1, r2, r3
-        var instruction = Instruction.Or(1, 2, 3);
-        cpu.ExecuteRType(instruction);
+        // or r1, r2, r3
+        var idef = I.Lookup["or"];
+        var instruction = idef.ToInstruction(1, 2, 3);
+        idef.Execute(cpu, instruction);
+
         Assert.AreEqual((Word)0xffff, cpu.Registers[1]);
     }
 
@@ -66,9 +75,11 @@ public class RTypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[2] = 0xaaaa;
 
-        // add r1, r2, r3
-        var instruction = I.Lookup["not"].ToInstruction(1, 2, 0);
-        cpu.ExecuteRType(instruction);
+        // not r1, r2
+        var idef = I.Lookup["not"];
+        var instruction = idef.ToInstruction(1, 2);
+        idef.Execute(cpu, instruction);
+
         Assert.AreEqual((Word)0x5555, cpu.Registers[1]);
     }
 
@@ -82,8 +93,10 @@ public class RTypeInstructionExecutionTests
 
         cpu.Registers[rd] = 20;
 
-        var instruction = Instruction.Jalr(rd, rs1);
-        var newPc = cpu.ExecuteRType(instruction);
+        var idef = I.Lookup["jalr"];
+        var instruction = idef.ToInstruction(rd, rs1);
+        var newPc = idef.Execute(cpu, instruction);
+
         Assert.AreEqual(20u, newPc);
         Assert.AreEqual((Word)11, cpu.Registers[rs1]);
     }
@@ -96,19 +109,23 @@ public class RTypeInstructionExecutionTests
         ushort rd = 1;
         cpu.Registers[rd] = 20;
 
-        var instruction = Instruction.Jalr(rd);
-        var newPc = cpu.ExecuteRType(instruction);
+        var idef = I.Lookup["jalr"];
+        var instruction = idef.ToInstruction(rd);
+        var newPc = idef.Execute(cpu, instruction);
+
         Assert.AreEqual(20u, newPc);
     }
 
     [TestMethod]
     public void TestGettingInputs()
     {
-        var cpu = new AnnaMachine(10, 20, 30).Reset();
+        var cpu = new AnnaMachine([10, 20, 30]).Reset();
         var addr = 1u;
-        cpu.ExecuteRType(Instruction.In((ushort)addr++));
-        cpu.ExecuteRType(Instruction.In((ushort)addr++));
-        cpu.ExecuteRType(Instruction.In((ushort)addr));
+
+        var idef = I.Lookup["in"];
+        idef.Execute(cpu, idef.ToInstruction((ushort)addr++));
+        idef.Execute(cpu, idef.ToInstruction((ushort)addr++));
+        idef.Execute(cpu, idef.ToInstruction((ushort)addr));
 
         Assert.AreEqual((Word)10u, cpu.Registers[1]);
         Assert.AreEqual((Word)20u, cpu.Registers[2]);
@@ -118,13 +135,16 @@ public class RTypeInstructionExecutionTests
     [TestMethod]
     public void TestGettingTooManyInputs()
     {
-        var cpu = new AnnaMachine(10).Reset();
-        cpu.ExecuteRType(Instruction.In(1));
+        var cpu = new AnnaMachine([10]).Reset();
+        var idef = I.Lookup["in"];
+        var instruction = idef.ToInstruction(1);
+
+        idef.Execute(cpu, instruction);
 
         Assert.AreEqual((Word)10u, cpu.Registers[1]);
         Assert.ThrowsException<NoInputRemainingException>((Action)(() =>
         {
-            cpu.ExecuteRType(Instruction.In(1));
+            idef.Execute(cpu, idef.ToInstruction(1));
         }));
     }
 
@@ -135,17 +155,18 @@ public class RTypeInstructionExecutionTests
 
         var cpu = new AnnaMachine
         {
-            OutputCallback = (w) => queue.Enqueue(w)
+            OutputCallback = queue.Enqueue
         };
 
         var expected = new Word[] { 10, 20, 30 };
+        var idef = I.Lookup["out"];
 
-        expected.ForEach((Action<Word>)(n =>
+        expected.ForEach(n =>
         {
             cpu.Registers[(uint)(n / 10)] = n;
-            var instruction = I.Lookup["out"].ToInstruction((ushort)(n / 10));
-            cpu.ExecuteRType(instruction);
-        }));
+            var instruction = idef.ToInstruction((ushort)(n / 10));
+            idef.Execute(cpu, instruction);
+        });
 
         Assert.IsTrue(Enumerable.SequenceEqual(expected, queue));
     }

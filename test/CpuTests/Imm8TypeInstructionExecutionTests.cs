@@ -18,9 +18,9 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        // var instruction = I.Lookup["beq"].ToInstruction(1, offset);
-        var instruction = I.Lookup["beq"].ToInstruction(1, offset);
-        var newPc = cpu.ExecuteImm8Type(instruction);
+        InstructionDefinition idef = I.Lookup["beq"];
+        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var newPc = idef.Execute(cpu, instruction);
 
         Assert.AreEqual((uint)expectedPc, newPc);
     }
@@ -36,8 +36,9 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = I.Lookup["bne"].ToInstruction(1, offset);
-        var newPc = cpu.ExecuteImm8Type(instruction);
+        InstructionDefinition idef = I.Lookup["bne"];
+        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var newPc = idef.Execute(cpu, instruction);
 
         Assert.AreEqual((uint)expectedPc, newPc);
     }
@@ -52,8 +53,10 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = I.Lookup["bgt"].ToInstruction(1, offset);
-        var newPc = cpu.ExecuteImm8Type(instruction);
+        InstructionDefinition idef = I.Lookup["bgt"];
+        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var newPc = idef.Execute(cpu, instruction);
+
 
         Assert.AreEqual((uint)expectedPc, newPc);
     }
@@ -70,8 +73,10 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = I.Lookup["bge"].ToInstruction(1, offset);
-        var newPc = cpu.ExecuteImm8Type(instruction);
+        InstructionDefinition idef = I.Lookup["bge"];
+        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var newPc = idef.Execute(cpu, instruction);
+
 
         Assert.AreEqual((uint)expectedPc, newPc);
     }
@@ -86,8 +91,10 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = I.Lookup["blt"].ToInstruction(1, offset);
-        var newPc = cpu.ExecuteImm8Type(instruction);
+        InstructionDefinition idef = I.Lookup["blt"];
+        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var newPc = idef.Execute(cpu, instruction);
+
 
         Assert.AreEqual((uint)expectedPc, newPc);
     }
@@ -104,8 +111,10 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        var instruction = I.Lookup["ble"].ToInstruction(1, offset);
-        var newPc = cpu.ExecuteImm8Type(instruction);
+        InstructionDefinition idef = I.Lookup["ble"];
+        var instruction = idef.ToInstruction(1, 2, (short)offset);
+        var newPc = idef.Execute(cpu, instruction);
+
 
         Assert.AreEqual((uint)expectedPc, newPc);
     }
@@ -118,9 +127,10 @@ public class Imm8TypeInstructionExecutionTests
     {
         var cpu = new AnnaMachine();
         cpu.Registers[1] = orig;
-        var instruction = I.Lookup["lli"].ToInstruction(1, imm8);
 
-        var newPc = cpu.ExecuteImm8Type(instruction);
+        InstructionDefinition idef = I.Lookup["lli"];
+        var instruction = idef.ToInstruction(1, 2, (short)imm8);
+        idef.Execute(instruction);
 
         Assert.AreEqual((Word)expected, cpu.Registers[1]);
     }
@@ -133,9 +143,10 @@ public class Imm8TypeInstructionExecutionTests
     {
         var cpu = new AnnaMachine();
         cpu.Registers[1] = orig;
-        var instruction = I.Lookup["lui"].ToInstruction(1, imm8);
 
-        var newPc = cpu.ExecuteImm8Type(instruction);
+        InstructionDefinition idef = I.Lookup["lui"];
+        var instruction = idef.ToInstruction(1, 2, (short)imm8);
+        idef.Execute(instruction);
 
         Assert.AreEqual((Word)expected, cpu.Registers[1]);
     }

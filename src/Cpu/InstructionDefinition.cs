@@ -27,6 +27,12 @@ public abstract partial class InstructionDefinition
     internal uint NormalizePc(int addr) => (uint)((addr < 0 ? addr + Memory.Length : addr) % Memory.Length);
     internal uint NormalizePc(uint addr) => (uint)(addr % Memory.Length);
 
+    public uint Execute(AnnaMachine cpu, Instruction instr)
+    {
+        Cpu = cpu;
+        return Execute(instr);
+    }
+
     public uint Execute(Instruction instr)
     {
         if (Cpu is null)

@@ -20,18 +20,20 @@ public class TwosComplementTests
         cpu.Registers[2] = (SignedWord)o1;
         cpu.Registers[3] = (SignedWord)o2;
 
-        var instruction = I.Lookup["add"].ToInstruction(1, 2, 3);
-        cpu.ExecuteRType(instruction);
+        var idef = I.Lookup["add"];
+        var instruction = idef.ToInstruction(1, 2, 3);
+        idef.Execute(cpu, instruction);
+
         Assert.AreEqual((SignedWord)result, (SignedWord)cpu.Registers[1]);
     }
 
     [TestMethod]
-    [DataRow(0b0100_000_000_000000, 0)]
-    [DataRow(0b0100_001_010_111011, -5)]
-    [DataRow(0b0100_001_010_000101, 5)]
-    public void TestImm6Values(int bits, int imm6Value)
+    [DataRow(0b0100_000_000_000000u, 0)]
+    [DataRow(0b0100_001_010_111011u, -5)]
+    [DataRow(0b0100_001_010_000101u, 5)]
+    public void TestImm6Values(uint bits, int imm6Value)
     {
-        var instruction = new Instruction((ushort)bits);
+        var instruction = I.Instruction((ushort)bits);
         Assert.AreEqual(imm6Value, instruction.Imm6);
     }
 
@@ -43,8 +45,8 @@ public class TwosComplementTests
     {
         int a_weird_variable = 1;
         Console.WriteLine(a_weird_variable);
-        var cpu = new AnnaMachine();
-        var addr = cpu.NormalizePc((int)baseAddr + offset);
-        Assert.AreEqual((uint)expected, addr);
+        var idef = I.Lookup["add"];
+        var addr = idef.NormalizePc((int)baseAddr + offset);
+        Assert.AreEqual(expected, addr);
     }
 }

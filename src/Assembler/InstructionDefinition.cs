@@ -23,6 +23,12 @@ public abstract partial class InstructionDefinition
         }
     }
 
+    public void Assemble(AnnaAssembler asm, params Operand[] operands)
+    {
+        Asm = asm;
+        Assemble(operands);
+    }
+
     public void Assemble(params Operand[] operands)
     {
         if (Asm is null)

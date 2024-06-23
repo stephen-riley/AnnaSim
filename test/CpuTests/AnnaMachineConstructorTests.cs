@@ -21,7 +21,7 @@ public class AnnaMachineConstructorTests
     {
         var inputs = new int[] { -1, 0, 1, 2, 3 };
 
-        var cpu = new AnnaMachine(inputs).Reset();
+        var cpu = new AnnaMachine().Reset();
 
         Assert.AreEqual(8, cpu.Registers.Length);
         Assert.AreEqual(65536, cpu.Memory.Length);

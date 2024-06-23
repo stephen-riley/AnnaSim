@@ -4,7 +4,7 @@ public partial class HaltDirective : InstructionDefinition
 {
     public HaltDirective() : base()
     {
-        Opcode = -1;
+        Opcode = 0xff;
         Mnemonic = ".halt";
         OperandCount = 0;
         Type = InstructionType.Directive;

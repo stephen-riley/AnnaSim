@@ -6,7 +6,7 @@ public static class I
 {
     public static readonly Dictionary<string, InstructionDefinition> Lookup = [];
 
-    public static readonly int MathOpcode;
+    public static readonly uint MathOpcode;
 
     static I()
     {

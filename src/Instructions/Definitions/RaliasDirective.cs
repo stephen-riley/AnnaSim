@@ -4,7 +4,7 @@ public partial class RaliasDirective : InstructionDefinition
 {
     public RaliasDirective() : base()
     {
-        Opcode = -1;
+        Opcode = 0xff;
         Mnemonic = ".ralias";
         OperandCount = 2;
         Type = InstructionType.Directive;

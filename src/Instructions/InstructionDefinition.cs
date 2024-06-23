@@ -5,7 +5,9 @@ namespace AnnaSim.Instructions;
 
 public abstract partial class InstructionDefinition
 {
-    public int Opcode { get; set; }
+    public const uint DirectiveOpcode = 0xff;
+
+    public uint Opcode { get; set; }
     public string Mnemonic { get; protected set; } = string.Empty;
     public MathOperation MathOp { get; set; } = MathOperation.NA;
     public InstructionType Type { get; set; }
