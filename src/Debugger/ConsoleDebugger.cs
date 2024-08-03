@@ -1,5 +1,6 @@
 using AnnaSim.Cpu;
 using AnnaSim.Cpu.Memory;
+using AnnaSim.Extensions;
 using AnnaSim.Instructions;
 
 namespace AnnaSim.Debugger;
@@ -9,6 +10,7 @@ public class ConsoleDebugger
     private static uint[] origInputs = [];
 
     public static IEnumerable<Word> Run(string fname) => Run(fname, [], []);
+    public static IEnumerable<Word> Run(string fname, string[] inputs) => Run(fname, inputs, []);
 
     public static IEnumerable<Word> Run(string fname, string[] inputs, string[] argv)
     {
@@ -34,7 +36,6 @@ public class ConsoleDebugger
         var readFromConsole = argv.Length == 0;
         var cmdQueue = new Queue<string>(argv);
 
-
         while (true)
         {
             Console.Error.WriteLine();
@@ -44,7 +45,7 @@ public class ConsoleDebugger
             }
 
             var instr = I.Instruction(cpu.Memory[cpu.Pc]);
-            Console.Error.Write($"PC:0x{cpu.Pc:x4} ({instr}) > ");
+            Console.Error.Write($"PC:0x{cpu.Pc:x4} ({instr}) |> ");
 
             string cmd = "";
             if (readFromConsole)
@@ -98,8 +99,15 @@ public class ConsoleDebugger
             }
             else if (cmd.StartsWith("d r"))
             {
-                var register = Convert.ToUInt16(cmd[3..]);
-                registersToDisplay.Add(register);
+                if (cmd[3..] == "*")
+                {
+                    registersToDisplay = Enumerable.Range(0, 8).Select(n => (uint)n).ToList();
+                }
+                else
+                {
+                    var register = Convert.ToUInt16(cmd[3..]);
+                    registersToDisplay.Fluid(l => l.Add(register)).Sort();
+                }
             }
             else if (cmd == "s")
             {
