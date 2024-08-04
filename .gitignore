@@ -3,3 +3,6 @@ bin/
 obj/
 TestResults/
 tmp/
+
+# draw.io temp files
+*.bkp

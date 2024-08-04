@@ -10,11 +10,11 @@
 // Console.WriteLine();
 // Console.WriteLine(reason);
 
-var output = ConsoleDebugger.Run("../test/fixtures/multiplication.asm", ["6", "9"]);
-// var output = ConsoleDebugger.Run("../test/fixtures/multiplication.asm", ["6", "9"], ["d r4", "c", "q"]);
+var debugger = new Vt100ConsoleDebugger("../test/fixtures/print_cstring.asm", [], args);
+debugger.Run();
 
 Console.WriteLine("\n\noutput:");
-foreach (var w in output)
+foreach (var w in debugger.Outputs)
 {
     Console.WriteLine(w);
 }
