@@ -35,7 +35,7 @@ public class Vt100ConsoleDebugger
             OutputCallback = (w) =>
             {
                 Outputs.Add(w);
-                TerminalWrite($"out: {w}");
+                TerminalWriteLine($"out: {w}");
             }
         };
     }
@@ -60,8 +60,7 @@ public class Vt100ConsoleDebugger
             {
                 cmd = cmd.Length > 0 ? cmd : "n";
                 history.Add(cmd);
-                TerminalWrite($"{PromptString(instr)} {cmd}");
-                TerminalWrite("");
+                TerminalWriteLine($"{PromptString(instr)} {cmd}");
             }
             else
             {
@@ -105,8 +104,8 @@ public class Vt100ConsoleDebugger
 
             switch (Status)
             {
-                case HaltReason.CyclesExceeded: TerminalWrite("Allowed cycles exceeded"); break;
-                case HaltReason.Halt: TerminalWrite($"Halted, PC: 0x{Cpu.Pc:x4}"); break;
+                case HaltReason.CyclesExceeded: TerminalWrite("> Allowed cycles exceeded"); break;
+                case HaltReason.Halt: TerminalWrite($"> Halted, PC: 0x{Cpu.Pc:x4}"); break;
                 case HaltReason.Breakpoint: TerminalWrite($"Breakpoint, PC: 0x{Cpu.Pc:x4}"); break;
             }
         }
@@ -167,6 +166,21 @@ public class Vt100ConsoleDebugger
         }
     }
 
+    private void RenderOutputs()
+    {
+        Console.SetCursorPosition(45, 22);
+        Console.Write("Outputs");
+        Console.SetCursorPosition(49, 23);
+        if (Outputs.Count > 0)
+        {
+            Console.Write(string.Join(", ", Outputs));
+        }
+        else
+        {
+            Console.Write("(none)");
+        }
+    }
+
     private void RenderTerminal()
     {
         const int terminalHeight = 10;
@@ -196,6 +210,7 @@ public class Vt100ConsoleDebugger
         RenderRegisters();
         RenderWatches();
         RenderTerminal();
+        RenderOutputs();
         RenderPrompt(instr);
         Console.CursorVisible = true;
     }

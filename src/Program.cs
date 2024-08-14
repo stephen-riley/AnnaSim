@@ -10,11 +10,5 @@
 // Console.WriteLine();
 // Console.WriteLine(reason);
 
-var debugger = new Vt100ConsoleDebugger("../test/fixtures/print_cstring.asm", [], args);
+var debugger = new Vt100ConsoleDebugger("../test/fixtures/fibonacci_all.asm", ["5"], args);
 debugger.Run();
-
-Console.WriteLine("\n\noutput:");
-foreach (var w in debugger.Outputs)
-{
-    Console.WriteLine(w);
-}
