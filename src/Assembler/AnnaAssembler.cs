@@ -3,6 +3,7 @@ using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
+using Microsoft.VisualBasic;
 
 namespace AnnaSim.Assembler;
 
@@ -14,9 +15,18 @@ public partial class AnnaAssembler
 
     internal readonly Dictionary<string, string> registerAliases = [];
 
+    internal readonly Dictionary<uint, int> lineMap = [];
+
     public MemoryFile MemoryImage { get; internal set; }
 
     internal uint Addr = 0u;
+
+    public PdbInfo GetPdb() => new PdbInfo()
+    {
+        Labels = labels,
+        RegisterAliases = registerAliases,
+        LineAddrMap = lineMap.Select(kvp => KeyValuePair.Create(kvp.Value, kvp.Key)).ToDictionary(),
+    };
 
     public AnnaAssembler(int memorySize = 65536)
     {
@@ -39,8 +49,9 @@ public partial class AnnaAssembler
 
     public void Assemble(IEnumerable<string> lines)
     {
-        foreach (var line in lines.Select(l => Regex.Replace(l, @"#.*", "")))
+        foreach (var (index, line) in lines.SelectWithIndex(1, l => Regex.Replace(l, @"#.*", "")))
         {
+            lineMap[Addr] = index;
             AssembleLine(line);
         }
 
@@ -72,6 +83,10 @@ public partial class AnnaAssembler
             {
                 def.Asm = this;
                 def.Assemble(pieces[(idx + 1)..].Select(s => ParseOperand(s)).ToArray());
+            }
+            else
+            {
+                throw new AssemblerParseException(string.Join(' ', pieces));
             }
         }
         catch (Exception e)

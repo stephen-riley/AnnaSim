@@ -48,9 +48,12 @@ public class Vt100ConsoleDebugger
         Console.Clear();
         DisplayBanner(fname);
 
+        Cpu.Reset();
+        Cpu.Status = CpuStatus.Running;
+
         while (true)
         {
-            var instr = I.Instruction(Cpu.Memory[Cpu.Pc]);
+            var instr = I.Instruction(Cpu.MemoryAtPc);
             RenderScreen(instr);
 
             cmdQueue.TryDequeue(out string? cmd);
@@ -98,6 +101,34 @@ public class Vt100ConsoleDebugger
                 case 'n':
                     Status = Cpu.ExecuteSingleInstruction(); break;
                 case 's': TerminalWriteLine($"Processor status: {Cpu.Status}"); break;
+                case 'b' when cmd.Length > 2:
+                    uint breakAddr = 0;
+                    var descriptor = "";
+
+                    if (int.TryParse(cmd[2..], out var lineNo))
+                    {
+                        breakAddr = Cpu.Pdb.LineAddrMap[lineNo];
+                        descriptor = $"line {lineNo}";
+                    }
+                    else
+                    {
+                        breakAddr = Cpu.Pdb.Labels[cmd[2..]];
+                        descriptor = $"label {cmd[2..]}";
+                    }
+
+                    if (Cpu.Memory.Get32bits(breakAddr).IsBreakpoint)
+                    {
+                        Cpu.Memory.ClearBreakpoint(breakAddr);
+                        TerminalWriteLine($"Cleared breakpoint at {descriptor} (addr 0x{breakAddr:x4})");
+                    }
+                    else
+                    {
+                        Cpu.Memory.SetBreakpoint(breakAddr);
+                        TerminalWriteLine($"Set breakpoint at {descriptor} (addr 0x{breakAddr:x4})");
+                    }
+
+                    break;
+
                 case 'h': RenderHelp(); break;
                 default: TerminalWriteLine($"invalid command {cmd}"); break;
             }
@@ -273,6 +304,7 @@ public class Vt100ConsoleDebugger
             }
             else if (keyInfo.Key == ConsoleKey.Enter)
             {
+                Console.CursorVisible = false;
                 return cmd;
             }
             else
@@ -285,12 +317,14 @@ public class Vt100ConsoleDebugger
     private void RenderHelp()
     {
         TerminalWrite("h          Help");
-        TerminalWrite("q          Quit");
-        TerminalWrite("n          execute Next instruction");
+        TerminalWrite("b [line]   set or clear Breakpoint at addr");
+        TerminalWrite("b [sym]    set Breakpoint at symbol");
         TerminalWrite("c          Continue execute until halted");
         TerminalWrite("m          view Memory at address");
+        TerminalWrite("n          execute Next instruction");
+        TerminalWrite("q          Quit");
         TerminalWrite("rN         view Register N");
-        TerminalWrite("w address  Watch memory at address");
+        TerminalWrite("w [addr]   Watch memory at addr");
         TerminalWrite();
     }
 

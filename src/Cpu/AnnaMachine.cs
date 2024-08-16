@@ -8,12 +8,15 @@ public class AnnaMachine
 {
     public Queue<Word> Inputs { get; internal set; } = [];
     public MemoryFile Memory { get; internal set; } = new();
+    public PdbInfo Pdb { get; internal set; } = new();
     public RegisterFile Registers { get; internal set; } = new();
     public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
     public CpuStatus Status { get; internal set; } = CpuStatus.Initialized;
     public string CurrentFile { get; internal set; } = "";
 
     public uint Pc { get; internal set; } = 0;
+    public Word MemoryAtPc => Memory[Pc];
+    public bool IsPcBreakpoint => Memory.Get32bits(Pc).IsBreakpoint;
 
     public static uint ParseInputString(string o)
     {
@@ -38,6 +41,7 @@ public class AnnaMachine
         CurrentFile = filename;
         var asm = new AnnaAssembler(filename);
         Memory = asm.MemoryImage;
+        Pdb = asm.GetPdb();
     }
 
     public AnnaMachine(string filename, params string[] inputs)
