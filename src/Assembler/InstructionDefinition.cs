@@ -23,13 +23,13 @@ public abstract partial class InstructionDefinition
         }
     }
 
-    public void Assemble(AnnaAssembler asm, params Operand[] operands)
+    public void Assemble(AnnaAssembler asm, Operand[] operands, string? label = null)
     {
         Asm = asm;
-        Assemble(operands);
+        Assemble(operands, label);
     }
 
-    public void Assemble(params Operand[] operands)
+    public void Assemble(Operand[] operands, string? label = null)
     {
         if (Asm is null)
         {
@@ -37,10 +37,10 @@ public abstract partial class InstructionDefinition
         }
 
         ValidateOperands(operands);
-        AssembleImpl(operands);
+        AssembleImpl(operands, label);
     }
 
-    protected abstract void AssembleImpl(params Operand[] operands);
+    protected abstract void AssembleImpl(Operand[] operands, string? label);
 
     public Instruction ToInstruction(uint? rd = null, uint? rs1 = null, uint? rs2 = null, int? imm6 = null, int? imm8 = null)
     {
@@ -54,5 +54,5 @@ public abstract partial class InstructionDefinition
         return ToInstruction([.. operands]);
     }
 
-    public abstract Instruction ToInstruction(params Operand[] operands);
+    public abstract Instruction ToInstruction(Operand[] operands);
 }

@@ -79,7 +79,7 @@ namespace AnnaSim.Instructions.Definitions;
 
 public partial class $name
 {
-    protected override void AssembleImpl(params Operand[] operands)
+    protected override void AssembleImpl(Operand[] operands, string? label)
     {
         throw new NotImplementedException(\$"$name.{nameof(Assemble)}");
     }

@@ -81,16 +81,18 @@ public partial class AnnaAssembler
         try
         {
             int idx = 0;
+            string? label = null;
             if (pieces[0].EndsWith(':'))
             {
-                labels[pieces[0][0..^1]] = Addr;
+                label = pieces[0][0..^1];
+                labels[label] = Addr;
                 idx++;
             }
 
             if (ISA.Lookup.TryGetValue(pieces[idx], out var def))
             {
                 def.Asm = this;
-                def.Assemble(pieces[(idx + 1)..].Select(s => ParseOperand(s)).ToArray());
+                def.Assemble(pieces[(idx + 1)..].Select(s => ParseOperand(s)).ToArray(), label);
             }
             else
             {

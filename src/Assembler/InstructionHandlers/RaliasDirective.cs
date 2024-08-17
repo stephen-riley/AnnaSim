@@ -5,7 +5,7 @@ namespace AnnaSim.Instructions.Definitions;
 
 public partial class RaliasDirective
 {
-    protected override void AssembleImpl(params Operand[] operands)
+    protected override void AssembleImpl(Operand[] operands, string? label)
     {
         if (operands[0].IsStandardRegisterName() && ((string)operands[1]).StartsWith('r'))
         {
@@ -17,6 +17,6 @@ public partial class RaliasDirective
         }
     }
 
-    public override Instruction ToInstruction(params Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
+    public override Instruction ToInstruction(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
 }
 

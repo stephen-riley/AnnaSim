@@ -2,11 +2,16 @@ using AnnaSim.Assembler;
 
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class HaltDirective
+public partial class DefDirective
 {
     protected override void AssembleImpl(Operand[] operands, string? label)
     {
-        MemoryImage[Addr++] = ISA.Lookup["out"].ToInstruction(rd: 0);
+        if (label is null)
+        {
+            throw new InvalidOperationException($".def must have a label");
+        }
+
+        Asm.labels[label] = operands[0].AsUInt();
     }
 
     public override Instruction ToInstruction(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");

@@ -4,7 +4,7 @@ namespace AnnaSim.Instructions.Definitions;
 
 public partial class FillDirective
 {
-    protected override void AssembleImpl(params Operand[] operands)
+    protected override void AssembleImpl(Operand[] operands, string? label)
     {
         foreach (var operand in operands)
         {
@@ -12,6 +12,6 @@ public partial class FillDirective
         }
     }
 
-    public override Instruction ToInstruction(params Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
+    public override Instruction ToInstruction(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
 }
 
