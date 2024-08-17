@@ -9,6 +9,7 @@ public enum OperandType
     SignedInt,
     Label,
     Register,
+    String,
 }
 
 public class Operand
@@ -33,6 +34,11 @@ public class Operand
     public Operand(string s, OperandType t)
     {
         if (t is OperandType.Label or OperandType.Register)
+        {
+            Str = s;
+            Type = t;
+        }
+        else if (t is OperandType.String)
         {
             Str = s;
             Type = t;

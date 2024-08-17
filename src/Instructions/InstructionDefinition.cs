@@ -19,7 +19,7 @@ public abstract partial class InstructionDefinition
 
     public void ValidateOperands(params Operand[] operands)
     {
-        var fillOkay = OperandCount == -1 && operands.Length > 1;
+        var fillOkay = OperandCount == -1 && operands.Length >= 1;
         var mismatch = operands.Length != OperandCount;
 
         if (!fillOkay && mismatch)

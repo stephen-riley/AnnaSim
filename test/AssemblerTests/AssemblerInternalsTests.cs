@@ -24,9 +24,26 @@ public class AssemblerInternalsTests
     [TestMethod]
     [DataRow(".halt", new string[0], new uint[] { 0x3000 }, 1)]
     [DataRow(".fill", new string[] { "1", "0b10", "0x03", "&label" }, new uint[] { 1, 2, 3, 0xffff }, 4)]
+    [DataRow(".fill", new string[] { "1" }, new uint[] { 1 }, 1)]
     [DataRow(".ralias", new string[] { "r7", "rSP" }, new uint[] { 0 }, 0)]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Attributes have weird rules about arrays as parameters")]
     public void TestGoodDirectiveHandler(string instruction, string[] operandStrings, uint[] memImage, int expectedPtr)
+    {
+        var asm = new AnnaAssembler();
+        var memImageWords = memImage.Select(ui => (Word)ui).ToList();
+
+        var idef = I.Lookup[instruction];
+        var operands = operandStrings.Select(s => asm.ParseOperand(s)).ToArray();
+        idef.Assemble(asm, operands);
+
+        Assert.AreEqual(-1, asm.MemoryImage.Compare(memImageWords));
+        Assert.AreEqual((uint)expectedPtr, asm.Addr);
+    }
+
+    [TestMethod]
+    [DataRow(".cstr", new string[] { "\"ABC\"" }, new uint[] { 0x41, 0x42, 0x43, 0x00 }, 4)]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Attributes have weird rules about arrays as parameters")]
+    public void TestCstrDirectiveHandler(string instruction, string[] operandStrings, uint[] memImage, int expectedPtr)
     {
         var asm = new AnnaAssembler();
         var memImageWords = memImage.Select(ui => (Word)ui).ToList();

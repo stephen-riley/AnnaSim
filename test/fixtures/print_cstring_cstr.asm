@@ -1,4 +1,4 @@
-# Print cstrings using .fill ASCII values
+# Print cstrings using .cstr directive
 
 # Register usage:
 # r1: current char addr
@@ -20,4 +20,4 @@ loop:   lw      r3 r1 0
         
 done:   .halt
 
-msg:    .fill   72 101 108 108 111 32 119 111 114 108 100 33 0
+msg:    .cstr   "Hello, world!"

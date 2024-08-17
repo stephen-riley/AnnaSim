@@ -30,6 +30,7 @@ my %opcodes = (
     ble => 15,
     '.halt' => -1,
     '.fill' => -1,
+    '.cstr' => -1,
     '.ralias' => -1,    
 );
 
@@ -127,4 +128,5 @@ or	_Math	Or	R	3
 not	_Math	Not	R	2
 .halt	_Halt	_Unused	Directive	0
 .fill	_Fill	_Unused	Directive	-1
+.cstr	_Cstr	_Unused	Directive	-1
 .ralias	_Ralias	_Unused	Directive	2

@@ -3,7 +3,6 @@ using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
-using Microsoft.VisualBasic;
 
 namespace AnnaSim.Assembler;
 
@@ -20,13 +19,6 @@ public partial class AnnaAssembler
     public MemoryFile MemoryImage { get; internal set; }
 
     internal uint Addr = 0u;
-
-    public PdbInfo GetPdb() => new PdbInfo()
-    {
-        Labels = labels,
-        RegisterAliases = registerAliases,
-        LineAddrMap = lineMap.Select(kvp => KeyValuePair.Create(kvp.Value, kvp.Key)).ToDictionary(),
-    };
 
     public AnnaAssembler(int memorySize = 65536)
     {
@@ -60,12 +52,28 @@ public partial class AnnaAssembler
 
     internal void AssembleLine(string line)
     {
-        var pieces = new Regex(@"\s+").Split(line).Where(s => s != "").ToArray();
-
-        if (pieces.Length > 0)
+        var rawPieces = new Regex(@"\s+").Split(line).Where(s => s != "").ToArray();
+        if (rawPieces.Length == 0)
         {
-            AssembleLine(pieces);
+            return;
         }
+
+        var pieces = new List<string>();
+
+        var i = 0;
+        do
+        {
+            if (rawPieces[i].StartsWith('"'))
+            {
+                pieces.Add(string.Join(" ", rawPieces[i..]));
+                break;
+            }
+
+            pieces.Add(rawPieces[i]);
+            i++;
+        } while (i < rawPieces.Length);
+
+        AssembleLine([.. pieces]);
     }
 
     internal void AssembleLine(string[] pieces)
@@ -154,6 +162,10 @@ public partial class AnnaAssembler
         {
             return Register(s);
         }
+        else if (s.StartsWith('"'))
+        {
+            return new Operand(s, OperandType.String);
+        }
 
         int negative = s.StartsWith('-') ? 1 : 0;
         int radix = s[negative..].StartsWith("0x") ? 16 : s[negative..].StartsWith("0b") ? 2 : 10;
@@ -179,4 +191,11 @@ public partial class AnnaAssembler
             throw new InvalidCastException($"Operand is of type {o.Type}, requested Register");
         }
     }
+
+    public PdbInfo GetPdb() => new()
+    {
+        Labels = labels,
+        RegisterAliases = registerAliases,
+        LineAddrMap = lineMap.Select(kvp => KeyValuePair.Create(kvp.Value, kvp.Key)).ToDictionary(),
+    };
 }
