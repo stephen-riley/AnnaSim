@@ -288,7 +288,7 @@ public class Vt100ConsoleDebugger
 
     private void RenderTerminal()
     {
-        const int terminalHeight = 10;
+        const int terminalHeight = 15;
 
         List<string> terminalLines;
 
@@ -298,7 +298,7 @@ public class Vt100ConsoleDebugger
         }
         else
         {
-            terminalLines = terminalBuffer.TakeLast(10).ToList();
+            terminalLines = terminalBuffer.TakeLast(terminalHeight).ToList();
         }
 
         for (var idx = 0; idx < terminalHeight; idx++)
@@ -323,19 +323,20 @@ public class Vt100ConsoleDebugger
 
     private void DisplayBanner(string fname)
     {
-        terminalBuffer.Add("AnnaSim Debugger");
+        TerminalWrite("AnnaSim Debugger");
         if (fname != string.Empty)
         {
-            terminalBuffer.Add($"  running {fname}");
+            TerminalWrite($"  running {fname}");
         }
-        terminalBuffer.Add("");
+        TerminalWrite("");
+        TerminalWriteLine("h to display help.");
     }
 
     private string PromptString(Instruction? instr) => $"PC:0x{Cpu.Pc:x4} ({instr?.ToString() ?? ""}) |>";
 
     private void RenderPrompt(Instruction? instr, bool colorful = true)
     {
-        Console.SetCursorPosition(1, 39);
+        Console.SetCursorPosition(1, 44);
 
         Console.CursorVisible = false;
 
@@ -395,6 +396,8 @@ public class Vt100ConsoleDebugger
         TerminalWrite("b [line]   set or clear Breakpoint at addr");
         TerminalWrite("b [sym]    set Breakpoint at symbol");
         TerminalWrite("c          Continue execute until halted");
+        TerminalWrite("i [inputs] add Inputs to input queue");
+        TerminalWrite("l [file]   Load .asm or .mem file");
         TerminalWrite("m          view Memory at address");
         TerminalWrite("n          execute Next instruction");
         TerminalWrite("q          Quit");
