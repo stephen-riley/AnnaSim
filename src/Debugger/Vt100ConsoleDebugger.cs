@@ -96,6 +96,7 @@ public class Vt100ConsoleDebugger
                     break;
                 case 'R':
                     Cpu.Reset(origInputs);
+                    Outputs.Clear();
                     Status = HaltReason.Running;
                     break;
                 case 'n':
@@ -209,6 +210,7 @@ public class Vt100ConsoleDebugger
         else
         {
             Console.Write("(none)");
+            ConsoleClearEol();
         }
     }
 

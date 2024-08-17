@@ -11,30 +11,17 @@ public class AnnaMachine
     public PdbInfo Pdb { get; internal set; } = new();
     public RegisterFile Registers { get; internal set; } = new();
     public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
-    public CpuStatus Status { get; internal set; } = CpuStatus.Initialized;
+    public CpuStatus Status { get; internal set; } = CpuStatus.Halted;
     public string CurrentFile { get; internal set; } = "";
 
     public uint Pc { get; internal set; } = 0;
     public Word MemoryAtPc => Memory[Pc];
     public bool IsPcBreakpoint => Memory.Get32bits(Pc).IsBreakpoint;
 
-    public static uint ParseInputString(string o)
+    public AnnaMachine()
     {
-        if (o.StartsWith("0b"))
-        {
-            return Convert.ToUInt32(o[2..], 2);
-        }
-        else if (o.StartsWith("0x"))
-        {
-            return Convert.ToUInt32(o[2..], 16);
-        }
-        else
-        {
-            return Convert.ToUInt32(o);
-        }
+        Reset();
     }
-
-    public AnnaMachine() { }
 
     public AnnaMachine(string filename) : this()
     {
@@ -99,7 +86,7 @@ public class AnnaMachine
         }
 
         Pc = 0;
-        Status = CpuStatus.Initialized;
+        Status = CpuStatus.Halted;
         return this;
     }
 
@@ -120,37 +107,30 @@ public class AnnaMachine
     public HaltReason ExecuteSingleInstruction()
     {
         var status = Execute(1);
+
         return status switch
         {
-            HaltReason.CyclesExceeded => HaltReason.DebuggerStep,
+            HaltReason.CyclesExceeded => HaltReason.DebuggerSingleStep,
             _ => status
         };
     }
 
     public HaltReason Execute(int maxCycles = 10_000)
     {
-        if (Status == CpuStatus.Halted)
-        {
-            return HaltReason.Halt;
-        }
-        else if (Status == CpuStatus.Initialized)
-        {
-            Reset();
-            Status = CpuStatus.Running;
-        }
-
         while (maxCycles > 0)
         {
             // Fetch and Decode
             var mw = Memory.Get32bits(Pc);
-            if (mw.IsBreakpoint)
+            if (mw.IsBreakpoint && Status is not CpuStatus.Paused)
             {
+                Status = CpuStatus.Paused;
                 return HaltReason.Breakpoint;
             }
 
+            Status = CpuStatus.Running;
+
             var instruction = I.Instruction((Word)mw);
 
-            // Execute (store is handled here)
             if (instruction.IsHalt)
             {
                 break;
@@ -168,9 +148,26 @@ public class AnnaMachine
 
         if (maxCycles == 0)
         {
+            Status = CpuStatus.Paused;
             return HaltReason.CyclesExceeded;
         }
 
         return HaltReason.Halt;
+    }
+
+    public static uint ParseInputString(string o)
+    {
+        if (o.StartsWith("0b"))
+        {
+            return Convert.ToUInt32(o[2..], 2);
+        }
+        else if (o.StartsWith("0x"))
+        {
+            return Convert.ToUInt32(o[2..], 16);
+        }
+        else
+        {
+            return Convert.ToUInt32(o);
+        }
     }
 }

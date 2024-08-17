@@ -46,7 +46,7 @@ public class MemoryFile
 
     public void SetBreakpoint(uint addr) => Set32bits(addr, (uint)Get32bits(addr) | 0x80000000);
 
-    public void ClearBreakpoint(uint addr) => Set32bits(addr, (uint)Get32bits(addr) | 0x7fffffff);
+    public void ClearBreakpoint(uint addr) => Set32bits(addr, (uint)Get32bits(addr) & 0x7fffffff);
 
     public void SetOrClearBreakpoint(uint addr)
     {
