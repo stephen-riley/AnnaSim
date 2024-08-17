@@ -35,7 +35,7 @@ public class AssemblerTests
         var asm = new AnnaAssembler();
 
         asm.Assemble(src);
-        var i = Enumerable.Range(0, 11).Select(addr => I.Instruction(asm.MemoryImage[(uint)addr]).ToString());
+        var i = Enumerable.Range(0, 11).Select(addr => ISA.Instruction(asm.MemoryImage[(uint)addr]).ToString());
 
         Assert.AreEqual(-1, asm.MemoryImage.Compare(assembled));
     }

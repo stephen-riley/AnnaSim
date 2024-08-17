@@ -55,7 +55,7 @@ public class Vt100ConsoleDebugger
 
         while (true)
         {
-            var instr = I.Instruction(Cpu.MemoryAtPc);
+            var instr = ISA.Instruction(Cpu.MemoryAtPc);
             RenderScreen(instr);
 
             cmdQueue.TryDequeue(out string? cmd);

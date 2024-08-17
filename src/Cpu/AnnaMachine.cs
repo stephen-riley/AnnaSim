@@ -129,7 +129,7 @@ public class AnnaMachine
 
             Status = CpuStatus.Running;
 
-            var instruction = I.Instruction((Word)mw);
+            var instruction = ISA.Instruction((Word)mw);
 
             if (instruction.IsHalt)
             {

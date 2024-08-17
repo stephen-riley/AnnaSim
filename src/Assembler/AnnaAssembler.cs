@@ -87,7 +87,7 @@ public partial class AnnaAssembler
                 idx++;
             }
 
-            if (I.Lookup.TryGetValue(pieces[idx], out var def))
+            if (ISA.Lookup.TryGetValue(pieces[idx], out var def))
             {
                 def.Asm = this;
                 def.Assemble(pieces[(idx + 1)..].Select(s => ParseOperand(s)).ToArray());
@@ -110,7 +110,7 @@ public partial class AnnaAssembler
             if (labels.TryGetValue(label, out var targetAddr))
             {
                 var wordAtAddr = MemoryImage[addr];
-                var def = I.GetIdef(wordAtAddr);
+                var def = ISA.GetIdef(wordAtAddr);
 
                 if (def.IsBranch)
                 {

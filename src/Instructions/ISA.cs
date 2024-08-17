@@ -2,13 +2,13 @@ using System.Data;
 
 namespace AnnaSim.Instructions;
 
-public static class I
+public static class ISA
 {
     public static readonly Dictionary<string, InstructionDefinition> Lookup = [];
 
     public static readonly uint MathOpcode;
 
-    static I()
+    static ISA()
     {
         var classes = typeof(InstructionDefinition)
             .Assembly.GetTypes()

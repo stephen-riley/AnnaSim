@@ -18,7 +18,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        InstructionDefinition idef = I.Lookup["beq"];
+        InstructionDefinition idef = ISA.Lookup["beq"];
         var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
@@ -36,7 +36,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        InstructionDefinition idef = I.Lookup["bne"];
+        InstructionDefinition idef = ISA.Lookup["bne"];
         var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
@@ -53,7 +53,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        InstructionDefinition idef = I.Lookup["bgt"];
+        InstructionDefinition idef = ISA.Lookup["bgt"];
         var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
@@ -73,7 +73,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        InstructionDefinition idef = I.Lookup["bge"];
+        InstructionDefinition idef = ISA.Lookup["bge"];
         var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
@@ -91,7 +91,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        InstructionDefinition idef = I.Lookup["blt"];
+        InstructionDefinition idef = ISA.Lookup["blt"];
         var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
@@ -111,7 +111,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        InstructionDefinition idef = I.Lookup["ble"];
+        InstructionDefinition idef = ISA.Lookup["ble"];
         var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 
@@ -128,7 +128,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = orig;
 
-        InstructionDefinition idef = I.Lookup["lli"];
+        InstructionDefinition idef = ISA.Lookup["lli"];
         var instruction = idef.ToInstruction(rd: 1, imm8: (short)imm8);
         idef.Execute(cpu, instruction);
 
@@ -144,7 +144,7 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = orig;
 
-        InstructionDefinition idef = I.Lookup["lui"];
+        InstructionDefinition idef = ISA.Lookup["lui"];
         var instruction = idef.ToInstruction(rd: 1, imm8: (short)imm8);
         idef.Execute(cpu, instruction);
 

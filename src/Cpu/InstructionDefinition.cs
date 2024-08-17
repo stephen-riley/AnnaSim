@@ -18,7 +18,7 @@ public abstract partial class InstructionDefinition
 
     public static void SetCpu(AnnaMachine cpu)
     {
-        foreach (var idef in I.Lookup.Values)
+        foreach (var idef in ISA.Lookup.Values)
         {
             idef.Cpu = cpu;
         }

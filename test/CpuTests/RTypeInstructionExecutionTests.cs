@@ -17,7 +17,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[3] = 20;
 
         // add r1, r2, r3
-        var idef = I.Lookup["add"];
+        var idef = ISA.Lookup["add"];
         var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
         idef.Execute(cpu, instruction);
 
@@ -32,7 +32,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[3] = 15;
 
         // sub r1, r2, r3
-        var idef = I.Lookup["sub"];
+        var idef = ISA.Lookup["sub"];
         var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
         idef.Execute(cpu, instruction);
 
@@ -47,7 +47,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[3] = 0xcafe;
 
         // and r1, r2, r3
-        var idef = I.Lookup["and"];
+        var idef = ISA.Lookup["and"];
         var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
         idef.Execute(cpu, instruction);
 
@@ -62,7 +62,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[3] = 0x00ff;
 
         // or r1, r2, r3
-        var idef = I.Lookup["or"];
+        var idef = ISA.Lookup["or"];
         var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
         idef.Execute(cpu, instruction);
 
@@ -76,7 +76,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[2] = 0xaaaa;
 
         // not r1, r2
-        var idef = I.Lookup["not"];
+        var idef = ISA.Lookup["not"];
         var instruction = idef.ToInstruction(rd: 1, rs1: 2);
         idef.Execute(cpu, instruction);
 
@@ -93,7 +93,7 @@ public class RTypeInstructionExecutionTests
 
         cpu.Registers[rd] = 20;
 
-        var idef = I.Lookup["jalr"];
+        var idef = ISA.Lookup["jalr"];
         var instruction = idef.ToInstruction(rd: rd, rs1: rs1);
         var newPc = idef.Execute(cpu, instruction);
 
@@ -109,7 +109,7 @@ public class RTypeInstructionExecutionTests
         ushort rd = 1;
         cpu.Registers[rd] = 20;
 
-        var idef = I.Lookup["jalr"];
+        var idef = ISA.Lookup["jalr"];
         var instruction = idef.ToInstruction(rd: rd);
         var newPc = idef.Execute(cpu, instruction);
 
@@ -122,7 +122,7 @@ public class RTypeInstructionExecutionTests
         var cpu = new AnnaMachine([10, 20, 30]).Reset();
         var addr = 1u;
 
-        var idef = I.Lookup["in"];
+        var idef = ISA.Lookup["in"];
         idef.Execute(cpu, idef.ToInstruction(rd: (ushort)addr++));
         idef.Execute(cpu, idef.ToInstruction(rd: (ushort)addr++));
         idef.Execute(cpu, idef.ToInstruction(rd: (ushort)addr));
@@ -136,7 +136,7 @@ public class RTypeInstructionExecutionTests
     public void TestGettingTooManyInputs()
     {
         var cpu = new AnnaMachine([10]).Reset();
-        var idef = I.Lookup["in"];
+        var idef = ISA.Lookup["in"];
         var instruction = idef.ToInstruction(rd: 1);
 
         idef.Execute(cpu, instruction);
@@ -159,7 +159,7 @@ public class RTypeInstructionExecutionTests
         };
 
         var expected = new Word[] { 10, 20, 30 };
-        var idef = I.Lookup["out"];
+        var idef = ISA.Lookup["out"];
 
         expected.ForEach(n =>
         {

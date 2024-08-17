@@ -78,7 +78,7 @@ public class Instruction
     public uint Rs2 => RType ? (uint)((Bits >> 3) & 0b111) : throw new InvalidInstructionFieldAccessException(Idef, nameof(Rs2), "Instruction is not RType");
     public int Imm6 => Imm6Type ? ((int)Bits & 0b111111).SignExtend(6) : throw new InvalidInstructionFieldAccessException(Idef, nameof(Imm6), "Instruction is not I6Type");
     public int Imm8 => Imm8Type ? ((int)Bits & 0b11111111).SignExtend(8) : throw new InvalidInstructionFieldAccessException(Idef, nameof(Imm8), "Instruction is not I8Type");
-    public MathOperation FuncCode => RType && Opcode == I.MathOpcode ? (MathOperation)((ushort)Bits & 0b111) : throw new InvalidInstructionFieldAccessException(Idef, nameof(FuncCode), "Instruction is not RType or not a math operation");
+    public MathOperation FuncCode => RType && Opcode == ISA.MathOpcode ? (MathOperation)((ushort)Bits & 0b111) : throw new InvalidInstructionFieldAccessException(Idef, nameof(FuncCode), "Instruction is not RType or not a math operation");
 
     public bool IsHalt => Bits == 0xF000;
 

@@ -20,7 +20,7 @@ public class TwosComplementTests
         cpu.Registers[2] = (SignedWord)o1;
         cpu.Registers[3] = (SignedWord)o2;
 
-        var idef = I.Lookup["add"];
+        var idef = ISA.Lookup["add"];
         var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
         idef.Execute(cpu, instruction);
 
@@ -33,7 +33,7 @@ public class TwosComplementTests
     [DataRow(0b0100_001_010_000101u, 5)]
     public void TestImm6Values(uint bits, int imm6Value)
     {
-        var instruction = I.Instruction((ushort)bits);
+        var instruction = ISA.Instruction((ushort)bits);
         Assert.AreEqual(imm6Value, instruction.Imm6);
     }
 
@@ -44,7 +44,7 @@ public class TwosComplementTests
     public void TestNormalizePc(uint baseAddr, int offset, uint expected)
     {
         // grab a random idef
-        var idef = I.Lookup["add"];
+        var idef = ISA.Lookup["add"];
         var cpu = new AnnaMachine();
         idef.Cpu = cpu;
 

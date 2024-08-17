@@ -17,7 +17,7 @@ public abstract partial class InstructionDefinition
 
     public static void SetAssembler(AnnaAssembler asm)
     {
-        foreach (var idef in I.Lookup.Values)
+        foreach (var idef in ISA.Lookup.Values)
         {
             idef.Asm = asm;
         }

@@ -44,7 +44,7 @@ public class ConsoleDebugger
                 Console.Error.WriteLine(string.Join(" ", registersToDisplay.Select(r => $"r{r}:{cpu.Registers[r]:x4)}")));
             }
 
-            var instr = I.Instruction(cpu.Memory[cpu.Pc]);
+            var instr = ISA.Instruction(cpu.Memory[cpu.Pc]);
             Console.Error.Write($"PC:0x{cpu.Pc:x4} ({instr}) |> ");
 
             string cmd = "";

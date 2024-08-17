@@ -16,7 +16,7 @@ public class Imm6TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[2] = (ushort)op1;
 
-        InstructionDefinition idef = I.Lookup["addi"];
+        InstructionDefinition idef = ISA.Lookup["addi"];
         var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: (short)imm6);
         idef.Execute(cpu, instruction);
 
@@ -34,7 +34,7 @@ public class Imm6TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[2] = (ushort)op1;
 
-        InstructionDefinition idef = I.Lookup["shf"];
+        InstructionDefinition idef = ISA.Lookup["shf"];
         var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: (short)imm6);
         idef.Execute(cpu, instruction);
 
@@ -52,7 +52,7 @@ public class Imm6TypeInstructionExecutionTests
         cpu.Memory.Initialize(0u, Enumerable.Range(0, cpu.Memory.Length).Reverse().Select(n => (Word)(uint)n).ToArray());
         cpu.Registers[2] = (uint)addrBase;
 
-        InstructionDefinition idef = I.Lookup["lw"];
+        InstructionDefinition idef = ISA.Lookup["lw"];
         var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: (short)offset);
         idef.Execute(cpu, instruction);
 
@@ -67,7 +67,7 @@ public class Imm6TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[2] = (uint)start;
 
-        InstructionDefinition idef = I.Lookup["shf"];
+        InstructionDefinition idef = ISA.Lookup["shf"];
         var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: (short)bitShift);
         idef.Execute(cpu, instruction);
 

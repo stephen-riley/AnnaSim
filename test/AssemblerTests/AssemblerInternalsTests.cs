@@ -32,7 +32,7 @@ public class AssemblerInternalsTests
         var asm = new AnnaAssembler();
         var memImageWords = memImage.Select(ui => (Word)ui).ToList();
 
-        var idef = I.Lookup[instruction];
+        var idef = ISA.Lookup[instruction];
         var operands = operandStrings.Select(s => asm.ParseOperand(s)).ToArray();
         idef.Assemble(asm, operands);
 
@@ -48,7 +48,7 @@ public class AssemblerInternalsTests
         var asm = new AnnaAssembler();
         var memImageWords = memImage.Select(ui => (Word)ui).ToList();
 
-        var idef = I.Lookup[instruction];
+        var idef = ISA.Lookup[instruction];
         var operands = operandStrings.Select(s => asm.ParseOperand(s)).ToArray();
         idef.Assemble(asm, operands);
 
