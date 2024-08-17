@@ -194,18 +194,18 @@ public class Vt100ConsoleDebugger
     private void RenderScreenMap()
     {
         Console.SetCursorPosition(0, 0);
-        Console.Write("+" + new string('-', 40) + "+" + new string(' ', 38) + "\n|");
+        Console.Write("╔" + new string('═', 40) + "╗" + new string(' ', 38) + "\n║");
         for (var offset = 0u; offset < 40 * 25; offset++)
         {
             if (offset % 40 == 0 && offset != 0)
             {
-                Console.Write("|" + new string(' ', 38) + "\n|");
+                Console.Write("║" + new string(' ', 38) + "\n║");
             }
             byte ascii = (byte)(Cpu.Memory[ScreenMap + offset] & 0x7f);
             char c = ascii != 0 ? (char)ascii : ' ';
             Console.Write(c);
         }
-        Console.Write("|\n+" + new string('-', 40) + "+\n");
+        Console.Write("║\n╚" + new string('═', 40) + "╝\n");
         Console.WriteLine(new string(' ', 42));
     }
 
