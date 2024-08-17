@@ -8,8 +8,8 @@
         lli     r1 &msg
         lui     r1 &msg
 
-        lli     r2 0x8000
-        lui     r2 0x8000
+        lli     r2 &screen
+        lui     r2 &screen
 
 loop:   lw      r3 r1 0
         beq     r3 &done
@@ -21,3 +21,5 @@ loop:   lw      r3 r1 0
 done:   .halt
 
 msg:    .fill   72 101 108 108 111 32 119 111 114 108 100 33 0
+
+screen: .def    0xc000

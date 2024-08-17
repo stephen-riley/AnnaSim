@@ -20,10 +20,10 @@ public class Vt100ConsoleDebugger
     public List<Word> Outputs { get; init; } = [];
     public HaltReason Status { get; private set; }
 
-    public Vt100ConsoleDebugger(string fname, string[] inputs, int screenMap = 0x8000) : this(fname, inputs, [], screenMap) { }
-    public Vt100ConsoleDebugger(string fname, int screenMap = 0x8000) : this(fname, [], [], screenMap) { }
+    public Vt100ConsoleDebugger(string fname, string[] inputs, int screenMap = 0xc000) : this(fname, inputs, [], screenMap) { }
+    public Vt100ConsoleDebugger(string fname, int screenMap = 0xc000) : this(fname, [], [], screenMap) { }
 
-    public Vt100ConsoleDebugger(string fname, string[] inputs, string[] argv, int screenMap = 0x8000)
+    public Vt100ConsoleDebugger(string fname, string[] inputs, string[] argv, int screenMap = 0xc000)
     {
         this.fname = fname;
         origInputs = inputs.Select(AnnaMachine.ParseInputString).ToArray();

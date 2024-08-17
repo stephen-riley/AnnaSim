@@ -13,7 +13,7 @@
 # r1: addr
 # r2: mod2
 # r4: const 'X'
-# r5: const 0x8000
+# r5: const &screen (start of screen map)
 # r6: tmp
 
         # initialize variables
@@ -22,7 +22,7 @@
         lui     r1 &scrend
 
         lli     r4 0x58         # 'X'
-        
+
         lli     r5 &screen
         lui     r5 &screen
 
@@ -40,6 +40,6 @@ dec:    addi    r1 r1 -1
 
 end:    .halt
 
-screen: .def    0x8000
-scrend: .def    0x83e7          # 0x8000 + 999 decimal,
+screen: .def    0xc000
+scrend: .def    0xc3e7          # 0xc000 + 999 decimal,
                                 # last char on screen

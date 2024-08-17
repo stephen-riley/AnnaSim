@@ -10,5 +10,5 @@
 // Console.WriteLine();
 // Console.WriteLine(reason);
 
-var debugger = new Vt100ConsoleDebugger("../test/fixtures/checkerboard.asm", [], args);
+var debugger = new Vt100ConsoleDebugger("../test/fixtures/print_cstring_cstr.asm", [], args);
 debugger.Run();

@@ -8,8 +8,8 @@
         lli     r1 &msg
         lui     r1 &msg
 
-        lli     r2 0x8000
-        lui     r2 0x8000
+        lli     r2 &screen
+        lui     r2 &screen
 
 loop:   lw      r3 r1 0
         beq     r3 &done
@@ -21,3 +21,4 @@ loop:   lw      r3 r1 0
 done:   .halt
 
 msg:    .cstr   "Hello, world!"
+screen: .def    0xc000
