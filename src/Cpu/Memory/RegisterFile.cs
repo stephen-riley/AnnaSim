@@ -32,4 +32,9 @@ public class RegisterFile
 
         return sb.ToString();
     }
+
+    public Word[] Copy()
+    {
+        return (Word[])registers.Clone();
+    }
 }

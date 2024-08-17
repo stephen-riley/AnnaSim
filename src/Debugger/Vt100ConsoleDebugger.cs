@@ -13,7 +13,7 @@ public class Vt100ConsoleDebugger
     private readonly List<uint> watches = [];
     private readonly List<string> terminalBuffer = [];
     private readonly List<string> history = [];
-
+    private Word[] lastRegistersState = [];
 
     public Word ScreenMap { get; init; }
     public AnnaMachine Cpu { get; init; }
@@ -51,6 +51,8 @@ public class Vt100ConsoleDebugger
         Cpu.Reset();
         Cpu.Status = CpuStatus.Running;
 
+        lastRegistersState = Cpu.Registers.Copy();
+
         while (true)
         {
             var instr = I.Instruction(Cpu.MemoryAtPc);
@@ -73,7 +75,10 @@ public class Vt100ConsoleDebugger
             switch (cmd[0])
             {
                 case 'q': goto breakLoop;
-                case 'c': Status = Cpu.Execute(); break;
+                case 'c':
+                    lastRegistersState = Cpu.Registers.Copy();
+                    Status = Cpu.Execute();
+                    break;
                 case 'r' when cmd.Length > 1:
                     // TODO: add register aliases to assembler output
 
@@ -97,10 +102,13 @@ public class Vt100ConsoleDebugger
                 case 'R':
                     Cpu.Reset(origInputs);
                     Outputs.Clear();
+                    lastRegistersState = Cpu.Registers.Copy();
                     Status = HaltReason.Running;
                     break;
                 case 'n':
-                    Status = Cpu.ExecuteSingleInstruction(); break;
+                    lastRegistersState = Cpu.Registers.Copy();
+                    Status = Cpu.ExecuteSingleInstruction();
+                    break;
                 case 's': TerminalWriteLine($"Processor status: {Cpu.Status}"); break;
                 case 'b' when cmd.Length > 2:
                     uint breakAddr = 0;
@@ -167,12 +175,23 @@ public class Vt100ConsoleDebugger
 
     private void RenderRegisters()
     {
+        var defaultColor = Console.ForegroundColor;
+
         Console.SetCursorPosition(45, 1);
         Console.Write("Registers");
+
         for (var r = 0; r < Cpu.Registers.Length; r++)
         {
             Console.SetCursorPosition(46, 2 + r);
+            if (Cpu.Registers[(uint)r] != lastRegistersState[r])
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+            }
             Console.Write($"r{r}: {Cpu.Registers[(uint)r]:x4}" + new string(' ', 10));
+            if (Cpu.Registers[(uint)r] != lastRegistersState[r])
+            {
+                Console.ForegroundColor = defaultColor;
+            }
         }
     }
 
@@ -195,6 +214,23 @@ public class Vt100ConsoleDebugger
         {
             Console.SetCursorPosition(47, 13);
             Console.Write("(none)");
+        }
+    }
+
+    private void RenderInputs()
+    {
+        Console.SetCursorPosition(45, 19);
+        Console.Write("Inputs");
+        Console.SetCursorPosition(49, 20);
+        if (Cpu.Inputs.Count > 0)
+        {
+            Console.Write(string.Join(", ", Cpu.Inputs));
+            ConsoleClearEol();
+        }
+        else
+        {
+            Console.Write("(none)");
+            ConsoleClearEol();
         }
     }
 
@@ -242,8 +278,9 @@ public class Vt100ConsoleDebugger
         RenderScreenMap();
         RenderRegisters();
         RenderWatches();
-        RenderTerminal();
+        RenderInputs();
         RenderOutputs();
+        RenderTerminal();
         RenderPrompt(instr);
         Console.CursorVisible = true;
     }
