@@ -72,27 +72,27 @@ public class AnnaMachine
 
     public AnnaMachine(params string[] inputs) : this() => ParseMachineInputs(inputs).ForEach(Inputs.Enqueue);
 
-    public AnnaMachine Reset()
+    public AnnaMachine Reset() => Reset("");
+
+    public AnnaMachine Reset(params uint[] inputs) => Reset("", inputs);
+
+    public AnnaMachine Reset(string filename, params uint[] inputs)
     {
         InstructionDefinition.SetCpu(this);
 
         Memory = new();
         Registers = new();
 
-        if (CurrentFile != "")
+        if (!string.IsNullOrWhiteSpace(filename))
         {
+            CurrentFile = filename;
             var asm = new AnnaAssembler(CurrentFile);
             Memory = asm.MemoryImage;
         }
 
         Pc = 0;
         Status = CpuStatus.Halted;
-        return this;
-    }
 
-    public AnnaMachine Reset(params uint[] inputs)
-    {
-        Reset();
         inputs.ForEach(i => Inputs.Enqueue(i));
         return this;
     }
@@ -100,6 +100,16 @@ public class AnnaMachine
     public AnnaMachine ReadMemFile(string path)
     {
         Memory.ReadMemFile(path);
+        return this;
+    }
+
+    public void ClearInputs() => Inputs.Clear();
+
+    public AnnaMachine AddInputs(IEnumerable<string> inputs) => AddInputs(ParseMachineInputs(inputs.ToArray()));
+
+    public AnnaMachine AddInputs(IEnumerable<Word> inputs)
+    {
+        inputs.Select(n => (Word)(ushort)n).ForEach(Inputs.Enqueue);
         return this;
     }
 

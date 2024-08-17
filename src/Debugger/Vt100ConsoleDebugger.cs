@@ -48,7 +48,7 @@ public class Vt100ConsoleDebugger
         Console.Clear();
         DisplayBanner(fname);
 
-        Cpu.Reset();
+        Cpu.Reset(fname);
         Cpu.Status = CpuStatus.Running;
 
         lastRegistersState = Cpu.Registers.Copy();
@@ -75,10 +75,12 @@ public class Vt100ConsoleDebugger
             switch (cmd[0])
             {
                 case 'q': goto breakLoop;
+
                 case 'c':
                     lastRegistersState = Cpu.Registers.Copy();
                     Status = Cpu.Execute();
                     break;
+
                 case 'r' when cmd.Length > 1:
                     // TODO: add register aliases to assembler output
 
@@ -89,27 +91,34 @@ public class Vt100ConsoleDebugger
                         continue;
                     }
                     break;
+
                 case 'r':
                     TerminalWriteLine("* must specify a register or register alias"); break;
+
                 case 'm' when cmd.Length > 2:
                     var addr = Convert.ToUInt16(cmd[2..], 16);
                     TerminalWriteLine($"* M[{cmd[2..]}]: {Cpu.Memory[addr]}");
                     break;
+
                 case 'w' when cmd.Length > 2:
                     addr = Convert.ToUInt16(cmd[2..], 16);
                     watches.Fluid(l => l.Add(addr)).Sort();
                     break;
+
                 case 'R':
                     Cpu.Reset(origInputs);
                     Outputs.Clear();
                     lastRegistersState = Cpu.Registers.Copy();
                     Status = HaltReason.Running;
                     break;
+
                 case 'n':
                     lastRegistersState = Cpu.Registers.Copy();
                     Status = Cpu.ExecuteSingleInstruction();
                     break;
+
                 case 's': TerminalWriteLine($"Processor status: {Cpu.Status}"); break;
+
                 case 'b' when cmd.Length > 2:
                     uint breakAddr = 0;
                     var descriptor = "";
@@ -138,7 +147,34 @@ public class Vt100ConsoleDebugger
 
                     break;
 
+                case 'l':
+                    var fname = cmd[2..];
+                    if (fname.EndsWith(".mem"))
+                    {
+                        Cpu.Reset();
+                        Cpu.ReadMemFile(fname);
+                        TerminalWriteLine("Loaded memory file.");
+                    }
+                    else
+                    {
+                        Cpu.Reset(fname, origInputs);
+                        TerminalWriteLine("Assembled file.");
+                    }
+                    break;
+
+                case 'i' when cmd.Length > 1:
+                    var inputs = cmd[2..].Split();
+                    Cpu.AddInputs(inputs);
+                    TerminalWriteLine($"Added {inputs.Length} inputs");
+                    break;
+
+                case 'i':
+                    Cpu.ClearInputs();
+                    TerminalWriteLine("Cleared inputs.");
+                    break;
+
                 case 'h': RenderHelp(); break;
+
                 default: TerminalWriteLine($"invalid command {cmd}"); break;
             }
 
@@ -146,7 +182,7 @@ public class Vt100ConsoleDebugger
             {
                 case HaltReason.CyclesExceeded: TerminalWrite("> Allowed cycles exceeded"); break;
                 case HaltReason.Halt: TerminalWrite($"> Halted, PC: 0x{Cpu.Pc:x4}"); break;
-                case HaltReason.Breakpoint: TerminalWrite($"Breakpoint, PC: 0x{Cpu.Pc:x4}"); break;
+                case HaltReason.Breakpoint: TerminalWrite($"> Breakpoint, PC: 0x{Cpu.Pc:x4}"); break;
             }
         }
 
