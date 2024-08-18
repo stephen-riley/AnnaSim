@@ -151,6 +151,7 @@ public class AssemblerInternalsTests
     [DataRow(".ralias", "operands required")]
     [DataRow(".ralias r0 Bob", "not find any recognizable digits")]
     [DataRow(".def 0x8000", ".def must have a label")]
+    [DataRow("test: .org 0x8000", ".org cannot have a label")]
     public void TestBadDirectives(string instruction, string messageExcerpt)
     {
         var asm = new AnnaAssembler();
