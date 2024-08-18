@@ -239,7 +239,7 @@ public abstract class BaseDebugger
         TerminalWrite("h          Help");
         TerminalWrite("b [line]   set or clear Breakpoint at addr");
         TerminalWrite("b [sym]    set Breakpoint at symbol");
-        TerminalWrite("c          Continue execute until halted");
+        TerminalWrite("c          Continue execution until halted");
         TerminalWrite("d          Dump screen memory");
         TerminalWrite("i [inputs] add Inputs to input queue");
         TerminalWrite("l [file]   Load .asm or .mem file");
@@ -247,6 +247,7 @@ public abstract class BaseDebugger
         TerminalWrite("n          execute Next instruction");
         TerminalWrite("q          Quit");
         TerminalWrite("rN         view Register N");
+        TerminalWrite("r*         view all registers");
         TerminalWrite("w [addr]   Watch memory at addr");
         TerminalWrite();
     }
