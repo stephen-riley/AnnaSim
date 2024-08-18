@@ -1,14 +1,25 @@
-﻿using AnnaSim.Debugger;
+﻿using AnnaSim.Cli;
+using AnnaSim.Debugger;
+using AnnaSim.Extensions;
+using CommandLine;
 
-// Test files:
-//   ../test/fixtures/fibonacci.asm
-//   ../test/fixtures/mul2_func.asm
+var cliParser = new Parser(settings =>
+{
+    settings.AllowMultiInstance = true;
+    settings.HelpWriter = Console.Error;
+});
 
-// var cpu = new AnnaMachine("../test/fixtures/mul2_func.asm", 6);
-// var reason = cpu.Execute(35);
+cliParser.ParseArguments<RunCliOptions, DebugCliOptions>(args)
+    .WithParsed<RunCliOptions>(opt =>
+    {
+        var runner = new MinimalDebugger(opt.Filename, opt.Inputs.ToArray());
+        runner.Run(opt.DumpScreen);
+    })
+    .WithParsed<DebugCliOptions>(opt =>
+    {
+        BaseDebugger debugger = opt.Vt100
+            ? new Vt100ConsoleDebugger(opt.Filename, opt.Inputs.ToArray(), opt.DebugCommands.ToArray())
+            : new ConsoleDebugger(opt.Filename, opt.Inputs.ToArray(), opt.DebugCommands.ToArray());
 
-// Console.WriteLine();
-// Console.WriteLine(reason);
-
-var debugger = new ConsoleDebugger("../test/fixtures/checkerboard.asm", [], args);
-debugger.Run();
+        debugger.Run(opt.DumpScreen);
+    });

@@ -11,7 +11,16 @@
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
-            "args": [],
+            "args": [
+                // "debug",
+                // "../test/fixtures/fibonacci_all.asm",
+                // "-i",
+                // "0x05",
+                // "-s",
+                // "-v"
+                "debug",
+                "--bob"
+            ],
             "cwd": "${workspaceFolder}/src",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             // "console": "internalConsole",

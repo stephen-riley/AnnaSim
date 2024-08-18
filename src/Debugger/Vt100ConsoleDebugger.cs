@@ -10,6 +10,10 @@ public class Vt100ConsoleDebugger : BaseDebugger
 
     public Vt100ConsoleDebugger(string fname, string[] inputs, string[] argv, int screenMap = 0xc000) : base(fname, inputs, argv, screenMap) { }
 
+    protected override void Prerun() => Console.Clear();
+
+    protected override void Postrun() => Console.CursorVisible = true;
+
     protected override void UpdateScreen(Instruction? instr)
     {
         Console.CursorVisible = false;
@@ -53,7 +57,7 @@ public class Vt100ConsoleDebugger : BaseDebugger
             Console.SetCursorPosition(46, 2 + r);
             if (Cpu.Registers[(uint)r] != lastRegistersState[r])
             {
-                Console.ForegroundColor = ConsoleColor.White;
+                Console.ForegroundColor = ConsoleColor.Red;
             }
             Console.Write($"r{r}: {Cpu.Registers[(uint)r]:x4}" + new string(' ', 10));
             if (Cpu.Registers[(uint)r] != lastRegistersState[r])

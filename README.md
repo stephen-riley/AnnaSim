@@ -6,3 +6,11 @@ See paper at http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
 
 * [ANNA Guide](docs/ANNA_Guide.pdf)
 * [ANNA Card](docs/ANNA_Card.pdf)
+
+## TODO
+
+- [X] Run mode
+- [X] Debug mode
+- [ ] Allow file load from STDIN
+- [ ] Prebuilt single-file executables?
+- [ ] dotnet tool?

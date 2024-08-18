@@ -40,12 +40,17 @@ public abstract class BaseDebugger
         };
     }
 
-    public IEnumerable<Word> Run()
+    protected abstract void Prerun();
+
+    protected abstract void Postrun();
+
+    public IEnumerable<Word> Run(bool dumpScreen = false)
     {
+        Prerun();
+
         var readFromConsole = argv.Length == 0;
         var cmdQueue = new Queue<string>(argv);
 
-        Console.Clear();
         DisplayBanner(fname);
 
         Cpu.Reset(fname);
@@ -200,21 +205,31 @@ public abstract class BaseDebugger
 
     breakLoop:
         TerminalWrite("Quitting.");
+
+        if (dumpScreen)
+        {
+            DumpScreen();
+        }
+
+        Postrun();
+
         return Outputs;
     }
 
     protected void DumpScreen()
     {
-        TerminalWrite("+" + new string('-', 40) + "+");
+        Console.WriteLine();
+        Console.WriteLine("+" + new string('-', 40) + "+");
         for (var row = 0; row < 25; row++)
         {
             var rowStr = Enumerable.Range(0, 40)
                 .Select(i => (uint)(ScreenMap + i + row * 40))
                 .Select(addr => Cpu.Memory[addr] != 0 ? (char)Cpu.Memory[addr] : ' ');
 
-            TerminalWrite("|" + string.Join("", rowStr) + "|");
+            Console.WriteLine("|" + string.Join("", rowStr) + "|");
         }
-        TerminalWriteLine("+" + new string('-', 40) + "+");
+        Console.WriteLine("+" + new string('-', 40) + "+");
+        Console.WriteLine();
     }
 
     protected abstract string ReadDebuggerCommand();

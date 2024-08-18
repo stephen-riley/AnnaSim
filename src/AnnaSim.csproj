@@ -6,11 +6,20 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>AnnaSim</RootNamespace>
+
+    <Copyright>Copyright 2024, Stephen Riley</Copyright>
+    <Company>Seattle University</Company>
+    <Version>1.0.0-beta</Version>
+    <AssemblyTitle>AnnaSim</AssemblyTitle>
   </PropertyGroup>
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>AnnaSim.Test</_Parameter1>
     </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
   </ItemGroup>
 </Project>

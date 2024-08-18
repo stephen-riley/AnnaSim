@@ -12,6 +12,10 @@ public class ConsoleDebugger : BaseDebugger
         Console.CursorVisible = true;
     }
 
+    protected override void Prerun() { }
+
+    protected override void Postrun() { }
+
     protected override void UpdateScreen(Instruction? instr)
     {
         // maybe show watches here?
