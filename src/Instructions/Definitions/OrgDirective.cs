@@ -1,11 +1,11 @@
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class CstrDirective : InstructionDefinition
+public partial class OrgDirective : InstructionDefinition
 {
-    public CstrDirective() : base()
+    public OrgDirective() : base()
     {
         Opcode = 0xff;
-        Mnemonic = ".cstr";
+        Mnemonic = ".org";
         OperandCount = 1;
         Type = InstructionType.Directive;
         MathOp = MathOperation.NA;

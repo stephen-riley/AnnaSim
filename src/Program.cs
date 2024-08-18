@@ -1,6 +1,5 @@
 ﻿using AnnaSim.Cli;
 using AnnaSim.Debugger;
-using AnnaSim.Extensions;
 using CommandLine;
 
 var cliParser = new Parser(settings =>

@@ -6,7 +6,7 @@ public partial class DefDirective : InstructionDefinition
     {
         Opcode = 0xff;
         Mnemonic = ".def";
-        OperandCount = -1;
+        OperandCount = 1;
         Type = InstructionType.Directive;
         MathOp = MathOperation.NA;
     }

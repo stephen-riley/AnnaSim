@@ -43,7 +43,7 @@ public class AssemblerInternalsTests
     [TestMethod]
     [DataRow("test", ".def", new string[] { "0x8000" })]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Attributes have weird rules about arrays as parameters")]
-    public void TestCstrDirectiveHandler(string label, string instruction, string[] operandStrings)
+    public void TestDefDirectiveHandler(string label, string instruction, string[] operandStrings)
     {
         var asm = new AnnaAssembler();
         var idef = ISA.Lookup[instruction];
@@ -55,7 +55,7 @@ public class AssemblerInternalsTests
     }
 
     [TestMethod]
-    [DataRow(".def", new string[] { "\"ABC\"" }, new uint[] { 0x41, 0x42, 0x43, 0x00 }, 4)]
+    [DataRow(".cstr", new string[] { "\"ABC\"" }, new uint[] { 0x41, 0x42, 0x43, 0x00 }, 4)]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Attributes have weird rules about arrays as parameters")]
     public void TestCstrDirectiveHandler(string instruction, string[] operandStrings, uint[] memImage, int expectedPtr)
     {
@@ -103,6 +103,7 @@ public class AssemblerInternalsTests
     [DataRow(".fill 1 0b10 0x03 &label", new uint[] { 1, 2, 3, 0xffff }, 4)]
     [DataRow(".ralias r7 rSP", new uint[] { 0 }, 0)]
     [DataRow("test: .def 0x8000", new uint[] { 0 }, 0)]
+    [DataRow(".org 0x8000", new uint[] { 0 }, 0x8000)]
     public void TestGoodDirectiveAssembler(string instruction, uint[] memImage, int expectedPtr)
     {
         var asm = new AnnaAssembler();
