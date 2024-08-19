@@ -11,7 +11,7 @@ var cliParser = new Parser(settings =>
 cliParser.ParseArguments<RunCliOptions, DebugCliOptions>(args)
     .WithParsed<RunCliOptions>(opt =>
     {
-        var runner = new MinimalDebugger(opt.Filename, opt.Inputs.ToArray());
+        var runner = new Runner(opt.Filename, opt.Inputs.ToArray());
         runner.Run(opt.DumpScreen);
     })
     .WithParsed<DebugCliOptions>(opt =>

@@ -5,7 +5,7 @@ namespace AnnaSim.Debugger;
 
 // Worst name ever: this is really just a thin wrapper around AnnaMachine.Execute()
 
-public class MinimalDebugger
+public class Runner
 {
     protected readonly uint[] origInputs = [];
     protected readonly string origFilename;
@@ -15,7 +15,7 @@ public class MinimalDebugger
     public List<Word> Outputs { get; init; } = [];
     public HaltReason Status { get; private set; }
 
-    public MinimalDebugger(string fname, string[] inputs, int screenMap = 0xc000)
+    public Runner(string fname, string[] inputs, int screenMap = 0xc000)
     {
         origFilename = fname;
         origInputs = inputs.Select(AnnaMachine.ParseInputString).ToArray();
@@ -34,7 +34,7 @@ public class MinimalDebugger
 
         Status = Cpu.Execute();
 
-        Console.WriteLine(Status.ToString());
+        Console.WriteLine($"{Status.ToString()} at PC: 0x{Cpu.Pc:x4} ({Cpu.CyclesExecuted} cycles)");
 
         if (dumpScreen)
         {

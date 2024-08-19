@@ -153,8 +153,16 @@ public abstract class BaseDebugger
                         }
                         else
                         {
-                            breakAddr = Cpu.Pdb.LineAddrMap[numeric];
-                            descriptor = $"line {numeric}";
+                            if (Cpu.Pdb.LineAddrMap.ContainsKey(numeric))
+                            {
+                                breakAddr = Cpu.Pdb.LineAddrMap[numeric];
+                                descriptor = $"line {numeric}";
+                            }
+                            else
+                            {
+                                TerminalWriteLine($"* line {numeric} is not in PDB");
+                                continue;
+                            }
                         }
                     }
                     else if (origFilename.EndsWith(".mem"))
@@ -224,8 +232,8 @@ public abstract class BaseDebugger
             switch (Status)
             {
                 case HaltReason.CyclesExceeded: TerminalWrite("> Allowed cycles exceeded"); break;
-                case HaltReason.Halted: TerminalWrite($"> Halted, PC: 0x{Cpu.Pc:x4}"); break;
-                case HaltReason.Breakpoint: TerminalWrite($"> Breakpoint, PC: 0x{Cpu.Pc:x4}"); break;
+                case HaltReason.Halted: TerminalWrite($"> Halted, PC: 0x{Cpu.Pc:x4} ({Cpu.CyclesExecuted} cycles)"); break;
+                case HaltReason.Breakpoint: TerminalWrite($"> Breakpoint, PC: 0x{Cpu.Pc:x4} ({Cpu.CyclesExecuted} cycles)"); break;
             }
         }
 

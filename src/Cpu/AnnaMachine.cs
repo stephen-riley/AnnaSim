@@ -13,6 +13,7 @@ public class AnnaMachine
     public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
     public CpuStatus Status { get; internal set; } = CpuStatus.Halted;
     public string CurrentFile { get; internal set; } = "";
+    public int CyclesExecuted { get; internal set; } = 0;
 
     public uint Pc { get; internal set; } = 0;
     public Word MemoryAtPc => Memory[Pc];
@@ -93,6 +94,7 @@ public class AnnaMachine
         }
 
         Pc = 0;
+        CyclesExecuted = 0;
         Status = CpuStatus.Halted;
 
         inputs.ForEach(i => Inputs.Enqueue(i));
@@ -149,6 +151,7 @@ public class AnnaMachine
             }
 
             Pc = instruction.Execute();
+            CyclesExecuted++;
 
             if (Status == CpuStatus.Halted)
             {
