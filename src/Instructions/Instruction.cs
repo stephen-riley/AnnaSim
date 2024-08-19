@@ -29,7 +29,7 @@ public class Instruction
             throw new InvalidOpcodeException(idef, "in Instruction RType math constructor");
         }
 
-        Bits = (uint)idef.Opcode << 12;
+        Bits = idef.Opcode << 12;
         Bits |= (rd & 0b111u) << 9;
         Bits |= (rs1 & 0b111u) << 6;
         Bits |= (rs2 & 0b111u) << 3;
@@ -65,7 +65,7 @@ public class Instruction
             throw new InvalidOpcodeException(idef, "in Instruction Imm8Type constructor");
         }
 
-        Bits = (uint)idef.Opcode << 12;
+        Bits = idef.Opcode << 12;
         Bits |= (rd & 0b111u) << 9;
         Bits |= (ushort)imm8 & 0b11111111u;
     }

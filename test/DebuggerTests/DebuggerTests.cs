@@ -10,7 +10,7 @@ public class DebuggerTests
     public void TestConsoleDebuggerWithStaticInputs()
     {
         Word[] expected = [54];
-        var results = new ConsoleDebugger("../../../fixtures/multiplication.asm", ["6", "9"], ["d r4", "c", "q"]).Run();
+        var results = new ConsoleDebugger("../../../fixtures/multiplication.asm", ["6", "9"], ["r4", "c", "q"]).Run();
         CollectionAssert.AreEqual(expected, results.ToList());
     }
 }

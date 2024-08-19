@@ -18,13 +18,16 @@
                 // "0x05",
                 // "-s",
                 // "-v"
-                "debug",
-                "--bob"
+                "run",
+                "-i",
+                "6",
+                "-f",
+                "../test/fixtures/fibonacci_all.asm"
             ],
             "cwd": "${workspaceFolder}/src",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             // "console": "internalConsole",
-            "console": "externalTerminal",
+            "console": "internalConsole",
             "stopAtEntry": false
         },
         {

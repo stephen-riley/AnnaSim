@@ -6,7 +6,7 @@ namespace AnnaSim.Cli;
 [Verb("run", HelpText = "Run a program (.asm) or memory image (.mem)")]
 public class RunCliOptions
 {
-    [Option('f', "filename", HelpText = "Filename (.asm or .mem); do not specify to read from STDIN")]
+    [Option('f', "filename", Default = "-", HelpText = "Filename (.asm or .mem); do not specify to read from STDIN")]
     public string Filename { get; set; } = "";
 
     [Option('i', "input", HelpText = "Specifiy inputs for `in` instruction")]

@@ -36,7 +36,28 @@ public partial class AnnaAssembler
 
     public void Assemble(string filename)
     {
-        Assemble(File.ReadAllLines(filename));
+        string[] lines;
+        if (filename == "-" && Console.IsInputRedirected)
+        {
+            var list = new List<string>();
+            string? line;
+            while ((line = Console.ReadLine()) != null)
+            {
+                list.Add(line);
+            }
+            lines = [.. list];
+            Console.Error.WriteLine("got these lines:\n" + string.Join("\n", lines));
+            Assemble(lines);
+        }
+        else if (filename != "")
+        {
+            lines = File.ReadAllLines(filename);
+            Assemble(lines);
+        }
+        else
+        {
+            return;
+        }
     }
 
     public void Assemble(IEnumerable<string> lines)

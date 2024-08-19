@@ -20,15 +20,11 @@ public class AnnaMachine
 
     public AnnaMachine()
     {
-        Reset();
     }
 
     public AnnaMachine(string filename) : this()
     {
         CurrentFile = filename;
-        var asm = new AnnaAssembler(filename);
-        Memory = asm.MemoryImage;
-        Pdb = asm.GetPdb();
     }
 
     public AnnaMachine(string filename, params string[] inputs)
@@ -80,15 +76,12 @@ public class AnnaMachine
     {
         InstructionDefinition.SetCpu(this);
 
-        Memory = new();
         Registers = new();
 
-        if (!string.IsNullOrWhiteSpace(filename))
-        {
-            CurrentFile = filename;
-            var asm = new AnnaAssembler(CurrentFile);
-            Memory = asm.MemoryImage;
-        }
+        CurrentFile = filename;
+        var asm = new AnnaAssembler(CurrentFile);
+        Memory = asm.MemoryImage;
+        Pdb = asm.GetPdb();
 
         Pc = 0;
         Status = CpuStatus.Halted;
@@ -150,7 +143,7 @@ public class AnnaMachine
 
             if (Status == CpuStatus.Halted)
             {
-                return HaltReason.Halt;
+                return HaltReason.Halted;
             }
 
             maxCycles--;
@@ -162,7 +155,7 @@ public class AnnaMachine
             return HaltReason.CyclesExceeded;
         }
 
-        return HaltReason.Halt;
+        return HaltReason.Halted;
     }
 
     public static uint ParseInputString(string o)

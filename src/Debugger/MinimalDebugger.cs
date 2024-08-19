@@ -8,7 +8,7 @@ namespace AnnaSim.Debugger;
 public class MinimalDebugger
 {
     protected readonly uint[] origInputs = [];
-    protected readonly string fname;
+    protected readonly string origFilename;
 
     public Word ScreenMap { get; init; }
     public AnnaMachine Cpu { get; init; }
@@ -17,7 +17,7 @@ public class MinimalDebugger
 
     public MinimalDebugger(string fname, string[] inputs, int screenMap = 0xc000)
     {
-        this.fname = fname;
+        origFilename = fname;
         origInputs = inputs.Select(AnnaMachine.ParseInputString).ToArray();
         ScreenMap = (uint)screenMap;
 
@@ -29,10 +29,12 @@ public class MinimalDebugger
 
     public IEnumerable<Word> Run(bool dumpScreen)
     {
-        Cpu.Reset(fname);
+        Cpu.Reset(origFilename);
         Cpu.Status = CpuStatus.Running;
 
         Status = Cpu.Execute();
+
+        Console.WriteLine(Status.ToString());
 
         if (dumpScreen)
         {

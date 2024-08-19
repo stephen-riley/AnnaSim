@@ -198,7 +198,7 @@ public abstract class BaseDebugger
             switch (Status)
             {
                 case HaltReason.CyclesExceeded: TerminalWrite("> Allowed cycles exceeded"); break;
-                case HaltReason.Halt: TerminalWrite($"> Halted, PC: 0x{Cpu.Pc:x4}"); break;
+                case HaltReason.Halted: TerminalWrite($"> Halted, PC: 0x{Cpu.Pc:x4}"); break;
                 case HaltReason.Breakpoint: TerminalWrite($"> Breakpoint, PC: 0x{Cpu.Pc:x4}"); break;
             }
         }

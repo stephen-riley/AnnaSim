@@ -3,7 +3,7 @@ namespace AnnaSim;
 public enum HaltReason
 {
     Running = -1,
-    Halt = 0,
+    Halted = 0,
     Breakpoint,
     CyclesExceeded,
     DebuggerSingleStep,
