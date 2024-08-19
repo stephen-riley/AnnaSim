@@ -79,9 +79,18 @@ public class AnnaMachine
         Registers = new();
 
         CurrentFile = filename;
-        var asm = new AnnaAssembler(CurrentFile);
-        Memory = asm.MemoryImage;
-        Pdb = asm.GetPdb();
+
+        if (CurrentFile.EndsWith(".mem"))
+        {
+            Memory = new MemoryFile().ReadMemFile(CurrentFile);
+            Pdb = new();
+        }
+        else
+        {
+            var asm = new AnnaAssembler(CurrentFile);
+            Memory = asm.MemoryImage;
+            Pdb = asm.GetPdb();
+        }
 
         Pc = 0;
         Status = CpuStatus.Halted;

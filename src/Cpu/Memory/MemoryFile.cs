@@ -2,6 +2,9 @@ namespace AnnaSim.Cpu.Memory;
 
 public class MemoryFile
 {
+    // At this point we don't care about image file versions
+    private const string ImageFileHeader = "# ANNA-IMG";
+
     internal MachineWord[] memory;
 
     public int Length => memory.Length;
@@ -60,12 +63,19 @@ public class MemoryFile
         }
     }
 
-    public void ReadMemFile(string path)
+    public MemoryFile ReadMemFile(string path)
     {
         var addr = 0u;
+        var foundHeader = false;
 
         foreach (var line in File.ReadAllLines(path))
         {
+            if (!foundHeader)
+            {
+                foundHeader = line.StartsWith(ImageFileHeader) ? true : throw new InvalidOperationException($".mem files must start with {ImageFileHeader}");
+                continue;
+            }
+
             if (line.StartsWith(':'))
             {
                 addr = Convert.ToUInt32(line[1..], 16);
@@ -80,14 +90,34 @@ public class MemoryFile
                 }
             }
         }
+
+        return this;
     }
 
-    public void WriteMemFile(string path, uint startAddr = 0u, int length = 65536)
+    public void WriteMemFile(string path, uint startAddr = 0u, int length = 65536, bool writeAll = false)
     {
+        if (!writeAll)
+        {
+            // start at the top and work down until we see a non-zero.  That will be the length.
+            var a = startAddr + length - 1;
+            while (a >= 0 && memory[a] == 0)
+            {
+                a--;
+            }
+
+            // if a is negative, then all of the checked memory is empty.
+            //  just stick with the original values.
+            if (a >= 0)
+            {
+                // a now points to the last non-zero item.
+                length = (int)(a - startAddr + 1);
+            }
+        }
+
         var addr = startAddr;
 
         using StreamWriter sw = new(path);
-
+        sw.WriteLine($"{ImageFileHeader}:1.0");
         sw.WriteLine($":{startAddr:X4}");
 
         foreach (var chunk in memory[(int)startAddr..(int)(startAddr + length)].Chunk(8))

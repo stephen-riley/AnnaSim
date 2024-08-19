@@ -12,6 +12,6 @@ See paper at http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
 - [X] Run mode
 - [X] Debug mode
 - [X] Allow file load from STDIN
-- [ ] Allow debugging of .mem files
+- [X] Allow debugging of .mem files
 - [ ] Prebuilt single-file executables?
 - [ ] dotnet tool?

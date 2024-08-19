@@ -190,12 +190,31 @@ public partial class AnnaAssembler
             return new Operand(s, OperandType.String);
         }
 
+        var value = ParseNumeric(s);
+        return type == OperandType.SignedInt ? new Operand(value) : new Operand((uint)value);
+    }
+
+    public static int ParseNumeric(string s)
+    {
         int negative = s.StartsWith('-') ? 1 : 0;
         int radix = s[negative..].StartsWith("0x") ? 16 : s[negative..].StartsWith("0b") ? 2 : 10;
         int value = Convert.ToInt32(s[(negative + (radix != 10 ? 2 : 0))..], radix);
         value = negative == 1 ? -value : value;
+        return value;
+    }
 
-        return type == OperandType.SignedInt ? new Operand(value) : new Operand((uint)value);
+    public static bool TryParseNumeric(string s, out int n)
+    {
+        try
+        {
+            n = ParseNumeric(s);
+            return true;
+        }
+        catch
+        {
+            n = -1;
+            return false;
+        }
     }
 
     internal ushort Register(Operand o)
