@@ -39,4 +39,18 @@ public class AssemblerTests
 
         Assert.AreEqual(-1, asm.MemoryImage.Compare(assembled));
     }
+
+    [TestMethod]
+    public void TestLoneLabels()
+    {
+        var src = """
+        start:
+            in      r4
+        end:
+            .halt
+        """.Split('\n');
+
+        var asm = new AnnaAssembler();
+        asm.Assemble(src);
+    }
 }

@@ -13,5 +13,7 @@ See paper at http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
 - [X] Debug mode
 - [X] Allow file load from STDIN
 - [X] Allow debugging of .mem files
+- [ ] .include directive
+- [ ] build annalib.asm
 - [ ] Prebuilt single-file executables?
 - [ ] dotnet tool?

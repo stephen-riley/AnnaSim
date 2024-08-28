@@ -17,7 +17,7 @@
                 "6",
                 "-v",
                 "-f",
-                "../test/fixtures/fibonacci_all.asm"
+                "../test/fixtures/fibonacci_all_lone_labels.asm"
             ],
             "cwd": "${workspaceFolder}/src",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

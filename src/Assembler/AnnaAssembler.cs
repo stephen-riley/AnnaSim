@@ -110,6 +110,11 @@ public partial class AnnaAssembler
                 idx++;
             }
 
+            if (idx == pieces.Length)
+            {
+                return;
+            }
+
             if (ISA.Lookup.TryGetValue(pieces[idx], out var def))
             {
                 def.Asm = this;
