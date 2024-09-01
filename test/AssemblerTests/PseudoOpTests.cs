@@ -57,4 +57,18 @@ public class PseudoOpTests
         // lui r1 0x12
         Assert.AreEqual(0b1001_001_0_0001_0010, asm.MemoryImage[1]);
     }
+
+    [TestMethod]
+    public void TestMovPseudoOp()
+    {
+        var src = """
+            mov     r1 r2
+        """.Split('\n');
+
+        var asm = new AnnaAssembler();
+        asm.Assemble(src);
+
+        // add r1 r2 0
+        Assert.AreEqual(0b0000_001_010_000_000, asm.MemoryImage[0]);
+    }
 }
