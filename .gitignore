@@ -6,3 +6,7 @@ tmp/
 
 # draw.io temp files
 *.bkp
+
+# Antlr-generated files
+src/TinyC/Antlr/*
+src/TinyC/.antlr/*

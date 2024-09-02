@@ -1,6 +1,30 @@
 ﻿using AnnaSim.Cli;
 using AnnaSim.Debugger;
+using AnnaSim.TinyC;
 using CommandLine;
+
+var src = """
+int fib(int n);
+
+int res = fib(5);
+out(res);
+
+int fib(int n) {
+	int a = fib(n-1);
+	int b = fib(n-2);
+    return a + b;
+}
+""";
+
+if (Compiler.TryCompile(src, out var asm))
+{
+    Console.WriteLine("success");
+}
+else
+{
+    Console.WriteLine("errors");
+}
+Environment.Exit(0);
 
 var cliParser = new Parser(settings =>
 {

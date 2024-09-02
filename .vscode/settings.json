@@ -1,0 +1,10 @@
+{
+  "antlr4.generation": {
+    "mode": "external",
+    "language": "CSharp",
+    "listeners": false,
+    "visitors": true,
+    "outputDir": "Antlr",
+    "package": "AnnaSim.TinyC.Antlr"
+  }
+}

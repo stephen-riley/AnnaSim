@@ -16,4 +16,16 @@ public static class IEnumerableExtensions
         var index = startIndex;
         return result.Select(el => (index++, el));
     }
+
+    public static void Each<T>(this IEnumerable<T> ie, Action<T, int> action)
+    {
+        var i = 0;
+        foreach (var e in ie) action(e, i++);
+    }
+
+    public static void EachReverse<T>(this IEnumerable<T> ie, Action<T, int> action)
+    {
+        var i = 0;
+        foreach (var e in ie.Reverse()) action(e, i++);
+    }
 }
