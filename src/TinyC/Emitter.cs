@@ -12,9 +12,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     public CompilerContext Cc { get; internal set; } = new();
 
-    private Dictionary<string, int> labels = [];
-
-    private Dictionary<string, AnnaCcParser.BlockContext> functionBodies = new();
+    private readonly Dictionary<string, int> labels = [];
 
     public Emitter(CompilerContext cc) : base()
     {
@@ -233,7 +231,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
             if (op is "*" or "/")
             {
-                throw new InvalidOperationException($"AnnaCC does not support * or /");
+                throw new InvalidOperationException("AnnaCC does not support * or /");
             }
             else if (op.StartsWith('b'))
             {
