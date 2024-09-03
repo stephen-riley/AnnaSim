@@ -1,6 +1,6 @@
 namespace AnnaSim.TinyC.Scheduler.Instructions;
 
-public enum InstructionEnum
+public enum InstrOpcode
 {
     Unknown = 0,
     Add,
