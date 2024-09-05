@@ -59,7 +59,7 @@ public class Scope
         {
             return [
                 ("lwi", ["r3", $"&_var_{name}"], $"load address of variable {name}"),
-                ("lw", ["r3", "r3", "0"], $"load variable {name} from data segment")
+                ("lw", ["r3", "r3", "0"], $"load variable \"{name}\" from data segment")
             ];
         }
         else

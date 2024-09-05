@@ -1,11 +1,14 @@
 using AnnaSim.TinyC.Antlr;
+using AnnaSim.TinyC.Scheduler.Instructions;
 
 namespace AnnaSim.TinyC;
 
 public partial class Emitter : AnnaCcBaseVisitor<bool>
 {
-    private static void EmitProlog()
+    private void EmitProlog(string filename)
     {
+        EmitHeaderComment($"compiled from {filename}");
+        EmitBlankLine();
         EmitHeaderComment("Register map:");
         EmitHeaderComment("  r1  scratch register");
         EmitHeaderComment("  r2  scratch register");
@@ -18,16 +21,18 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitBlankLine();
         EmitHeaderComment(".text segment");
         EmitBlankLine();
+        EmitInstruction(".org", ["0x0000"]);
+        EmitBlankLine();
 
-        EmitHeaderComment("set up main() stack frame");
+        EmitComment("set up main() stack frame");
         // TODO: switch to register aliases
         EmitInstruction("lwi", ["r7", "&_stack"], "initialize SP (r7)");
-        EmitInstruction("add", ["r6", "r7", "0"], "initialize FP (r6)");
+        EmitInstruction("add", ["r6", "r7", "r0"], "initialize FP (r6)");
         EmitBlankLine();
         EmitHeaderComment("start of main");
     }
 
-    private static void EmitFunctionBodies(CompilerContext cc, Emitter e)
+    private void EmitFunctionBodies(CompilerContext cc, Emitter e)
     {
         foreach (var (name, scope) in e.Cc.Functions)
         {
@@ -38,13 +43,14 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             EmitStackFrameComments(scope);
 
             EmitLabel(name);
-            EmitInstruction("push", ["r6"], "push FP");
-            EmitInstruction("push", ["r5"], "push return address");
+            EmitInstruction("push", ["r7", "r6"], "push FP");
+            EmitInstruction("push", ["r7", "r5"], "push return address");
 
             if (scope.Vars.Count > 0)
             {
                 EmitInstruction("addi", ["r7", "r7", (-scope.Vars.Count).ToString()], $"create space for {scope.Vars.Count} local variables");
             }
+            EmitBlankLine();
 
             EmitLabel($"{name}_body");
             e.VisitBlock(scope.Body);
@@ -59,27 +65,27 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         }
     }
 
-    private static void EmitStackFrameComments(Scope scope)
+    private void EmitStackFrameComments(Scope scope)
     {
         var argList = string.Join(", ", scope.Args.Select(a => $"{a.Type} {a.Name}"));
-        EmitComment($"function {scope.Name}({argList})");
+        EmitComment($"function `{scope.Type} {scope.Name}({argList})`");
 
         foreach (var a in scope.Args)
         {
-            EmitComment($"FP+{a.Offset}  {a.Name}");
+            EmitComment($" FP+{a.Offset}  {a.Name}");
         }
 
-        EmitComment("FP+0  previous FP");
-        EmitComment("FP-1  return addr");
+        EmitComment(" FP+0  previous FP");
+        EmitComment(" FP-1  return addr");
 
         foreach (var v in scope.Vars)
         {
-            EmitComment($"FP{v.Offset}  {v.Name}");
+            EmitComment($" FP{v.Offset}  {v.Name}");
         }
         EmitBlankLine();
     }
 
-    private static void EmitGlobalVars(Emitter e)
+    private void EmitGlobalVars(Emitter e)
     {
         foreach (var v in e.Cc.GlobalScope.Vars)
         {
@@ -87,7 +93,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         }
     }
 
-    private static void EmitInternedStrings(CompilerContext cc)
+    private void EmitInternedStrings(CompilerContext cc)
     {
         foreach (var s in cc.InternedStrings)
         {
@@ -95,33 +101,28 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         }
     }
 
-    private static void EmitBlankLine() => Console.WriteLine();
+    private void EmitBlankLine() => Scheduler.BlankLine();
 
-    private static void EmitComment(string comment) => Console.WriteLine($"{new string(' ', 12)}# {comment}");
+    private void EmitComment(string comment) => Scheduler.InlineComment(comment);
 
-    private static void EmitHeaderComment(string comment) => Console.WriteLine($"# {comment}");
+    private void EmitHeaderComment(string comment) => Scheduler.HeaderComment(comment);
 
-    private static void EmitLabel(string label) => Console.WriteLine($"{label}:");
+    private void EmitLabel(string label) => Scheduler.Label(label);
 
-    private static void EmitInstruction(string op, string[]? operands = null, string? comment = null) => EmitInstruction(null, op, operands, comment);
+    private void EmitInstruction(string op, string[]? operands = null, string? comment = null) => EmitInstruction(null, op, operands, comment);
 
-    private static void EmitInstruction(string? label = null, string? op = null, string[]? operands = null, string? comment = null)
+    private void EmitInstruction(string? label = null, string? op = null, string[]? operands = null, string? comment = null)
     {
-        var labelTerm = new string(' ', 12);
-        var opTerm = new string(' ', 8);
-        var operandsTerm = operands is null ? "" : string.Join(' ', operands);
-        var commentTerm = comment is null ? "" : $"# {comment}";
-
-        if (label != null)
+        var (op1, op2, op3) = ExtractOperands(operands);
+        Scheduler.Schedule(new ScheduledInstruction
         {
-            labelTerm = $"{label + ':',-12}";
-        }
-        if (op != null)
-        {
-            opTerm = $"{op,-8}";
-        }
-
-        Console.WriteLine($"{labelTerm}{opTerm}{operandsTerm,-20}{commentTerm}");
+            Labels = label is not null ? [label] : [],
+            Opcode = op is null ? InstrOpcode.Unknown : ToEnum(op),
+            Operand1 = op1,
+            Operand2 = op2,
+            Operand3 = op3,
+            Comment = comment,
+        });
     }
 
     private string GetInternedStringLabel(string str)
@@ -148,5 +149,34 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         var n = labels[root];
         labels[root] = n + 1;
         return $"{root}_{n:n3}";
+    }
+
+    private static InstrOpcode ToEnum(string opcode)
+    {
+        var str = opcode.Replace('.', '_');
+        if (Enum.TryParse<InstrOpcode>(str, ignoreCase: true, out var result))
+        {
+            return result;
+        }
+        else
+        {
+            throw new InvalidOperationException($"InstrOpcode ToEnum failed on input \"{opcode}\"");
+        }
+    }
+
+    private static (string? op1, string? op2, string? op3) ExtractOperands(string[]? operands)
+    {
+        if (operands is null)
+        {
+            return (null, null, null);
+        }
+
+        return operands.Length switch
+        {
+            1 => (operands[0], null, null),
+            2 => (operands[0], operands[1], null),
+            3 => (operands[0], operands[1], operands[2]),
+            _ => (null, null, null)
+        };
     }
 }

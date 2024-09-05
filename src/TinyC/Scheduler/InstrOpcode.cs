@@ -31,4 +31,5 @@ public enum InstrOpcode
     _Fill,
     _Cstr,
     _Def,
+    _Halt,
 }

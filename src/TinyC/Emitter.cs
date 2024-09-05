@@ -2,13 +2,15 @@ using System.Text.RegularExpressions;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using AnnaSim.TinyC.Antlr;
-using AnnaSim.Extensions;
+using AnnaSim.TinyC.Scheduler;
 
 namespace AnnaSim.TinyC;
 
 public partial class Emitter : AnnaCcBaseVisitor<bool>
 {
     public string StackTop { get; set; } = "0x8000";
+
+    public InstructionScheduler Scheduler { get; } = new();
 
     public CompilerContext Cc { get; internal set; } = new();
 
@@ -19,30 +21,33 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         Cc = cc;
     }
 
-    public static void Emit(CompilerContext cc, ParserRuleContext context)
+    public static InstructionScheduler Emit(CompilerContext cc, ParserRuleContext context, string filename = "(no filename)")
     {
         var e = new Emitter(cc);
 
-        EmitProlog();
+        e.EmitProlog(filename);
 
         e.Visit(context);
 
-        EmitInstruction(".halt", [], "end program");
-        EmitBlankLine();
+        e.EmitInstruction(".halt", [], "end program");
+        e.EmitBlankLine();
 
-        EmitHeaderComment("start of functions");
-        EmitBlankLine();
+        e.EmitHeaderComment("start of functions");
+        e.EmitBlankLine();
 
-        EmitFunctionBodies(cc, e);
-        EmitBlankLine();
+        e.EmitFunctionBodies(cc, e);
+        e.EmitBlankLine();
 
-        EmitHeaderComment(".data segment");
-        EmitGlobalVars(e);
+        e.EmitHeaderComment(".data segment");
+        e.EmitBlankLine();
+        e.EmitGlobalVars(e);
 
-        EmitInternedStrings(cc);
-        EmitBlankLine();
+        e.EmitInternedStrings(cc);
+        e.EmitBlankLine();
 
-        EmitInstruction("_stack", ".org", [e.StackTop], "stack origination");
+        e.EmitInstruction("_stack", ".org", [e.StackTop], "stack origination");
+
+        return e.Scheduler;
     }
 
     public void RegisterBuiltins()
@@ -83,48 +88,6 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         return true;
     }
 
-    // public override bool VisitFunc_signature([NotNull] AnnaCcParser.Func_signatureContext context)
-    // {
-    //     if (Cc.Functions.TryGetValue(context.name.Text, out var scope))
-    //     {
-    //         Cc.CurrentScope = scope;
-    //     }
-    //     else
-    //     {
-    //         var funcScope = new Scope { Name = context.name.Text, Type = context.type().GetText() };
-    //         Cc.CurrentScope = funcScope;
-
-    //         var funcName = context.name.Text;
-    //         var paramList = context.param_list()._param;
-
-    //         paramList.EachReverse((p, i) =>
-    //         {
-    //             funcScope.Args.Add(new Scope.Var(p.name.Text, p.t.GetText(), i));
-    //         });
-
-    //         Cc.Functions[funcScope.Name] = funcScope;
-    //     }
-
-    //     return true;
-    // }
-
-    // public override bool VisitFunc_proto([NotNull] AnnaCcParser.Func_protoContext context)
-    // {
-    //     VisitFunc_signature(context.func_signature());
-    //     Cc.CurrentScope = Cc.GlobalScope;
-
-    //     return true;
-    // }
-
-    // public override bool VisitFunc_decl([NotNull] AnnaCcParser.Func_declContext context)
-    // {
-    //     VisitFunc_signature(context.func_signature());
-    //     functionBodies[context.func_signature().name.Text] = context.block();
-    //     Cc.CurrentScope = Cc.GlobalScope;
-
-    //     return true;
-    // }
-
     public override bool VisitFunc_call([NotNull] AnnaCcParser.Func_callContext context)
     {
         // save r3 (push onto stack)
@@ -139,8 +102,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         if (funcName == "out")
         {
             VisitExpr(args[0]);
-            EmitInstruction("pop", ["r7", "r3"]);
-            EmitInstruction("out", ["r3"]);
+            EmitInstruction("pop", ["r7", "r3"], "pop value for output");
+            EmitInstruction("out", ["r3"], "output r3");
             EmitBlankLine();
             return true;
         }
@@ -155,40 +118,13 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         if (Cc.Functions[funcName].Type != "void")
         {
-            EmitInstruction("push", ["r7", "r4"], $"push {funcName}() return value");
+            EmitInstruction("push", ["r7", "r4"], $"push {funcName}(...)'s result");
         }
 
         EmitBlankLine();
 
         return true;
     }
-
-    // public override bool VisitParam_list([NotNull] AnnaCcParser.Param_listContext context)
-    // {
-    //     inParamsDecl = true;
-    //     foreach (var pc in context._param)
-    //     {
-    //         VisitSimple_decl(pc);
-    //     }
-    //     inParamsDecl = false;
-    //     return true;
-    // }
-
-    // public override bool VisitSimple_decl([NotNull] AnnaCcParser.Simple_declContext context)
-    // {
-    //     if (inParamsDecl)
-    //     {
-    //         Cc.CurrentScope.Args.Add(new Scope.Var(context.name.Text, context.type().GetText(), Cc.CurrentScope.Args.Count));
-    //     }
-    //     else
-    //     {
-    //         var name = context.name.Text;
-    //         var type = context.type().GetText();
-    //         Cc.CurrentScope.AddVar(name, type);
-    //     }
-
-    //     return true;
-    // }
 
     public override bool VisitFunc_decl([NotNull] AnnaCcParser.Func_declContext context)
     {
@@ -245,6 +181,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             }
             else if (Regex.IsMatch(instr, "^[a-z]+$"))
             {
+                // TODO: fold constants if both sides are constant
+                // TODO: simplify operations (no stack) if one side is constant
                 EmitInstruction("pop", ["r7", "r2"], $"pop arg2 for op \"{op}\"");
                 EmitInstruction("pop", ["r7", "r1"], $"pop arg2 for op \"{op}\"");
                 EmitInstruction(instr, ["r3", "r1", "r2"], $"perform \"{op}\" on r1, r2");

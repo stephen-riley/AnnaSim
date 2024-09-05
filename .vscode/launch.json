@@ -12,17 +12,16 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
             "args": [
-                "debug",
-                "-i",
-                "6",
-                "-v",
+                "cc",
                 "-f",
-                "../test/fixtures/fibonacci_all_lone_labels.asm"
+                "../test/fixtures/simple_fibonacci.c",
+                "-o",
+                "/tmp/fib.asm"
             ],
             "cwd": "${workspaceFolder}/src",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
-            // "console": "internalConsole",
-            "console": "externalTerminal",
+            "console": "internalConsole",
+            // "console": "externalTerminal",
             "stopAtEntry": false
         },
         {

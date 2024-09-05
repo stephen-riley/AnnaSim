@@ -1,6 +1,7 @@
 using AnnaSim.TinyC.Antlr;
 using Antlr4.Runtime;
 using AnnaSim.TinyC.Errors;
+using System.Text;
 
 namespace AnnaSim.TinyC;
 
@@ -64,7 +65,7 @@ public class Compiler
         }
     }
 
-    public static bool TryCompile(string input, out string? asmSource, bool showParseTree = false)
+    public static bool TryCompile(string filename, string input, out string? asmSource, bool showParseTree = false)
     {
         var compiler = new Compiler() { Trace = false };
         var success = compiler.BuildParseTree(input);
@@ -89,7 +90,13 @@ public class Compiler
                 return false;
             }
 
-            Emitter.Emit(sa.Cc, compiler.ParseTree);
+            var sched = Emitter.Emit(sa.Cc, compiler.ParseTree, filename);
+
+            using var ms = new MemoryStream();
+            using var writer = new StreamWriter(ms) { AutoFlush = true };
+            sched.Render(writer);
+            asmSource = Encoding.ASCII.GetString(ms.ToArray());
+            return true;
         }
         else
         {
@@ -97,9 +104,5 @@ public class Compiler
             asmSource = null;
             return false;
         }
-
-        // TODO: have the emitter write to a data structure, then render it to this string
-        asmSource = "# TBD";
-        return true;
     }
 }
