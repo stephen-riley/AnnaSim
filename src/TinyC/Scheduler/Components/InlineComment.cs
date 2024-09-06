@@ -1,4 +1,4 @@
-namespace AnnaSim.TinyC.Scheduler;
+namespace AnnaSim.TinyC.Scheduler.Components;
 
 public class InlineComment : IInstructionComponent
 {

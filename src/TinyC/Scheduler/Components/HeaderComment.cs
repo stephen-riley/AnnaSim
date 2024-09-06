@@ -1,6 +1,4 @@
-using AnnaSim.TinyC.Scheduler.Instructions;
-
-namespace AnnaSim.TinyC.Scheduler;
+namespace AnnaSim.TinyC.Scheduler.Components;
 
 public class HeaderComment : IInstructionComponent
 {

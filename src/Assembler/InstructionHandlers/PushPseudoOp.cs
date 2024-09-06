@@ -9,7 +9,10 @@ public partial class PushPseudoOp
         var swDef = ISA.GetIdef((ushort)(new SwInstruction().Opcode << 12));
         var addiDef = ISA.GetIdef((ushort)(new AddiInstruction().Opcode << 12));
 
-        MemoryImage[Addr] = swDef.ToInstruction([.. operands, 0]); Addr++;
+        // operand[0] is the stack pointer
+        // operand[1] is the base address (we hardcode 0 as the offset)
+
+        MemoryImage[Addr] = swDef.ToInstruction([operands[1], operands[0], 0]); Addr++;
         MemoryImage[Addr] = addiDef.ToInstruction([operands[0], operands[0], -1]); Addr++;
     }
 

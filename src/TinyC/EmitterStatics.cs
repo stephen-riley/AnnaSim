@@ -43,7 +43,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             EmitStackFrameComments(scope);
 
             EmitLabel(name);
-            EmitInstruction("push", ["r7", "r6"], "push FP");
+            EmitInstruction("mov", ["r6", "r7"], "set FP for our stack frame");
+            EmitInstruction("push", ["r7", "r7"], "cache SP");
             EmitInstruction("push", ["r7", "r5"], "push return address");
 
             if (scope.Vars.Count > 0)
@@ -75,7 +76,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             EmitComment($" FP+{a.Offset}  {a.Name}");
         }
 
-        EmitComment(" FP+0  previous FP");
+        EmitComment(" FP+0  previous SP");
         EmitComment(" FP-1  return addr");
 
         foreach (var v in scope.Vars)

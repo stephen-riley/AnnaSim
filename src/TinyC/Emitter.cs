@@ -3,6 +3,7 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using AnnaSim.TinyC.Antlr;
 using AnnaSim.TinyC.Scheduler;
+using AnnaSim.Cpu;
 
 namespace AnnaSim.TinyC;
 
@@ -205,8 +206,17 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         {
             if (context.INT() is not null)
             {
-                var value = context.INT().GetText();
-                EmitInstruction("lwi", ["r3", value], $"load constant {value} -> r3");
+                var strValue = context.INT().GetText();
+                var value = (int)AnnaMachine.ParseMachineInputs([strValue]).First();
+                if (value is >= -128 and <= 127)
+                {
+                    // save an instruction if it's an 8-bit value
+                    EmitInstruction("lli", ["r3", strValue], $"load constant {strValue} -> r3");
+                }
+                else
+                {
+                    EmitInstruction("lwi", ["r3", strValue], $"load constant {strValue} -> r3");
+                }
             }
             else if (context.ID() is not null)
             {

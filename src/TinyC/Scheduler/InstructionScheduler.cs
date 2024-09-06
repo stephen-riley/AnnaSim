@@ -1,3 +1,4 @@
+using AnnaSim.TinyC.Scheduler.Components;
 using AnnaSim.TinyC.Scheduler.Instructions;
 
 using static AnnaSim.TinyC.Scheduler.Instructions.InstrOpcode;
@@ -23,7 +24,7 @@ public class InstructionScheduler
 
     public void HeaderComment(string comment) => Schedule(new HeaderComment { Comment = comment });
 
-    public void Label(string label) => Instructions.Peek().Labels.Add(label);
+    public void Label(string label) => Schedule(new LabelComponent { Label = label });
 
     public void Schedule(IInstructionComponent piece)
     {
@@ -39,16 +40,19 @@ public class InstructionScheduler
         if (Instructions.Peek().IsDefined == true && piece is BlankLine)
         {
             Instructions.Peek().TrailingTrivia.Add(piece);
-            return;
         }
         else if (Instructions.Peek().IsDefined)
         {
             Instructions.Push(new ScheduledInstruction());
             Schedule(piece);
         }
-        else if (piece is ScheduledInstruction)
+        else if (piece is ScheduledInstruction si)
         {
-            Instructions.Peek().CopyInstructionDataFrom(piece as ScheduledInstruction);
+            Instructions.Peek().CopyInstructionDataFrom(si);
+        }
+        else if (piece is LabelComponent l)
+        {
+            Instructions.Peek().Labels.Add(l.Label);
         }
         else
         {
