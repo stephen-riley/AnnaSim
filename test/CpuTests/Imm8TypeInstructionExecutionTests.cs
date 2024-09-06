@@ -91,7 +91,9 @@ public class Imm8TypeInstructionExecutionTests
         var cpu = new AnnaMachine();
         cpu.Registers[1] = (Word)(uint)testValue;
 
-        InstructionDefinition idef = ISA.Lookup["blt"];
+        var idef = ISA.Lookup["blt"];
+        idef.Asm = new();
+
         var instruction = idef.ToInstruction(rd: 1, imm8: (short)offset);
         var newPc = idef.Execute(cpu, instruction);
 

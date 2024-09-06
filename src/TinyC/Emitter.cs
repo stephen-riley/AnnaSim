@@ -45,7 +45,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         e.EmitInternedStrings(cc);
         e.EmitBlankLine();
 
-        e.EmitInstruction("_stack", ".org", [e.StackTop], "stack origination");
+        e.EmitInstruction("_stack", ".def", [e.StackTop], "stack origination");
 
         return e.Scheduler;
     }

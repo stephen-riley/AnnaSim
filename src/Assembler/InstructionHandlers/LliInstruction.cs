@@ -6,10 +6,10 @@ public partial class LliInstruction
 {
     protected override void AssembleImpl(Operand[] operands, string? label)
     {
-        MemoryImage[Addr++] = ToInstruction(operands);
+        MemoryImage[Addr] = ToInstruction(operands); Addr++;
     }
 
-    public override Instruction ToInstruction(Operand[] operands)
+    public override Instruction ToInstructionImpl(Operand[] operands)
     {
         return Instruction.NewImm8(this, Asm.Register(operands[0]), (short)operands[1]);
     }

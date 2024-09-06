@@ -14,6 +14,6 @@ public partial class DefDirective
         Asm.labels[label] = operands[0].AsUInt();
     }
 
-    public override Instruction ToInstruction(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
+    public override Instruction ToInstructionImpl(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
 }
 

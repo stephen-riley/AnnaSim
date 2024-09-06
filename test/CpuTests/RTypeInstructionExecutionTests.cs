@@ -94,6 +94,7 @@ public class RTypeInstructionExecutionTests
         cpu.Registers[rd] = 20;
 
         var idef = ISA.Lookup["jalr"];
+        idef.Asm = new();
         var instruction = idef.ToInstruction(rd: rd, rs1: rs1);
         var newPc = idef.Execute(cpu, instruction);
 

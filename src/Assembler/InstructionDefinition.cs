@@ -1,5 +1,6 @@
 using AnnaSim.Assembler;
 using AnnaSim.Cpu.Memory;
+using AnnaSim.Extensions;
 
 namespace AnnaSim.Instructions;
 
@@ -54,5 +55,11 @@ public abstract partial class InstructionDefinition
         return ToInstruction([.. operands]);
     }
 
-    public abstract Instruction ToInstruction(Operand[] operands);
+    public Instruction ToInstruction(Operand[] operands)
+    {
+        operands.Where(o => o.Type == OperandType.Label).ForEach(o => Asm.resolutionToDo[Addr] = o.Str);
+        return ToInstructionImpl(operands);
+    }
+
+    public abstract Instruction ToInstructionImpl(Operand[] operands);
 }

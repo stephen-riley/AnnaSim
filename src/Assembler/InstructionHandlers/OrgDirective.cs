@@ -14,6 +14,6 @@ public partial class OrgDirective
         Asm.Addr = (uint)(int)operands[0];
     }
 
-    public override Instruction ToInstruction(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
+    public override Instruction ToInstructionImpl(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
 }
 

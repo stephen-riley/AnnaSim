@@ -14,12 +14,12 @@ public partial class CstrDirective
 
         foreach (var c in operands[0].Str[1..^1])
         {
-            MemoryImage[Addr++] = c;
+            MemoryImage[Addr] = c; Addr++;
         }
 
-        MemoryImage[Addr++] = 0;
+        MemoryImage[Addr] = 0; Addr++;
     }
 
-    public override Instruction ToInstruction(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
+    public override Instruction ToInstructionImpl(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
 }
 

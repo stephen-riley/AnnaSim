@@ -9,10 +9,10 @@ public partial class LwiPseudoOp
         var lliDef = ISA.GetIdef((ushort)(new LliInstruction().Opcode << 12));
         var luiDef = ISA.GetIdef((ushort)(new LuiInstruction().Opcode << 12));
 
-        MemoryImage[Addr++] = lliDef.ToInstruction(operands);
-        MemoryImage[Addr++] = luiDef.ToInstruction(operands);
+        MemoryImage[Addr] = lliDef.ToInstruction(operands); Addr++;
+        MemoryImage[Addr] = luiDef.ToInstruction(operands); Addr++;
     }
 
-    public override Instruction ToInstruction(Operand[] operands) => throw new NotImplementedException($"{Mnemonic}.{nameof(ExecuteImpl)}");
+    public override Instruction ToInstructionImpl(Operand[] operands) => throw new NotImplementedException($"{Mnemonic}.{nameof(ExecuteImpl)}");
 }
 

@@ -6,10 +6,10 @@ public partial class JalrInstruction
 {
     protected override void AssembleImpl(Operand[] operands, string? label)
     {
-        MemoryImage[Addr++] = ToInstruction(operands);
+        MemoryImage[Addr] = ToInstruction(operands); Addr++;
     }
 
-    public override Instruction ToInstruction(Operand[] operands)
+    public override Instruction ToInstructionImpl(Operand[] operands)
     {
         // jalr has two "modes" in assembly:
         //  1. a jump and link -- rs1 is specified as > 0

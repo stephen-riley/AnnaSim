@@ -8,9 +8,9 @@ public partial class MovPseudoOp
     {
         var addDef = ISA.GetIdef((ushort)(new AddInstruction().Opcode << 12));
 
-        MemoryImage[Addr++] = addDef.ToInstruction([operands[0], operands[1], Operand.Register("r0")]);
+        MemoryImage[Addr] = addDef.ToInstruction([operands[0], operands[1], Operand.Register("r0")]); Addr++;
     }
 
-    public override Instruction ToInstruction(Operand[] operands) => throw new NotImplementedException($"{Mnemonic}.{nameof(ExecuteImpl)}");
+    public override Instruction ToInstructionImpl(Operand[] operands) => throw new NotImplementedException($"{Mnemonic}.{nameof(ExecuteImpl)}");
 }
 

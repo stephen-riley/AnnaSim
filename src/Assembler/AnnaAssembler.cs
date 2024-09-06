@@ -183,8 +183,7 @@ public partial class AnnaAssembler
     {
         if (s.StartsWith('&'))
         {
-            resolutionToDo[Addr] = s[1..];
-            return new Operand(0xffff);
+            return Label(s[1..]);
         }
         else if (s.StartsWith('r'))
         {

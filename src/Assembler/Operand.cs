@@ -55,6 +55,7 @@ public class Operand
         {
             OperandType.UnsignedInt => UnsignedInt,
             OperandType.SignedInt => (uint)SignedInt,
+            OperandType.Label => 0xffff,
             _ => throw new InvalidCastException($"Operand is of type {Type}, requested (uint) or (int)")
         };
     }
@@ -63,9 +64,21 @@ public class Operand
 
     public static implicit operator Operand(uint n) => new(n);
 
-    public static explicit operator ushort(Operand o) => o.Type == OperandType.UnsignedInt ? (ushort)o.UnsignedInt : throw new InvalidCastException($"Operand is of type {o.Type}, requested (ushort)");
+    public static explicit operator ushort(Operand o) => o.Type switch
+    {
+        OperandType.UnsignedInt => (ushort)o.UnsignedInt,
+        OperandType.SignedInt => (ushort)o.SignedInt,
+        OperandType.Label => 0xffff,
+        _ => throw new InvalidCastException($"Operand is of type {o.Type}, requested (ushort)")
+    };
 
-    public static explicit operator short(Operand o) => o.Type == OperandType.SignedInt ? (short)o.SignedInt : throw new InvalidCastException($"Operand is of type {o.Type}, requested (short)");
+    public static explicit operator short(Operand o) => o.Type switch
+    {
+        OperandType.UnsignedInt => (short)o.UnsignedInt,
+        OperandType.SignedInt => (short)o.SignedInt,
+        OperandType.Label => -32768, // 0xffff
+        _ => throw new InvalidCastException($"Operand is of type {o.Type}, requested (ushort)")
+    };
 
     public static explicit operator uint(Operand o) => o.Type == OperandType.UnsignedInt ? o.UnsignedInt : throw new InvalidCastException($"Operand is of type {o.Type}, requested (uint)");
 

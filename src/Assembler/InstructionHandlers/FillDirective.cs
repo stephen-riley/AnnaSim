@@ -8,10 +8,10 @@ public partial class FillDirective
     {
         foreach (var operand in operands)
         {
-            MemoryImage[Addr++] = operand.AsUInt();
+            MemoryImage[Addr] = operand.AsUInt(); Addr++;
         }
     }
 
-    public override Instruction ToInstruction(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
+    public override Instruction ToInstructionImpl(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
 }
 

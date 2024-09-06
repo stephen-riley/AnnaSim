@@ -6,10 +6,10 @@ public partial class ShfInstruction
 {
     protected override void AssembleImpl(Operand[] operands, string? label)
     {
-        MemoryImage[Addr++] = ToInstruction(operands);
+        MemoryImage[Addr] = ToInstruction(operands); Addr++;
     }
 
-    public override Instruction ToInstruction(Operand[] operands)
+    public override Instruction ToInstructionImpl(Operand[] operands)
     {
         return Instruction.NewImm6(this, Asm.Register(operands[0]), Asm.Register(operands[1]), (short)operands[2]);
     }
