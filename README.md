@@ -13,7 +13,15 @@ See paper at http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
 - [X] Debug mode
 - [X] Allow file load from STDIN
 - [X] Allow debugging of .mem files
+- [ ] Tiny C compiler!
+    - [ ] #include in C
+    - [ ] for loop
+    - [ ] while loop
+    - [ ] do-while loop
+    - [ ] postfix increment
+- [ ] Allow + unary in asm (eg. for FP offsets)
+- [ ] Expressions in assembler?
 - [ ] .include directive
 - [ ] build annalib.asm
 - [ ] Prebuilt single-file executables?
-- [ ] dotnet tool?
+- [ ] dotnet tool
