@@ -11,4 +11,7 @@ public enum MathOperation
     And,
     Or,
     Not,
+
+    Halt = 0,
+    OutString = 1,
 }

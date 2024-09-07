@@ -53,4 +53,17 @@ public class AssemblerTests
         var asm = new AnnaAssembler();
         asm.Assemble(src);
     }
+
+    [TestMethod]
+    public void TestOutString()
+    {
+        var src = """
+                lwi     r3 &str
+                outs    r3
+        str:    .cstr   "hello"
+        """.Split('\n');
+
+        var asm = new AnnaAssembler();
+        asm.Assemble(src);
+    }
 }

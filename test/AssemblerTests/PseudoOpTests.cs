@@ -38,7 +38,7 @@ public class PseudoOpTests
         Assert.AreEqual(0b0100_111_111_000001, asm.MemoryImage[0]);
 
         // sw r7 r1 0
-        Assert.AreEqual(0b0111_111_001_000000, asm.MemoryImage[1]);
+        Assert.AreEqual(0b0110_001_111_000000, asm.MemoryImage[1]);
     }
 
     [TestMethod]

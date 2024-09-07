@@ -3,12 +3,19 @@ using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
 using AnnaSim.Exceptions;
+using AnnaSim.Assembler;
 
 namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
 public class RTypeInstructionExecutionTests
 {
+    static RTypeInstructionExecutionTests()
+    {
+        // This is required to run these tests individually.
+        InstructionDefinition.SetAssembler(new AnnaAssembler());
+    }
+
     [TestMethod]
     public void TestAddition()
     {
@@ -150,7 +157,7 @@ public class RTypeInstructionExecutionTests
     }
 
     [TestMethod]
-    public void TestOutputInstructions()
+    public void TestOutputInstruction()
     {
         var queue = new Queue<Word>();
 
@@ -170,5 +177,34 @@ public class RTypeInstructionExecutionTests
         });
 
         Assert.IsTrue(Enumerable.SequenceEqual(expected, queue));
+    }
+
+    [TestMethod]
+    public void TestOutputStringInstruction()
+    {
+        var tests = new Dictionary<uint, string>
+        {
+            [10] = "hello",
+            [20] = "world"
+        };
+
+        var queue = new Queue<string>();
+
+        var cpu = new AnnaMachine
+        {
+            OutputStringCallback = queue.Enqueue
+        };
+
+        tests.ForEach(kvp => cpu.Memory.Initialize(kvp.Key, kvp.Value));
+
+        var idef = ISA.Lookup["outs"];
+        foreach (var (addr, _) in tests)
+        {
+            cpu.Registers[1] = addr;
+            var instruction = idef.ToInstruction(rd: 1);
+            idef.Execute(cpu, instruction);
+        }
+
+        Assert.IsTrue(Enumerable.SequenceEqual(tests.Values, queue));
     }
 }

@@ -11,6 +11,7 @@ public class AnnaMachine
     public PdbInfo Pdb { get; internal set; } = new();
     public RegisterFile Registers { get; internal set; } = new();
     public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
+    public Action<string> OutputStringCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
     public CpuStatus Status { get; internal set; } = CpuStatus.Halted;
     public string CurrentFile { get; internal set; } = "";
     public int CyclesExecuted { get; internal set; } = 0;

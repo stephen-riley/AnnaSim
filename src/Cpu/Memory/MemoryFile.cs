@@ -47,6 +47,15 @@ public class MemoryFile
         }
     }
 
+    public void Initialize(uint baseAddr, string str)
+    {
+        foreach (var c in str)
+        {
+            memory[baseAddr++] = c;
+        }
+        memory[baseAddr] = 0;
+    }
+
     public void SetBreakpoint(uint addr) => Set32bits(addr, (uint)Get32bits(addr) | 0x80000000);
 
     public void ClearBreakpoint(uint addr) => Set32bits(addr, (uint)Get32bits(addr) & 0x7fffffff);
