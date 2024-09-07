@@ -80,6 +80,9 @@ public class InstructionScheduler
         }
     }
 
+    // TODO: back to back beq r0's
+    // TODO: beq is very next instruction
+
     internal bool OptPushPop()
     {
         var cur = Instructions.Pop();

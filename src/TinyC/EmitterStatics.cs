@@ -98,7 +98,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     {
         foreach (var s in cc.InternedStrings)
         {
-            EmitInstruction(label: s.Key, op: ".cstr", operands: [$"\"{s.Value}\""], "interned string");
+            EmitInstruction(label: s.Value, op: ".cstr", operands: [$"\"{s.Key}\""], "interned string");
         }
     }
 
@@ -149,7 +149,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         var n = labels[root];
         labels[root] = n + 1;
-        return $"{root}_{n:n3}";
+        return $"{root}_{n:d2}";
     }
 
     private static InstrOpcode ToEnum(string opcode)

@@ -34,7 +34,10 @@ func_proto  : func_signature ';' ;
 
 func_decl   : func_signature body=block ;
 
-if_stat     : 'if' '(' expr ')' block ( 'else' block )? ;
+if_stat     : 'if' '(' ifx=expr ')' ifblock=block 
+              ( 'else' 'if' '(' elseifx+=expr ')' elseifblock+=block )* 
+              ( 'else' elseblock=block )? 
+            ;
 
 while_stat  : 'while' '(' expr ')' block ;
 

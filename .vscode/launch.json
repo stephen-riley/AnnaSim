@@ -14,7 +14,8 @@
             "args": [
                 "cc",
                 "-f",
-                "../test/fixtures/simple_fibonacci.c",
+                // "../test/fixtures/simple_fibonacci.c",
+                "../test/fixtures/complex_if.c",
                 "-o",
                 "/tmp/fib.asm"
             ],

@@ -41,7 +41,9 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         e.EmitHeaderComment(".data segment");
         e.EmitBlankLine();
+
         e.EmitGlobalVars(e);
+        e.EmitBlankLine();
 
         e.EmitInternedStrings(cc);
         e.EmitBlankLine();
@@ -58,6 +60,69 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     // This skips the EOF token in the input stream
     public override bool VisitEntrypoint([NotNull] AnnaCcParser.EntrypointContext context) => Visit(context.children[0]);
+
+    public override bool VisitIf_stat([NotNull] AnnaCcParser.If_statContext context)
+    {
+        var start = GetNextLabel("ifst");
+        var exit = GetNextLabel("ifend");
+        var next = GetNextLabel("ifx");
+        var degenerateIf = context.elseblock is null && context._elseifx.Count == 0;
+
+        EmitLabel(start);
+
+        // handle if block
+        EmitComment($"{start} test condition");
+        VisitExpr(context.ifx);
+        EmitInstruction("pop", ["r7", "r3"]);
+        if (degenerateIf)
+        {
+            EmitInstruction("beq", ["r3", "&" + exit], "condition failed, exit");
+        }
+        else
+        {
+            EmitInstruction("beq", ["r3", "&" + next], "condition failed, goto next condition");
+        }
+
+        EmitBlankLine();
+        EmitComment($"{start} block");
+        VisitBlock(context.ifblock);
+        EmitInstruction("beq", ["r0", "&" + exit], "exit if");
+        EmitBlankLine();
+
+        // handle else ifs
+        if (context._elseifx.Count > 0)
+        {
+            for (var i = 0; i < context._elseifx.Count; i++)
+            {
+                var oldNextLabel = next;
+                next = GetNextLabel("ifx");
+                EmitComment($"{oldNextLabel} elseif condition");
+                EmitLabel(oldNextLabel);
+                VisitExpr(context._elseifx[i]);
+                EmitInstruction("pop", ["r7", "r3"]);
+                EmitInstruction("beq", ["r3", "&" + next], "condition failed, goto next condition");
+                EmitComment($"{oldNextLabel} block");
+                VisitBlock(context._elseifblock[i]);
+                EmitInstruction("beq", ["r0", "&" + exit], "exit if");
+                EmitBlankLine();
+            }
+        }
+
+        if (!degenerateIf)
+        {
+            EmitLabel(next);
+        }
+
+        // handle else block
+        if (context.elseblock is not null)
+        {
+            VisitBlock(context.elseblock);
+        }
+
+        EmitLabel(exit);
+
+        return true;
+    }
 
     public override bool VisitVar_decl([NotNull] AnnaCcParser.Var_declContext context)
     {
@@ -84,7 +149,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     public override bool VisitReturn_stat([NotNull] AnnaCcParser.Return_statContext context)
     {
         VisitExpr(context.expr());
-        EmitInstruction("beq", ["r0", $"&{Cc.CurrentScope.Name}_exit"]);
+        EmitInstruction("beq", ["r0", $"&{Cc.CurrentScope.Name}_exit"], "return (jump to func exit)");
 
         return true;
     }
@@ -163,6 +228,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 ">" => "bgt",
                 "<" => "blt",
                 "==" => "beq",
+                "!=" => "bne",
                 _ => throw new InvalidOperationException($"invalid operator {context.op.Text}")
             };
 
@@ -170,15 +236,15 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             {
                 throw new InvalidOperationException("AnnaCC does not support * or /");
             }
-            else if (op.StartsWith('b'))
+            else if (instr.StartsWith('b'))
             {
-                var label = GetNextLabel("_expr_true");
+                // var label = GetNextLabel("_true");
                 EmitInstruction("pop", ["r7", "r2"], $"pop arg2 for op \"{op}\"");
-                EmitInstruction("pop", ["r7", "r1"], $"pop arg2 for op \"{op}\"");
+                EmitInstruction("pop", ["r7", "r1"], $"pop arg1 for op \"{op}\"");
                 EmitInstruction("sub", ["r3", "r1", "r2"], "compare r1 and r2");
-                EmitInstruction(instr, ["r3", $"&{label}"], $"branch if \"{op}\" is true");
-                EmitInstruction("lli", ["r3", "0"], "result is 0 otherwise");
-                EmitLabel(label);
+                // EmitInstruction(instr, ["r3", $"&{label}"], $"branch if \"{op}\" is true");
+                EmitInstruction(instr, ["r3", "1"], $"jump past the next instruction if \"{op}\" is true");
+                EmitInstruction("lli", ["r3", "0"], "result is false (0) otherwise");
             }
             else if (Regex.IsMatch(instr, "^[a-z]+$"))
             {
