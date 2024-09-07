@@ -183,7 +183,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 return true;
 
             case "println":
-                Cc.InternedStrings["__nl"] = "\n";
+                Cc.InternedStrings["\n"] = "__nl";
                 EmitInstruction("lwi", ["r3", "&__nl"], "load addr of newline");
                 EmitInstruction("outs", ["r3"], "print newline");
                 EmitBlankLine();
@@ -339,7 +339,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             else if (context.STRING() is not null)
             {
                 var strLabel = GetInternedStringLabel(context.STRING().GetText()[1..^1]);
-                EmitInstruction("lw", ["r3", $"&{strLabel}"]);
+                EmitInstruction("lwi", ["r3", $"&{strLabel}"]);
             }
             else if (context.func_call() is not null)
             {

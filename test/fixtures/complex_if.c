@@ -1,10 +1,14 @@
 int n = 1;
-int z;
+
+print("Which clause executed? ");
 
 if (n == 1) {
-    z = "if";
+    print("if");
 } else if( n == 2) {
-    z = "else if";
+    print("else if");
 } else {
-    z = "else";
+    print("else");
 }
+
+println();
+println();

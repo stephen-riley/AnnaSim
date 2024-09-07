@@ -23,7 +23,8 @@ public class Runner
 
         Cpu = new AnnaMachine(fname, origInputs)
         {
-            OutputCallback = Outputs.Add
+            OutputCallback = Outputs.Add,
+            OutputStringCallback = Console.Write
         };
     }
 

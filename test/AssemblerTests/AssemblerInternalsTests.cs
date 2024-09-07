@@ -55,14 +55,15 @@ public class AssemblerInternalsTests
     }
 
     [TestMethod]
-    [DataRow(".cstr", new string[] { "\"ABC\"" }, new uint[] { 0x41, 0x42, 0x43, 0x00 }, 4)]
+    [DataRow(new string[] { "\"ABC\"" }, new uint[] { 0x41, 0x42, 0x43, 0x00 }, 4)]
+    [DataRow(new string[] { "\"\\ \\t\\n\"" }, new uint[] { 0x20, 0x09, 0x0a, 0x00 }, 4)]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Attributes have weird rules about arrays as parameters")]
-    public void TestCstrDirectiveHandler(string instruction, string[] operandStrings, uint[] memImage, int expectedPtr)
+    public void TestCstrDirectiveHandler(string[] operandStrings, uint[] memImage, int expectedPtr)
     {
         var asm = new AnnaAssembler();
         var memImageWords = memImage.Select(ui => (Word)ui).ToList();
 
-        var idef = ISA.Lookup[instruction];
+        var idef = ISA.Lookup[".cstr"];
         var operands = operandStrings.Select(s => asm.ParseOperand(s)).ToArray();
         idef.Assemble(asm, operands);
 

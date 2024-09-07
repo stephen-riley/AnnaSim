@@ -147,7 +147,8 @@ public class SemanticAnalyzer : AnnaCcBaseVisitor<bool>
 
     public override bool VisitFunc_call([NotNull] AnnaCcParser.Func_callContext context)
     {
-        if (context.name.Text == "out")
+        // TODO: need to set up a dictionary of builtins that this and the emitter can use
+        if (context.name.Text is "out" or "print" or "printn" or "println")
         {
             return true;
         }

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Text.RegularExpressions;
 using AnnaSim.Assembler;
 
 namespace AnnaSim.Instructions.Definitions;
@@ -12,7 +12,7 @@ public partial class CstrDirective
             throw new InvalidOperationException($"Operand.Str {operands[0].Str} does not start and end with double quotes");
         }
 
-        foreach (var c in operands[0].Str[1..^1])
+        foreach (var c in Regex.Unescape(operands[0].Str)[1..^1])
         {
             MemoryImage[Addr] = c; Addr++;
         }

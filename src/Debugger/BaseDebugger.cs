@@ -26,7 +26,7 @@ public abstract class BaseDebugger
 
     protected BaseDebugger(string fname, string[] inputs, string[] argv, int screenMap = 0xc000)
     {
-        this.origFilename = fname;
+        origFilename = fname;
         origInputs = inputs.Select(AnnaMachine.ParseInputString).ToArray();
         this.argv = argv;
         ScreenMap = (uint)screenMap;
@@ -37,7 +37,8 @@ public abstract class BaseDebugger
             {
                 Outputs.Add(w);
                 TerminalWriteLine($"out: {w}");
-            }
+            },
+            OutputStringCallback = TerminalWrite
         };
     }
 

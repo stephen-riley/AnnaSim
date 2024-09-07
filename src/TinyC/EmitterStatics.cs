@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using AnnaSim.TinyC.Antlr;
 using AnnaSim.TinyC.Scheduler.Instructions;
 
@@ -98,7 +99,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     {
         foreach (var s in cc.InternedStrings)
         {
-            EmitInstruction(label: s.Value, op: ".cstr", operands: [$"\"{s.Key}\""], "interned string");
+            EmitInstruction(label: s.Value, op: ".cstr", operands: [$"\"{Regex.Escape(s.Key)}\""], "interned string");
         }
     }
 
