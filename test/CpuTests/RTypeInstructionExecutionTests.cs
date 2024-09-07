@@ -207,4 +207,28 @@ public class RTypeInstructionExecutionTests
 
         Assert.IsTrue(Enumerable.SequenceEqual(tests.Values, queue));
     }
+
+    [TestMethod]
+    public void TestOutputNumStringInstruction()
+    {
+        var tests = new List<int> { 10, 20, -30 };
+        var testStrs = tests.Select(n => n.ToString()).ToList();
+
+        var queue = new Queue<string>();
+
+        var cpu = new AnnaMachine
+        {
+            OutputStringCallback = queue.Enqueue
+        };
+
+        var idef = ISA.Lookup["outns"];
+        foreach (var n in tests)
+        {
+            cpu.Registers[1] = (uint)n;
+            var instruction = idef.ToInstruction(rd: 1);
+            idef.Execute(cpu, instruction);
+        }
+
+        Assert.IsTrue(Enumerable.SequenceEqual(testStrs, queue));
+    }
 }

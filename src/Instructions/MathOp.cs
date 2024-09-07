@@ -14,4 +14,5 @@ public enum MathOperation
 
     Halt = 0,
     OutString = 1,
+    OutNumString = 2,
 }

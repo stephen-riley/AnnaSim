@@ -154,6 +154,46 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         return true;
     }
 
+    private bool HandleBuiltins(AnnaCcParser.Func_callContext context)
+    {
+        var funcName = context.name.Text;
+        var args = context.args._args;
+
+        switch (funcName)
+        {
+            case "out":
+                VisitExpr(args[0]);
+                EmitInstruction("pop", ["r7", "r3"], "pop value for output");
+                EmitInstruction("out", ["r3"], "output r3");
+                EmitBlankLine();
+                return true;
+
+            case "print":
+                VisitExpr(args[0]);
+                EmitInstruction("pop", ["r7", "r3"], "pop value for output");
+                EmitInstruction("outs", ["r3"], "print string at r3");
+                EmitBlankLine();
+                return true;
+
+            case "printn":
+                VisitExpr(args[0]);
+                EmitInstruction("pop", ["r7", "r3"], "pop value for output");
+                EmitInstruction("outns", ["r3"], "print string at r3");
+                EmitBlankLine();
+                return true;
+
+            case "println":
+                Cc.InternedStrings["__nl"] = "\n";
+                EmitInstruction("lwi", ["r3", "&__nl"], "load addr of newline");
+                EmitInstruction("outs", ["r3"], "print newline");
+                EmitBlankLine();
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
     public override bool VisitFunc_call([NotNull] AnnaCcParser.Func_callContext context)
     {
         // save r3 (push onto stack)
@@ -165,12 +205,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         var funcName = context.name.Text;
         var args = context.args._args;
 
-        if (funcName == "out")
+        if (HandleBuiltins(context))
         {
-            VisitExpr(args[0]);
-            EmitInstruction("pop", ["r7", "r3"], "pop value for output");
-            EmitInstruction("out", ["r3"], "output r3");
-            EmitBlankLine();
             return true;
         }
 
