@@ -19,9 +19,11 @@ See paper at http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
     - [ ] while loop
     - [ ] do-while loop
     - [ ] postfix increment
-- [ ] Allow + unary in asm (eg. for FP offsets)
-- [ ] Expressions in assembler?
-- [ ] .include directive
+- [ ] Assembler enhancements
+    - [ ] Allow + unary in asm (eg. for FP offsets)
+    - [ ] Expressions in assembler?
+    - [ ] .include directive
+    - [ ] add jmp/br pseudo op
 - [ ] build annalib.asm
 - [ ] Prebuilt single-file executables?
 - [ ] dotnet tool

@@ -152,7 +152,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         var n = labels[root];
         labels[root] = n + 1;
-        return $"{root}_{n:d2}";
+        return $"{root}{n:d2}";
     }
 
     private static InstrOpcode ToEnum(string opcode)
