@@ -99,7 +99,9 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     {
         foreach (var s in cc.InternedStrings)
         {
-            EmitInstruction(label: s.Value, op: ".cstr", operands: [$"\"{Regex.Escape(s.Key)}\""], "interned string");
+            // We can leave most characters alone, but whitepace chars might mess up the output.
+            var escaped = s.Key.Replace("\t", "\\t").Replace("\n", "\\n").Replace("\r", "\\r");
+            EmitInstruction(label: s.Value, op: ".cstr", operands: [$"\"{escaped}\""], "interned string");
         }
     }
 
