@@ -14,11 +14,11 @@
             "args": [
                 "cc",
                 "-f",
-                // "../test/fixtures/simple_fibonacci.c",
-                "../test/fixtures/complex_if.c",
-                "-r"
-                // "-o",
-                // "/tmp/fib.asm"
+                "../test/fixtures/simple_fibonacci.c",
+                // "../test/fixtures/assignment.c",
+                "-r",
+                "-o",
+                "/tmp/fib.asm"
             ],
             // "args": [
             //     "run",

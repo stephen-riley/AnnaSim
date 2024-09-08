@@ -81,7 +81,7 @@ public class InstructionScheduler
     }
 
     // TODO: back to back beq r0's
-    // TODO: beq is very next instruction
+    // TODO: beq to very next instruction
 
     internal bool OptPushPop()
     {

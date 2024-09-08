@@ -27,6 +27,9 @@ public class CompileCliOptions
     [Option('s', "screendump", HelpText = "Dump screen to STDOUT after execution")]
     public bool DumpScreen { get; set; }
 
+    [Option('t', "trace", HelpText = "Trace parsing")]
+    public bool Trace { get; set; }
+
     private static readonly UnParserSettings settings = new()
     {
         GroupSwitches = true,

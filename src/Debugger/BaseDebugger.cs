@@ -81,66 +81,6 @@ public abstract class BaseDebugger
 
             switch (cmd[0])
             {
-                case 'q': goto breakLoop;
-
-                case 'c':
-                    lastRegistersState = Cpu.Registers.Copy();
-                    Status = Cpu.Execute();
-                    break;
-
-                case 'r' when cmd == "r*":
-                    var display = string.Join(" | ", Enumerable.Range(0, Cpu.Registers.Length)
-                        .Select(r => $"r{r}: {Cpu.Registers[(uint)r]:x4}"));
-                    TerminalWriteLine($"* {display}");
-                    break;
-
-                case 'r' when cmd.Length > 1:
-                    // TODO: add register aliases to assembler output
-
-                    uint r = Convert.ToUInt32(cmd[1..]);
-                    if (r < 0 || (r >= Cpu.Registers.Length))
-                    {
-                        TerminalWriteLine($"* invalid register {cmd} (must be in the range 0..{Cpu.Registers.Length - 1})");
-                        continue;
-                    }
-                    TerminalWriteLine($"* r{r}: {Cpu.Registers[r]}");
-                    break;
-
-                case 'r':
-                    TerminalWriteLine("* must specify a register or register alias");
-                    break;
-
-                case 'm' when cmd.Length > 2:
-                    var addr = Convert.ToUInt16(cmd[2..], 16);
-                    TerminalWriteLine($"* M[{cmd[2..]}]: {Cpu.Memory[addr]}");
-                    break;
-
-                case 'w' when cmd.Length > 2:
-                    addr = Convert.ToUInt16(cmd[2..], 16);
-                    watches.Fluid(l => l.Add(addr)).Sort();
-                    break;
-
-                case 'R':
-                    if (origFilename == "-")
-                    {
-                        TerminalWriteLine("* cannot reset from STDIN");
-                    }
-                    else
-                    {
-                        Cpu.Reset(origInputs);
-                        Outputs.Clear();
-                        lastRegistersState = Cpu.Registers.Copy();
-                        Status = HaltReason.Running;
-                    }
-                    break;
-
-                case 'n':
-                    lastRegistersState = Cpu.Registers.Copy();
-                    Status = Cpu.ExecuteSingleInstruction();
-                    break;
-
-                case 's': TerminalWriteLine($"Processor status: {Cpu.Status}"); break;
-
                 case 'b' when cmd.Length > 2:
                     uint breakAddr = 0;
                     var descriptor = "";
@@ -190,6 +130,28 @@ public abstract class BaseDebugger
 
                     break;
 
+                case 'c':
+                    lastRegistersState = Cpu.Registers.Copy();
+                    Status = Cpu.Execute();
+                    break;
+
+                case 'd':
+                    DumpScreen();
+                    break;
+
+                case 'h': RenderHelp(); break;
+
+                case 'i' when cmd.Length > 1:
+                    var inputs = cmd[2..].Split();
+                    Cpu.AddInputs(inputs);
+                    TerminalWriteLine($"Added {inputs.Length} inputs");
+                    break;
+
+                case 'i':
+                    Cpu.ClearInputs();
+                    TerminalWriteLine("Cleared inputs.");
+                    break;
+
                 case 'l':
                     var fname = cmd[2..];
                     if (fname.EndsWith(".mem"))
@@ -205,27 +167,78 @@ public abstract class BaseDebugger
                     }
                     break;
 
-                case 'i' when cmd.Length > 1:
-                    var inputs = cmd[2..].Split();
-                    Cpu.AddInputs(inputs);
-                    TerminalWriteLine($"Added {inputs.Length} inputs");
+                case 'm' when cmd.Length > 2:
+                    var addr = Convert.ToUInt16(cmd[2..], 16);
+                    TerminalWriteLine($"* M[{cmd[2..]}]: {Cpu.Memory[addr]}");
                     break;
 
-                case 'i':
-                    Cpu.ClearInputs();
-                    TerminalWriteLine("Cleared inputs.");
+                case 'n':
+                    lastRegistersState = Cpu.Registers.Copy();
+                    Status = Cpu.ExecuteSingleInstruction();
                     break;
 
-                case 'd':
-                    DumpScreen();
+                case 'p':
+                    foreach (var kvp in Cpu.Pdb.Labels)
+                    {
+                        var line = Cpu.Pdb.LineAddrMap.Where(e => e.Value == kvp.Value).Select(e => e.Key).FirstOrDefault();
+                        var lineStr = line != 0 ? $" (line {line})" : "";
+                        TerminalWrite($" 0x{kvp.Value:x4} {kvp.Key}{lineStr}");
+                    }
+                    break;
+
+                case 'q': goto breakLoop;
+
+                case 'r' when cmd == "r*":
+                    var display = string.Join(" | ", Enumerable.Range(0, Cpu.Registers.Length)
+                        .Select(r => $"r{r}: {Cpu.Registers[(uint)r]:x4}"));
+                    TerminalWriteLine($"* {display}");
+                    break;
+
+                case 'r' when cmd.Length > 1:
+                    // TODO: add register aliases to assembler output
+
+                    uint r = Convert.ToUInt32(cmd[1..]);
+                    if (r < 0 || (r >= Cpu.Registers.Length))
+                    {
+                        TerminalWriteLine($"* invalid register {cmd} (must be in the range 0..{Cpu.Registers.Length - 1})");
+                        continue;
+                    }
+                    TerminalWriteLine($"* r{r}: {Cpu.Registers[r]}");
+                    break;
+
+                case 'r':
+                    TerminalWriteLine("* must specify a register or register alias");
+                    break;
+
+                case 'R':
+                    if (origFilename == "-")
+                    {
+                        TerminalWriteLine("* cannot reset from STDIN");
+                    }
+                    else
+                    {
+                        Cpu.Reset(origInputs);
+                        Outputs.Clear();
+                        lastRegistersState = Cpu.Registers.Copy();
+                        Status = HaltReason.Running;
+                    }
+                    break;
+
+                case 's': TerminalWriteLine($"Processor status: {Cpu.Status}"); break;
+
+                case 'w' when cmd.Length > 2:
+                    addr = Convert.ToUInt16(cmd[2..], 16);
+                    watches.Fluid(l => l.Add(addr)).Sort();
+                    break;
+
+                case 'W':
+                    watches.Clear();
                     break;
 
                 case 'x':
                     Cpu.Memory.WriteMemFile(cmd[2..]);
                     TerminalWriteLine($"Wrote image file to {cmd[2..]}");
                     break;
-
-                case 'h': RenderHelp(); break;
 
                 default: TerminalWriteLine($"invalid command {cmd}"); break;
             }
@@ -295,10 +308,12 @@ public abstract class BaseDebugger
         TerminalWrite("l [file]   Load .asm or .mem file");
         TerminalWrite("m          view Memory at address");
         TerminalWrite("n          execute Next instruction");
+        TerminalWrite("p          Dump PDB information");
         TerminalWrite("q          Quit");
         TerminalWrite("rN         view Register N");
         TerminalWrite("r*         view all registers");
         TerminalWrite("w [addr]   Watch memory at addr");
+        TerminalWrite("W          Clear watches");
         TerminalWrite();
     }
 

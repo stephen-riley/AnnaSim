@@ -18,12 +18,15 @@ See paper at http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
     - [ ] for loop
     - [ ] while loop
     - [ ] do-while loop
-    - [ ] postfix increment
+    - [ ] postfix increment/decrement
+    - [ ] optimizer
 - [ ] Assembler enhancements
     - [ ] Allow + unary in asm (eg. for FP offsets)
     - [ ] Expressions in assembler?
     - [ ] .include directive
     - [ ] add jmp/br pseudo op
+    - [ ] dump listing with addresses
+    - [ ] add mul, div, mod instructions
 - [ ] build annalib.asm
 - [ ] Prebuilt single-file executables?
 - [ ] dotnet tool

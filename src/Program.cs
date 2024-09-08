@@ -54,31 +54,38 @@ void HandleCompile(CompileCliOptions opt)
         src = sb.ToString();
     }
 
-    if (Compiler.TryCompile(opt.Filename != "-" ? opt.Filename : "STDIN", src, out var asm))
+    if (Compiler.TryCompile(opt.Filename != "-" ? opt.Filename : "STDIN", src, out var asm, opt.Trace))
     {
+        if (opt.Output != "-")
+        {
+            File.WriteAllText(opt.Output, asm);
+        }
+
         if (opt.Debug || opt.Vt100 || opt.Run)
         {
-            var tmp = Path.GetTempFileName();
-            Console.Error.WriteLine($"writing assembly to temp file {tmp}");
-            File.WriteAllText(tmp, asm);
+            var filenameToUse = opt.Output;
+
+            if (opt.Output == "-")
+            {
+                var tmp = Path.GetTempFileName();
+                Console.Error.WriteLine($"writing assembly to temp file {tmp}");
+                File.WriteAllText(tmp, asm);
+                filenameToUse = tmp;
+            }
 
             if (opt.Debug || opt.Vt100)
             {
                 BaseDebugger debugger = opt.Vt100
-                   ? new Vt100ConsoleDebugger(tmp, opt.Inputs.ToArray(), [])
-                   : new ConsoleDebugger(tmp, opt.Inputs.ToArray(), []);
+                   ? new Vt100ConsoleDebugger(filenameToUse, opt.Inputs.ToArray(), [])
+                   : new ConsoleDebugger(filenameToUse, opt.Inputs.ToArray(), []);
 
                 debugger.Run(opt.DumpScreen);
             }
             else
             {
-                var runner = new Runner(tmp, opt.Inputs.ToArray());
+                var runner = new Runner(filenameToUse, opt.Inputs.ToArray());
                 runner.Run(opt.DumpScreen);
             }
-        }
-        else if (opt.Output != "-")
-        {
-            File.WriteAllText(opt.Output, asm);
         }
         else
         {

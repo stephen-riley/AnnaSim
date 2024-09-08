@@ -67,13 +67,14 @@ public class Compiler
 
     public static bool TryCompile(string filename, string input, out string? asmSource, bool showParseTree = false)
     {
-        var compiler = new Compiler() { Trace = false };
+        var compiler = new Compiler() { Trace = showParseTree };
         var success = compiler.BuildParseTree(input);
 
         if (success)
         {
             if (showParseTree)
             {
+                Console.WriteLine();
                 Console.WriteLine($"# parse tree: {compiler.GetStringTree()}");
                 Console.WriteLine();
             }

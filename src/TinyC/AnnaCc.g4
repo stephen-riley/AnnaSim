@@ -16,6 +16,8 @@ flow_ctl    : if_stat
             | while_stat
             | for_stat
             | return_stat
+            | while_stat
+            | do_while_stat
             ;
 
 block       : '{' stat* '}' ;
@@ -41,7 +43,10 @@ if_stat     : 'if' '(' ifx=expr ')' ifblock=block
 
 while_stat  : 'while' '(' expr ')' block ;
 
-for_stat    : 'for' '(' init=var_decl ';' cond=expr ';' update=expr ')' block ;
+do_while_stat
+            : 'do' block 'while' expr ';' ;
+
+for_stat    : 'for' '(' init=var_decl? ';' cond=expr ';' update=assign? ')' block ;
 
 return_stat : 'return' expr ';' ;
 
