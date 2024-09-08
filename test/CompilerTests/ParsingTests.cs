@@ -1,5 +1,3 @@
-using AnnaSim.Cpu;
-using AnnaSim.Cpu.Memory;
 using AnnaSim.TinyC;
 
 namespace AnnaSim.Test.CpuTests;
@@ -14,14 +12,14 @@ public class ParsingTests
     }
 
     [TestMethod]
-    public void ParseComplexIf() => Parse("fixtures/complex_if.c");
+    public void TestParseComplexIf() => Parse("fixtures/complex_if.c");
 
     [TestMethod]
-    public void ParseWhile() => Parse("fixtures/while.c");
+    public void TestParseWhile() => Parse("fixtures/while.c");
 
     [TestMethod]
-    public void ParseDoWhile() => Parse("fixtures/do-while.c");
+    public void TestParseDoWhile() => Parse("fixtures/do-while.c");
 
     [TestMethod]
-    public void ParseFor() => Parse("fixtures/for.c");
+    public void TestParseFor() => Parse("fixtures/for.c");
 }

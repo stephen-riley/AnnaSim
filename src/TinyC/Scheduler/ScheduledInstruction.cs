@@ -36,6 +36,17 @@ public class ScheduledInstruction : IInstructionComponent
 
     public IEnumerable<string> Operands { get => new List<string?> { Operand1, Operand2, Operand3 }.Cast<string>(); }
 
+    public ScheduledInstruction() { }
+    public ScheduledInstruction(string? label, InstrOpcode opcode, string? op1, string? op2 = null, string? op3 = null, string? comment = null)
+    {
+        Labels = label is not null ? [label] : Labels;
+        Opcode = opcode;
+        Operand1 = op1;
+        Operand2 = op2;
+        Operand3 = op3;
+        Comment = comment;
+    }
+
     public bool IsDefined { get => Opcode != InstrOpcode.Unknown; }
 
     public void Deconstruct(out string[] labels, out InstrOpcode opcode, out string? op1, out string? op2, out string? op3)

@@ -18,7 +18,7 @@ public class PseudoOpTests
         asm.Assemble(src);
 
         // sw r7 r1 0
-        Assert.AreEqual(0b0111_111_001_000000, asm.MemoryImage[0]);
+        Assert.AreEqual(0b0111_001_111_000000, asm.MemoryImage[0]);
 
         // addi r7 r7 -1
         Assert.AreEqual(0b0100_111_111_111111, asm.MemoryImage[1]);

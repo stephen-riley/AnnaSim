@@ -1,21 +1,16 @@
+using AnnaSim.TinyC.Optimizer;
 using AnnaSim.TinyC.Scheduler.Components;
 using AnnaSim.TinyC.Scheduler.Instructions;
-
-using static AnnaSim.TinyC.Scheduler.Instructions.InstrOpcode;
 
 namespace AnnaSim.TinyC.Scheduler;
 
 public class InstructionScheduler
 {
-    public Stack<ScheduledInstruction> Instructions { get; } = new();
-
-    internal List<Func<bool>> Optimizers = [];
+    public Stack<ScheduledInstruction> Instructions { get; internal set; } = new();
 
     public InstructionScheduler()
     {
         Instructions.Push(new ScheduledInstruction());
-
-        Optimizers.Add(OptPushPop);
     }
 
     public void BlankLine() => Schedule(new BlankLine());
@@ -60,6 +55,17 @@ public class InstructionScheduler
         }
     }
 
+    public int Optimize()
+    {
+        Console.Error.WriteLine($"OPT: instr count before: {Instructions.Count}");
+        var opt = new Opt(Instructions.Reverse());
+        var optimizations = opt.Run();
+        Console.Error.WriteLine($"OPT: optimizaiton count: {optimizations}");
+        Instructions = opt.Instructions;
+        Console.Error.WriteLine($"OPT: instr count after:  {Instructions.Count}");
+        return optimizations;
+    }
+
     public void Render()
     {
         var writer = new StreamWriter(Console.OpenStandardOutput())
@@ -77,44 +83,6 @@ public class InstructionScheduler
         foreach (var i in Instructions.Reverse())
         {
             i.Render(writer);
-        }
-    }
-
-    // TODO: back to back beq r0's
-    // TODO: beq to very next instruction
-
-    internal bool OptPushPop()
-    {
-        var cur = Instructions.Pop();
-        var prev = Instructions.Pop();
-
-        var (curLabels, curOpcode, curOp1, curOp2, _) = cur;
-        var (prevLabels, prevOpcode, prevOp1, prevOp2, _) = prev;
-
-        // if rd and rs1 is the same for both instructions, then delete them both.
-        //  otherwise...
-        if (curOpcode == Pop && prevOpcode == Push && curOp1 == prevOp1)
-        {
-            if (curOp2 != prevOp2)
-            {
-                Instructions.Push(new ScheduledInstruction
-                {
-                    LeadingTrivia = prev.LeadingTrivia,
-                    Labels = [.. prevLabels, .. curLabels],
-                    Opcode = Mov,
-                    Operand1 = curOp2,
-                    Operand2 = prevOp2,
-                    TrailingTrivia = cur.TrailingTrivia
-                });
-            }
-
-            return true;
-        }
-        else
-        {
-            Instructions.Push(prev);
-            Instructions.Push(cur);
-            return false;
         }
     }
 }

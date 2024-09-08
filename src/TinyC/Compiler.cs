@@ -12,6 +12,8 @@ public class Compiler
 
     public bool Trace { get; set; }
 
+    public bool Optimize { get; set; } = true;
+
     private AnnaCcParser parser = null!;
 
     // After a successful `Compile()` call, this property will have the root
@@ -92,6 +94,11 @@ public class Compiler
             }
 
             var sched = Emitter.Emit(sa.Cc, compiler.ParseTree, filename);
+
+            if (compiler.Optimize)
+            {
+                sched.Optimize();
+            }
 
             using var ms = new MemoryStream();
             using var writer = new StreamWriter(ms) { AutoFlush = true };
