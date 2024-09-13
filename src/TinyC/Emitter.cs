@@ -36,7 +36,6 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         if (e.Cc.Functions.Count > 0)
         {
             e.EmitHeaderComment("start of functions");
-            e.EmitBlankLine();
 
             e.EmitFunctionBodies(cc, e);
             e.EmitBlankLine();
@@ -254,8 +253,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
             case "println":
                 Cc.InternedStrings["\n"] = "__nl";
-                EmitInstruction("lwi", ["r3", "&__nl"], "load addr of newline");
-                EmitInstruction("outs", ["r3"], "print newline");
+                EmitInstruction("lwi", ["r1", "&__nl"], "load addr of newline");
+                EmitInstruction("outs", ["r1"], "print newline");
                 EmitBlankLine();
                 return true;
 
@@ -285,8 +284,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             VisitExpr(a);
         }
 
-        EmitInstruction("lwi", ["r3", $"&{funcName}"], $"load address of \"{funcName}\" -> r3");
-        EmitInstruction("jalr", ["r3", "r5"], $"call function \"{context.name.Text}\"");
+        EmitInstruction("lwi", ["r1", $"&{funcName}"], $"load address of \"{funcName}\" -> r3");
+        EmitInstruction("jalr", ["r1", "r5"], $"call function \"{context.name.Text}\"");
 
         if (Cc.Functions[funcName].Type != "void")
         {
@@ -339,9 +338,24 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         }
         else
         {
-            // it's a binary expression
+            // It's a binary expression.  By the end of this, r3 contians the lhs,
+            //  and r2 contains the rhs.
+
+            // If the rhs is just a constant int, then load it into r2
+            bool constRhs = false;
+            if (context.rh.Start.Type == AnnaCcLexer.INT)
+            {
+                // EmitComment("OPTMIZATION: don't push rhs constant onto stack");
+                EmitInstruction("lwi", ["r2", context.rh.GetText()]);
+                constRhs = true;
+            }
+            else
+            {
+                VisitExpr(context.rh);
+            }
+
             VisitExpr(context.lh);
-            VisitExpr(context.rh);
+
             var op = context.op.Text;
             var instr = op switch
             {
@@ -367,10 +381,12 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             }
             else if (instr.StartsWith('b'))
             {
-                // var label = GetNextLabel("_true");
-                EmitInstruction("pop", ["r7", "r3"], $"pop arg2 for op \"{op}\"");
-                EmitInstruction("pop", ["r7", "r2"], $"pop arg1 for op \"{op}\"");
-                EmitInstruction("sub", ["r2", "r2", "r3"], "compare r2 and r3");
+                if (!constRhs)
+                {
+                    EmitInstruction("pop", ["r7", "r2"], $"pop arg2 for op \"{op}\"");
+                }
+                EmitInstruction("pop", ["r7", "r3"], $"pop arg1 for op \"{op}\"");
+                EmitInstruction("sub", ["r2", "r3", "r2"], "compare r2 and r3");
                 EmitInstruction("lli", ["r3", "1"], "assume true preemptively");
                 EmitInstruction(instr, ["r2", "1"], $"jump past the next instruction if \"{op}\" is true");
                 EmitInstruction("lli", ["r3", "0"], "result is false (0) otherwise");
@@ -378,10 +394,12 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             else if (Regex.IsMatch(instr, "^[a-z]+$"))
             {
                 // TODO: fold constants if both sides are constant
-                // TODO: simplify operations (no stack) if one side is constant
-                EmitInstruction("pop", ["r7", "r3"], $"pop arg2 (rhs) for op \"{op}\"");
-                EmitInstruction("pop", ["r7", "r2"], $"pop arg1 (lhs) for op \"{op}\"");
-                EmitInstruction(instr, ["r3", "r2", "r3"], $"perform \"{op}\" on r2, r3");
+                if (!constRhs)
+                {
+                    EmitInstruction("pop", ["r7", "r2"], $"pop arg2 for op \"{op}\"");
+                }
+                EmitInstruction("pop", ["r7", "r3"], $"pop arg1 (lhs) for op \"{op}\"");
+                EmitInstruction(instr, ["r3", "r3", "r2"], $"perform \"{op}\" on r2, r3");
             }
 
             EmitInstruction("push", ["r7", "r3"], $"push result of \"{context.GetText()}\"");

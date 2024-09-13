@@ -11,8 +11,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitHeaderComment($"compiled from {filename}");
         EmitBlankLine();
         EmitHeaderComment("Register map:");
-        EmitHeaderComment("  r1  scratch register");
-        EmitHeaderComment("  r2  scratch register");
+        EmitHeaderComment("  r1  scratch register for addresses");
+        EmitHeaderComment("  r2  scratch register for temps");
         EmitHeaderComment("  r3  scratch register for expressions results");
         EmitHeaderComment("  r4  result from function calls");
         EmitHeaderComment("  r5  function call destinations (jalr)");
@@ -41,16 +41,20 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
             var epExit = $"{name}_exit";
 
+            EmitBlankLine();
             EmitStackFrameComments(scope);
 
             EmitLabel(name);
-            EmitInstruction("mov", ["r6", "r7"], "set FP for our stack frame");
-            EmitInstruction("push", ["r7", "r7"], "cache SP");
+            // EmitInstruction("mov", ["r6", "r7"], "set FP for our stack frame");
+            // TODO: put SP and return address onto the stack using sw's,
+            //  and then bump SP 2 + #locals
+            EmitInstruction("push", ["r7", "r6"], "cache FP");
+            EmitInstruction("addi", ["r6", "r7", "1"], "set up new FP");
             EmitInstruction("push", ["r7", "r5"], "push return address");
 
             if (scope.Vars.Count > 0)
             {
-                EmitInstruction("addi", ["r7", "r7", (-scope.Vars.Count).ToString()], $"create space for {scope.Vars.Count} local variables");
+                EmitInstruction("addi", ["r7", "r7", (-scope.Vars.Count).ToString()], $"create space for stack frame");
             }
             EmitBlankLine();
 
@@ -70,19 +74,19 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     private void EmitStackFrameComments(Scope scope)
     {
         var argList = string.Join(", ", scope.Args.Select(a => $"{a.Type} {a.Name}"));
-        EmitComment($"function `{scope.Type} {scope.Name}({argList})`");
+        EmitHeaderComment($"function `{scope.Type} {scope.Name}({argList})`");
 
         foreach (var a in scope.Args)
         {
-            EmitComment($" FP+{a.Offset}  {a.Name}");
+            EmitHeaderComment($" FP+{a.Offset}  {a.Name}");
         }
 
-        EmitComment(" FP+0  previous SP");
-        EmitComment(" FP-1  return addr");
+        EmitHeaderComment(" FP+0  previous SP");
+        EmitHeaderComment(" FP-1  return addr");
 
         foreach (var v in scope.Vars)
         {
-            EmitComment($" FP{v.Offset}  {v.Name}");
+            EmitHeaderComment($" FP{v.Offset}  {v.Name}");
         }
         EmitBlankLine();
     }

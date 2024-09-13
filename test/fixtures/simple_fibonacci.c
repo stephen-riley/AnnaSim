@@ -6,13 +6,13 @@ int res = fib(i);
 printn(i); print(": "); printn(res); println();
 
 int fib(int n) {
-	print("in @"); printn(n); println();
-
+	print("enter fib("); printn(n); print(")"); println();
 	if (n<=1) {
-		print("check "); printn(n); println();
+		print("  fib("); printn(n); print(") early returned "); printn(n); println();
 		return n;
 	}
 
 	int res = fib(n-2) + fib(n-1);
+	print("  fib("); printn(n); print(") returned "); printn(res); println();
 	return res;
 }

@@ -54,7 +54,7 @@ void HandleCompile(CompileCliOptions opt)
         src = sb.ToString();
     }
 
-    if (Compiler.TryCompile(opt.Filename != "-" ? opt.Filename : "STDIN", src, out var asm, opt.Trace))
+    if (Compiler.TryCompile(opt.Filename != "-" ? opt.Filename : "STDIN", src, out var asm, opt.Trace, opt.Optimize))
     {
         if (opt.Output != "-")
         {

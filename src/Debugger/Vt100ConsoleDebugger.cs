@@ -19,6 +19,7 @@ public class Vt100ConsoleDebugger : BaseDebugger
         Console.CursorVisible = false;
         RenderScreenMap();
         RenderRegisters();
+        RenderStack();
         RenderWatches();
         RenderInputs();
         RenderOutputs();
@@ -65,16 +66,40 @@ public class Vt100ConsoleDebugger : BaseDebugger
                 Console.ForegroundColor = defaultColor;
             }
         }
+
+        Console.SetCursorPosition(46, 11);
+        Console.Write($"PC: 0x{Cpu.Pc:x4}" + new string(' ', 10));
+    }
+
+    public void RenderStack()
+    {
+        Console.SetCursorPosition(59, 1);
+        Console.Write("Stack");
+
+        var baseAddr = Cpu.Registers[7] >= 0x7ffb ? 0x8000 : Cpu.Registers[7] + 5;
+        for (int i = 0; i <= 10; i++)
+        {
+            var addr = baseAddr - i;
+            var ptr = Cpu.Registers[7] == Cpu.Registers[6] && Cpu.Registers[6] == addr
+                        ? " <- SP, FP"
+                        : Cpu.Registers[7] == addr
+                          ? " <- SP    "
+                          : Cpu.Registers[6] == addr
+                            ? " <- FP    "
+                            : "          ";
+            Console.SetCursorPosition(60, 2 + i);
+            Console.Write($"0x{addr & 0xffff:x4}: 0x{Cpu.Memory[(uint)addr]:x4}{ptr}");
+        }
     }
 
     private void RenderWatches()
     {
-        Console.SetCursorPosition(45, 12);
+        Console.SetCursorPosition(45, 15);
         Console.Write("Watches");
 
         for (var i = 0; i < watches.Count; i++)
         {
-            Console.SetCursorPosition(46, 13 + i);
+            Console.SetCursorPosition(46, 16 + i);
             Console.Write($"0x{watches[i]:x4}:");
             for (uint offset = 0; offset < 4; offset++)
             {
@@ -84,16 +109,16 @@ public class Vt100ConsoleDebugger : BaseDebugger
 
         if (watches.Count == 0)
         {
-            Console.SetCursorPosition(47, 13);
+            Console.SetCursorPosition(47, 16);
             Console.Write("(none)");
         }
     }
 
     private void RenderInputs()
     {
-        Console.SetCursorPosition(45, 19);
+        Console.SetCursorPosition(45, 21);
         Console.Write("Inputs");
-        Console.SetCursorPosition(49, 20);
+        Console.SetCursorPosition(49, 22);
         if (Cpu.Inputs.Count > 0)
         {
             Console.Write(string.Join(", ", Cpu.Inputs));
@@ -108,9 +133,9 @@ public class Vt100ConsoleDebugger : BaseDebugger
 
     private void RenderOutputs()
     {
-        Console.SetCursorPosition(45, 22);
+        Console.SetCursorPosition(45, 24);
         Console.Write("Outputs");
-        Console.SetCursorPosition(49, 23);
+        Console.SetCursorPosition(49, 25);
         if (Outputs.Count > 0)
         {
             Console.Write(string.Join(", ", Outputs));

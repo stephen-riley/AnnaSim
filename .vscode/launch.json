@@ -13,12 +13,10 @@
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
             "args": [
                 "cc",
-                "-f",
-                "../test/fixtures/simple_fibonacci.c",
-                // "../test/fixtures/assignment.c",
+                "-f", "../test/fixtures/chain_call.c",
+                "-o", "/tmp/test.asm",
+                "-g", "1",
                 "-r",
-                "-o",
-                "/tmp/fib.asm"
             ],
             // "args": [
             //     "run",

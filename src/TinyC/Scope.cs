@@ -58,8 +58,8 @@ public class Scope
         if (IsGlobal)
         {
             return [
-                ("lwi", ["r3", $"&_var_{name}"], $"load address of variable {name}"),
-                ("lw", ["r3", "r3", "0"], $"load variable \"{name}\" from data segment")
+                ("lwi", ["r1", $"&_var_{name}"], $"load address of variable {name}"),
+                ("lw", ["r3", "r1", "0"], $"load variable \"{name}\" from data segment")
             ];
         }
         else
@@ -82,8 +82,8 @@ public class Scope
         if (IsGlobal)
         {
             return [
-                ("lwi", ["r2", $"&_var_{name}"], $"load address of variable \"{name}\""),
-                ("sw", ["r3", "r2", "0"], $"store variable \"{name}\" to data segment")
+                ("lwi", ["r1", $"&_var_{name}"], $"load address of variable \"{name}\""),
+                ("sw", ["r3", "r1", "0"], $"store variable \"{name}\" to data segment")
             ];
         }
         else

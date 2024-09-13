@@ -1,4 +1,3 @@
-using AnnaSim.Extensions;
 using AnnaSim.TinyC.Scheduler.Components;
 using AnnaSim.TinyC.Scheduler.Instructions;
 
@@ -14,13 +13,15 @@ public class Opt
 
     internal List<Func<int>> Optimizers = [];
 
+    public bool AddComments { get; set; } = false;
+
     public Opt(IEnumerable<ScheduledInstruction> instr)
     {
         foreach (var i in instr)
         {
             Instructions.Push(i);
         }
-        Optimizers.AddRange([OptPushPop, OptBranchToNext]);
+        Optimizers.AddRange([OptPushPop, OptBranchToNextByLabel, OptBranchToNextByOffset]);
     }
 
     public int Run()
@@ -66,10 +67,7 @@ public class Opt
         return optimizations;
     }
 
-    // TODO: back to back beq r0's
-    // TODO: beq to very next instruction
-
-    internal int OptBranchToNext()
+    internal int OptBranchToNextByLabel()
     {
         var cur = pass.Pop();
         var prev = pass.Pop();
@@ -83,10 +81,39 @@ public class Opt
             {
                 if (curLabels.Contains(prevOp2[1..]))
                 {
-                    cur.LeadingTrivia.Add(new InlineComment { Comment = $"OPTIMIZATION: removed unnecessary beq r0 {prevOp2}" });
+                    if (AddComments)
+                    {
+                        cur.LeadingTrivia.Add(new InlineComment { Comment = $"OPTIMIZATION: removed unnecessary beq r0 {prevOp2}" });
+                    }
                     pass.Push(cur);
                     return 1;
                 }
+            }
+        }
+
+        pass.Push(prev);
+        pass.Push(cur);
+        return 0;
+    }
+
+    internal int OptBranchToNextByOffset()
+    {
+        var cur = pass.Pop();
+        var prev = pass.Pop();
+
+        var (curLabels, _, _, _, _) = cur;
+        var (_, prevOpcode, prevOp1, prevOp2, _) = prev;
+
+        if (prevOpcode == Beq && prevOp1 == "r0")
+        {
+            if (prevOp2 is not null && prevOp2 == "1")
+            {
+                if (AddComments)
+                {
+                    cur.LeadingTrivia.Add(new InlineComment { Comment = $"OPTIMIZATION: removed unnecessary beq r0 {prevOp2}" });
+                }
+                pass.Push(cur);
+                return 1;
             }
         }
 
@@ -109,9 +136,15 @@ public class Opt
         {
             if (curOp2 != prevOp2)
             {
+                var leadingTrivia = prev.LeadingTrivia;
+                if (AddComments)
+                {
+                    leadingTrivia = [.. leadingTrivia, new InlineComment { Comment = "OPTIMIZATION: push/pop becomes mov" }];
+                }
+
                 pass.Push(new ScheduledInstruction
                 {
-                    LeadingTrivia = [.. prev.LeadingTrivia, new InlineComment { Comment = "OPTIMIZATION: push/pop becomes mov" }],
+                    LeadingTrivia = leadingTrivia,
                     Labels = [.. prevLabels, .. curLabels],
                     Opcode = Mov,
                     Operand1 = curOp2,
@@ -122,7 +155,10 @@ public class Opt
             }
             else
             {
-                pass.Peek().TrailingTrivia.Add(new InlineComment { Comment = $"OPTIMIZATION: canceled push/pop on {curOp2}" });
+                if (pass.Count > 0 && AddComments)
+                {
+                    pass.Peek().TrailingTrivia.Add(new InlineComment { Comment = $"OPTIMIZATION: canceled push/pop on {curOp2}" });
+                }
                 // we can safely remove both push and pop
             }
 

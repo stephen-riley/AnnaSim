@@ -84,16 +84,16 @@ public class ScheduledInstruction : IInstructionComponent
         LeadingTrivia.ForEach(t => t.Render(writer));
 
         var commentTerm = Comment is not null ? $"# {Comment}" : "";
-        var labelTerm = Labels.Count > 0 ? $"{Labels[^1] + ':',-12}" : new string(' ', 12);
+        var labelTerm = Labels.Count > 0 ? $"{Labels[^1] + ':',-IInstructionComponent.LabelColLength}" : new string(' ', IInstructionComponent.LabelColLength);
 
-        var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-8}";
+        var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-IInstructionComponent.OpcodeColLength}";
 
         foreach (var l in Labels.Take(Labels.Count - 1))
         {
             writer.WriteLine($"{l}:");
         }
 
-        writer.WriteLine($"{labelTerm}{opTerm}{string.Join(' ', Operands),-20}{commentTerm}");
+        writer.WriteLine($"{labelTerm}{opTerm}{string.Join(' ', Operands),-IInstructionComponent.OperandColLength}{commentTerm}");
 
         TrailingTrivia.ForEach(t => t.Render(writer));
     }

@@ -30,6 +30,9 @@ public class CompileCliOptions
     [Option('t', "trace", HelpText = "Trace parsing")]
     public bool Trace { get; set; }
 
+    [Option('g', "optimization-level", HelpText = "Optimization level (0 for none)")]
+    public int Optimize { get; set; }
+
     private static readonly UnParserSettings settings = new()
     {
         GroupSwitches = true,
