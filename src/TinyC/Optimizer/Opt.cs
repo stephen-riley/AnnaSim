@@ -21,7 +21,7 @@ public class Opt
         {
             Instructions.Push(i);
         }
-        Optimizers.AddRange([OptPushPop, OptBranchToNextByLabel, OptBranchToNextByOffset]);
+        Optimizers.AddRange([OptPushPop, OptBranchToNextByLabel, OptBranchToNextByOffset, OptBackToBackJumps]);
     }
 
     public int Run()
@@ -170,5 +170,37 @@ public class Opt
             pass.Push(cur);
             return 0;
         }
+    }
+
+    internal int OptBackToBackJumps()
+    {
+        var cur = pass.Pop();
+        var prev = pass.Pop();
+
+        // 
+        var (curLabels, curOpcode, curOp1, curOp2, _) = cur;
+        var (_, prevOpcode, prevOp1, _, _) = prev;
+
+        // if the second `beq r0` has a label, it may be
+        //  a jump target, so we can't get rid of it.
+        if (curLabels.Length == 0)
+        {
+            if (prevOpcode == Beq && prevOp1 == "r0")
+            {
+                if (curOpcode == Beq && curOp1 == "r0")
+                {
+                    if (AddComments)
+                    {
+                        cur.LeadingTrivia.Add(new InlineComment { Comment = $"OPTIMIZATION: removed reduntant beq r0 {curOp2}" });
+                    }
+                    pass.Push(prev);
+                    return 1;
+                }
+            }
+        }
+
+        pass.Push(prev);
+        pass.Push(cur);
+        return 0;
     }
 }

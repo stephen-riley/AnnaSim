@@ -13,16 +13,11 @@
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
             "args": [
                 "cc",
-                "-f", "../test/fixtures/chain_call.c",
+                "-f", "../test/fixtures/simple_fibonacci.c",
                 "-o", "/tmp/test.asm",
-                "-g", "1",
+                "-g", "2",
                 "-r",
             ],
-            // "args": [
-            //     "run",
-            //     "-f",
-            //     "/tmp/fib.asm",
-            // ],
             "cwd": "${workspaceFolder}/src",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",

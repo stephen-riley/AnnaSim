@@ -3,7 +3,7 @@ using AnnaSim.TinyC.Scheduler.Instructions;
 
 using static AnnaSim.TinyC.Scheduler.Instructions.InstrOpcode;
 
-namespace AnnaSim.Test.CpuTests;
+namespace AnnaSim.Test.CompilerTests;
 
 [TestClass]
 public class OptimizerTests
@@ -118,8 +118,9 @@ public class OptimizerTests
 
         var opt = new Opt(instructions);
         var count = opt.Run();
-        Assert.AreEqual(0, count);
-        Assert.AreEqual(2, opt.Instructions.Count);
+        Assert.AreEqual(1, count);
+        Assert.AreEqual(1, opt.Instructions.Count);
+        Assert.AreEqual("&somewhere", opt.Instructions.Peek().Operand2);
     }
 
     [TestMethod]

@@ -55,14 +55,16 @@ public class InstructionScheduler
         }
     }
 
-    public int Optimize()
+    public int Optimize(bool showOptimizationComments = false)
     {
         Console.Error.WriteLine($"OPT: instr count before: {Instructions.Count}");
-        var opt = new Opt(Instructions.Reverse());
+        var opt = new Opt(Instructions.Reverse()) { AddComments = showOptimizationComments };
         var optimizations = opt.Run();
         Console.Error.WriteLine($"OPT: optimizaiton count: {optimizations}");
         Instructions = opt.Instructions;
         Console.Error.WriteLine($"OPT: instr count after:  {Instructions.Count}");
+        Console.Error.WriteLine();
+
         return optimizations;
     }
 

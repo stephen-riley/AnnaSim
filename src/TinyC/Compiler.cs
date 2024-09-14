@@ -14,6 +14,8 @@ public class Compiler
 
     public bool Optimize { get; set; } = true;
 
+    public bool ShowOptimizationComments { get; set; } = false;
+
     private AnnaCcParser parser = null!;
 
     // After a successful `Compile()` call, this property will have the root
@@ -69,7 +71,7 @@ public class Compiler
 
     public static bool TryCompile(string filename, string input, out string? asmSource, bool showParseTree = false, int optimization = 1)
     {
-        var compiler = new Compiler() { Trace = showParseTree, Optimize = optimization > 0 };
+        var compiler = new Compiler() { Trace = showParseTree, Optimize = optimization > 0, ShowOptimizationComments = optimization > 1 };
         var success = compiler.BuildParseTree(input);
 
         if (success)
@@ -97,7 +99,7 @@ public class Compiler
 
             if (compiler.Optimize)
             {
-                sched.Optimize();
+                sched.Optimize(compiler.ShowOptimizationComments);
             }
 
             using var ms = new MemoryStream();

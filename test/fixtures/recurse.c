@@ -1,6 +1,6 @@
 int recurse(int n);
 
-recurse(1);
+recurse(3);
 
 int recurse(int n) {
     printn(n); println();
