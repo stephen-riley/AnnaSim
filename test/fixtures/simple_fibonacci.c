@@ -1,6 +1,6 @@
 int fib(int n);
 
-int i = 3;
+int i = 2;
 int res = fib(i);
 
 println(); printn(i); print(": "); printn(res); println(); println();
@@ -8,9 +8,10 @@ println(); printn(i); print(": "); printn(res); println(); println();
 int fib(int n) {
 	print("  enter fib("); printn(n); print(")"); println();
 
-	if (n<=1) {
-		print("    fib("); printn(n); print("): early returned "); printn(n); println();
-		return n;
+	if (n <= 0) {
+		return 0;
+	} else if( n == 1 ) {
+		return 1;
 	} else {
 		int res = fib(n-2) + fib(n-1);
 		print("  exit fib("); printn(n); print("), returned "); printn(res); println();

@@ -76,6 +76,8 @@ public class Vt100ConsoleDebugger : BaseDebugger
         Console.SetCursorPosition(59, 1);
         Console.Write("Stack");
 
+        var defaultColor = Console.ForegroundColor;
+
         var baseAddr = Cpu.Registers[7] >= 0x7ffb ? 0x8000 : Cpu.Registers[7] + 5;
         for (int i = 0; i <= 10; i++)
         {
@@ -88,7 +90,15 @@ public class Vt100ConsoleDebugger : BaseDebugger
                             ? " <- FP    "
                             : "          ";
             Console.SetCursorPosition(60, 2 + i);
-            Console.Write($"0x{addr & 0xffff:x4}: 0x{Cpu.Memory[(uint)addr]:x4}{ptr}");
+
+            if (addr <= Cpu.Registers[7])
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+            }
+
+            Console.Write($"0x{addr & 0xffff:x4}: 0x{Cpu.Memory[(uint)addr]:x4}");
+            Console.ForegroundColor = defaultColor;
+            Console.Write(ptr);
         }
     }
 
@@ -118,7 +128,7 @@ public class Vt100ConsoleDebugger : BaseDebugger
     {
         Console.SetCursorPosition(45, 21);
         Console.Write("Inputs");
-        Console.SetCursorPosition(49, 22);
+        Console.SetCursorPosition(47, 22);
         if (Cpu.Inputs.Count > 0)
         {
             Console.Write(string.Join(", ", Cpu.Inputs));
@@ -135,7 +145,7 @@ public class Vt100ConsoleDebugger : BaseDebugger
     {
         Console.SetCursorPosition(45, 24);
         Console.Write("Outputs");
-        Console.SetCursorPosition(49, 25);
+        Console.SetCursorPosition(47, 25);
         if (Outputs.Count > 0)
         {
             Console.Write(string.Join(", ", Outputs));

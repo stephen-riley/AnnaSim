@@ -191,7 +191,7 @@ public class Opt
                 {
                     if (AddComments)
                     {
-                        cur.LeadingTrivia.Add(new InlineComment { Comment = $"OPTIMIZATION: removed reduntant beq r0 {curOp2}" });
+                        prev.LeadingTrivia.Add(new InlineComment { Comment = $"OPTIMIZATION: removed reduntant beq r0 {curOp2}" });
                     }
                     pass.Push(prev);
                     return 1;

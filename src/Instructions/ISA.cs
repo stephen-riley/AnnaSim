@@ -1,4 +1,5 @@
 using System.Data;
+using AnnaSim.Exceptions;
 
 namespace AnnaSim.Instructions;
 
@@ -33,6 +34,12 @@ public static class ISA
         {
             defs = defs.Where(id => id.MathOp == (MathOperation)mathOp).ToList();
         }
+
+        if (defs.Count == 0)
+        {
+            throw new InvalidOpcodeException($"Invalid opcode {opcode}, mathop {mathOp}");
+        }
+
         return defs[0];
     }
 

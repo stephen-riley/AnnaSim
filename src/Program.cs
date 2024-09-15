@@ -19,7 +19,13 @@ try
 }
 catch (Exception e)
 {
-    Console.Error.WriteLine(e.Message);
+    Console.Error.WriteLine();
+    Console.Error.Write(e.Message);
+    if (e.InnerException is not null)
+    {
+        Console.Error.Write($" ({e.InnerException.Message})");
+    }
+    Console.WriteLine();
 }
 
 void HandleRun(RunCliOptions opt)

@@ -69,9 +69,9 @@ public class Compiler
         }
     }
 
-    public static bool TryCompile(string filename, string input, out string? asmSource, bool showParseTree = false, int optimization = 1)
+    public static bool TryCompile(string filename, string input, out string? asmSource, bool showParseTree = false, int optimization = 2)
     {
-        var compiler = new Compiler() { Trace = showParseTree, Optimize = optimization > 0, ShowOptimizationComments = optimization > 1 };
+        var compiler = new Compiler() { Trace = showParseTree, Optimize = optimization > 0, ShowOptimizationComments = optimization == 1 };
         var success = compiler.BuildParseTree(input);
 
         if (success)

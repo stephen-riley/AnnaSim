@@ -184,6 +184,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         // handle else block
         if (context.elseblock is not null)
         {
+            EmitComment($"{start} else block");
             EmitLabel(GetNextLabel("ifb"));
             VisitBlock(context.elseblock);
         }
@@ -218,6 +219,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     public override bool VisitReturn_stat([NotNull] AnnaCcParser.Return_statContext context)
     {
         VisitExpr(context.expr());
+        EmitInstruction("pop", ["r7", "r4"], "load function result -> r4");
         EmitInstruction("beq", ["r0", $"&{Cc.CurrentScope.Name}_exit"], "return (jump to func exit)");
 
         return true;
@@ -284,7 +286,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             VisitExpr(a);
         }
 
-        EmitInstruction("lwi", ["r1", $"&{funcName}"], $"load address of \"{funcName}\" -> r3");
+        EmitInstruction("lwi", ["r1", $"&{funcName}"], $"load address of \"{funcName}\" -> r1");
         EmitInstruction("jalr", ["r1", "r5"], $"call function \"{context.name.Text}\"");
 
         if (Cc.Functions[funcName].Type != "void")

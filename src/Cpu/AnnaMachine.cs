@@ -2,6 +2,7 @@ using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
 using AnnaSim.Assembler;
+using AnnaSim.Exceptions;
 
 namespace AnnaSim.Cpu;
 public class AnnaMachine
@@ -144,22 +145,29 @@ public class AnnaMachine
 
             Status = CpuStatus.Running;
 
-            var instruction = ISA.Instruction((Word)mw);
-
-            if (instruction.IsHalt)
+            try
             {
-                break;
+                var instruction = ISA.Instruction((Word)mw);
+
+                if (instruction.IsHalt)
+                {
+                    break;
+                }
+
+                Pc = instruction.Execute();
+                CyclesExecuted++;
+
+                if (Status == CpuStatus.Halted)
+                {
+                    return HaltReason.Halted;
+                }
+
+                maxCycles--;
             }
-
-            Pc = instruction.Execute();
-            CyclesExecuted++;
-
-            if (Status == CpuStatus.Halted)
+            catch (InvalidOpcodeException e)
             {
-                return HaltReason.Halted;
+                throw new InvalidOperationException($"Invalid instruction at 0x{Pc:x4}", e);
             }
-
-            maxCycles--;
         }
 
         if (maxCycles == 0)

@@ -35,7 +35,7 @@ public class Runner
 
         Status = Cpu.Execute();
 
-        Console.WriteLine($"{Status.ToString()} at PC: 0x{Cpu.Pc:x4} ({Cpu.CyclesExecuted} cycles)");
+        Console.WriteLine($"{Status} at PC: 0x{Cpu.Pc:x4} ({Cpu.CyclesExecuted} cycles)");
 
         if (dumpScreen)
         {

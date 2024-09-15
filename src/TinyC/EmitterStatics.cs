@@ -63,7 +63,6 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
             // unwind stack and return
             EmitLabel(epExit);
-            EmitInstruction("pop", ["r7", "r4"], "load function result -> r4");
             EmitInstruction("lw", ["r5", "r6", "-1"], "load return addr from FP-1");
             EmitInstruction("lw", ["r6", "r6", "0"], "restore previous FP");
             EmitInstruction("addi", ["r7", "r7", scope.FrameSize.ToString()], "collapse stack frame");
