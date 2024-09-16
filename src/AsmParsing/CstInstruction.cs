@@ -1,7 +1,9 @@
-namespace AnnaSim.TinyC.Scheduler.Instructions;
+using AnnaSim.Instructions;
+
+namespace AnnaSim.AsmParsing;
 
 /// <summary>
-/// ScheduledInstructions are here so we can do quick peephole optimizations,
+/// CstInstructions are here so we can do quick peephole optimizations,
 /// necessary since we're largely doing operations using a stack machine
 /// (each push and pop of which requires two ANNA instructions).  When the
 /// compiler is done emitting instructions, there will be a single list of
@@ -12,18 +14,18 @@ namespace AnnaSim.TinyC.Scheduler.Instructions;
 /// by the Roslyn compiler's handling of source code so that Roslyn Code
 /// Fixes tend to follow the original source code's style and structure.)
 /// 
-/// A ScheduledInstruction can have LeadingTrivia in the form of BlankLines,
+/// A CstInstruction can have LeadingTrivia in the form of BlankLines,
 /// HeaderComments (left-justified comments), and InlineComments (comments
-/// indented to line up with opcodes).  ScheduledInstructions can also have
+/// indented to line up with opcodes).  CstInstructions can also have
 /// a comment on the same line, as well as TrailingTrivia.  The Scheduler
-/// will rack up trivia until it sees a ScheduledInstruction, at which
+/// will rack up trivia until it sees a CstInstruction, at which
 /// point the accumulated trivia will be attached to the instruction as
 /// LeadingTrivia.  Any subsequent BlankLines will be attached as
 /// TraiingTrivia.  As soon as we see anything else, a new instruction
 /// is started.
 /// </summary>
 
-public class ScheduledInstruction : IInstructionComponent
+public class CstInstruction : ICstComponent
 {
     public List<string> Labels { get; set; } = [];
     public InstrOpcode Opcode { get; set; }
@@ -31,13 +33,13 @@ public class ScheduledInstruction : IInstructionComponent
     public string? Operand2 { get; set; }
     public string? Operand3 { get; set; }
     public string? Comment { get; set; }
-    public List<IInstructionComponent> LeadingTrivia { get; set; } = [];
-    public List<IInstructionComponent> TrailingTrivia { get; set; } = [];
+    public List<ICstComponent> LeadingTrivia { get; set; } = [];
+    public List<ICstComponent> TrailingTrivia { get; set; } = [];
 
     public IEnumerable<string> Operands { get => new List<string?> { Operand1, Operand2, Operand3 }.Cast<string>(); }
 
-    public ScheduledInstruction() { }
-    public ScheduledInstruction(string? label, InstrOpcode opcode, string? op1, string? op2 = null, string? op3 = null, string? comment = null)
+    public CstInstruction() { }
+    public CstInstruction(string? label, InstrOpcode opcode, string? op1, string? op2 = null, string? op3 = null, string? comment = null)
     {
         Labels = label is not null ? [label] : Labels;
         Opcode = opcode;
@@ -58,7 +60,7 @@ public class ScheduledInstruction : IInstructionComponent
         op3 = Operand3;
     }
 
-    public void CopyInstructionDataFrom(ScheduledInstruction? s)
+    public void CopyInstructionDataFrom(CstInstruction? s)
     {
         if (s is not null)
         {
@@ -75,7 +77,7 @@ public class ScheduledInstruction : IInstructionComponent
         }
         else
         {
-            throw new InvalidOperationException("cannot copy ScheduledInstruction from null");
+            throw new InvalidOperationException("cannot copy CstInstruction from null");
         }
     }
 
@@ -84,16 +86,16 @@ public class ScheduledInstruction : IInstructionComponent
         LeadingTrivia.ForEach(t => t.Render(writer));
 
         var commentTerm = Comment is not null ? $"# {Comment}" : "";
-        var labelTerm = Labels.Count > 0 ? $"{Labels[^1] + ':',-IInstructionComponent.LabelColLength}" : new string(' ', IInstructionComponent.LabelColLength);
+        var labelTerm = Labels.Count > 0 ? $"{Labels[^1] + ':',-ICstComponent.LabelColLength}" : new string(' ', ICstComponent.LabelColLength);
 
-        var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-IInstructionComponent.OpcodeColLength}";
+        var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-ICstComponent.OpcodeColLength}";
 
         foreach (var l in Labels.Take(Labels.Count - 1))
         {
             writer.WriteLine($"{l}:");
         }
 
-        writer.WriteLine($"{labelTerm}{opTerm}{string.Join(' ', Operands),-IInstructionComponent.OperandColLength}{commentTerm}");
+        writer.WriteLine($"{labelTerm}{opTerm}{string.Join(' ', Operands),-ICstComponent.OperandColLength}{commentTerm}");
 
         TrailingTrivia.ForEach(t => t.Render(writer));
     }

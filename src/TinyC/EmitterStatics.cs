@@ -1,6 +1,6 @@
-using System.Text.RegularExpressions;
+using AnnaSim.AsmParsing;
+using AnnaSim.Instructions;
 using AnnaSim.TinyC.Antlr;
-using AnnaSim.TinyC.Scheduler.Instructions;
 
 namespace AnnaSim.TinyC;
 
@@ -121,7 +121,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     private void EmitInstruction(string? label = null, string? op = null, string[]? operands = null, string? comment = null)
     {
         var (op1, op2, op3) = ExtractOperands(operands);
-        Scheduler.Schedule(new ScheduledInstruction
+        Scheduler.Schedule(new CstInstruction
         {
             Labels = label is not null ? [label] : [],
             Opcode = op is null ? InstrOpcode.Unknown : ToEnum(op),

@@ -1,6 +1,6 @@
-namespace AnnaSim.TinyC.Scheduler;
+namespace AnnaSim.AsmParsing;
 
-public interface IInstructionComponent
+public interface ICstComponent
 {
     public const int LabelColLength = 14;
     public const int OpcodeColLength = 8;

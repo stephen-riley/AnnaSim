@@ -1,6 +1,6 @@
-namespace AnnaSim.TinyC.Scheduler.Components;
+namespace AnnaSim.AsmParsing;
 
-public class BlankLine : IInstructionComponent
+public class BlankLine : ICstComponent
 {
     public string Comment { get; set; } = "";
 

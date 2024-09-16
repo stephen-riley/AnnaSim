@@ -1,6 +1,6 @@
-namespace AnnaSim.TinyC.Scheduler.Components;
+namespace AnnaSim.AsmParsing;
 
-public class HeaderComment : IInstructionComponent
+public class HeaderComment : ICstComponent
 {
     public string Comment { get; set; } = "";
 

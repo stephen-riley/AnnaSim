@@ -1,21 +1,20 @@
-using AnnaSim.TinyC.Scheduler.Components;
-using AnnaSim.TinyC.Scheduler.Instructions;
+using AnnaSim.AsmParsing;
 
-using static AnnaSim.TinyC.Scheduler.Instructions.InstrOpcode;
+using static AnnaSim.Instructions.InstrOpcode;
 
 namespace AnnaSim.TinyC.Optimizer;
 
 public class Opt
 {
-    public Stack<ScheduledInstruction> Instructions { get; internal set; } = new();
+    public Stack<CstInstruction> Instructions { get; internal set; } = new();
 
-    private Stack<ScheduledInstruction> pass = null!;
+    private Stack<CstInstruction> pass = null!;
 
     internal List<Func<int>> Optimizers = [];
 
     public bool AddComments { get; set; } = false;
 
-    public Opt(IEnumerable<ScheduledInstruction> instr)
+    public Opt(IEnumerable<CstInstruction> instr)
     {
         foreach (var i in instr)
         {
@@ -142,7 +141,7 @@ public class Opt
                     leadingTrivia = [.. leadingTrivia, new InlineComment { Comment = "OPTIMIZATION: push/pop becomes mov" }];
                 }
 
-                pass.Push(new ScheduledInstruction
+                pass.Push(new CstInstruction
                 {
                     LeadingTrivia = leadingTrivia,
                     Labels = [.. prevLabels, .. curLabels],

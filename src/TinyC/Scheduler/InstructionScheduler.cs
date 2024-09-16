@@ -1,16 +1,15 @@
+using AnnaSim.AsmParsing;
 using AnnaSim.TinyC.Optimizer;
-using AnnaSim.TinyC.Scheduler.Components;
-using AnnaSim.TinyC.Scheduler.Instructions;
 
 namespace AnnaSim.TinyC.Scheduler;
 
 public class InstructionScheduler
 {
-    public Stack<ScheduledInstruction> Instructions { get; internal set; } = new();
+    public Stack<CstInstruction> Instructions { get; internal set; } = new();
 
     public InstructionScheduler()
     {
-        Instructions.Push(new ScheduledInstruction());
+        Instructions.Push(new CstInstruction());
     }
 
     public void BlankLine() => Schedule(new BlankLine());
@@ -21,7 +20,7 @@ public class InstructionScheduler
 
     public void Label(string label) => Schedule(new LabelComponent { Label = label });
 
-    public void Schedule(IInstructionComponent piece)
+    public void Schedule(ICstComponent piece)
     {
         // states of CurrentInstr:
         // * IsDefined == false: keep attaching trivia to LeadingTrivia, 
@@ -38,10 +37,10 @@ public class InstructionScheduler
         }
         else if (Instructions.Peek().IsDefined)
         {
-            Instructions.Push(new ScheduledInstruction());
+            Instructions.Push(new CstInstruction());
             Schedule(piece);
         }
-        else if (piece is ScheduledInstruction si)
+        else if (piece is CstInstruction si)
         {
             Instructions.Peek().CopyInstructionDataFrom(si);
         }
