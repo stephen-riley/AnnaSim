@@ -4,14 +4,13 @@ using AnnaSim.Instructions;
 namespace AnnaSim.Test.CstTests;
 
 [TestClass]
-public class CstByLineTests
+public class CstParserByLineTests
 {
     [TestMethod]
     public void TestEmplyLine()
     {
         var line = "";
-        var parser = new Parser();
-        var res = parser.TryParseLine(line, out var component);
+        var res = CstParser.TryParseLine(line, out var component);
         Assert.IsTrue(res);
         Assert.IsInstanceOfType<BlankLine>(component);
     }
@@ -20,8 +19,7 @@ public class CstByLineTests
     public void TestOnlyWhitespace()
     {
         var line = "  \t \t  ";
-        var parser = new Parser();
-        var res = parser.TryParseLine(line, out var component);
+        var res = CstParser.TryParseLine(line, out var component);
         Assert.IsTrue(res);
         Assert.IsInstanceOfType<BlankLine>(component);
     }
@@ -30,8 +28,7 @@ public class CstByLineTests
     public void TestInlineComment()
     {
         var line = "  \t \t  # testing";
-        var parser = new Parser();
-        var res = parser.TryParseLine(line, out var component);
+        var res = CstParser.TryParseLine(line, out var component);
         Assert.IsTrue(res);
         Assert.IsInstanceOfType<InlineComment>(component);
         Assert.AreEqual("testing", (component as InlineComment)?.Comment);
@@ -41,8 +38,7 @@ public class CstByLineTests
     public void TestHeaderComment()
     {
         var line = "# testing";
-        var parser = new Parser();
-        var res = parser.TryParseLine(line, out var component);
+        var res = CstParser.TryParseLine(line, out var component);
         Assert.IsTrue(res);
         Assert.IsInstanceOfType<HeaderComment>(component);
         Assert.AreEqual("testing", (component as HeaderComment)?.Comment);
@@ -54,8 +50,7 @@ public class CstByLineTests
     [DataRow("lwi r2 &label", InstrOpcode.Lwi, "r2", "&label", null)]
     public void TestBasicInstruction(string input, InstrOpcode opcode, string? op1, string? op2, string? op3)
     {
-        var parser = new Parser();
-        var res = parser.TryParseLine(input, out var component);
+        var res = CstParser.TryParseLine(input, out var component);
         Assert.IsTrue(res);
         Assert.IsInstanceOfType<CstInstruction>(component);
 
@@ -73,12 +68,12 @@ public class CstByLineTests
     [DataRow("label:    lwi   r2 &label # comment", "label", InstrOpcode.Lwi, "r2", "&label", null, "comment")]
     public void TestMessyInstruction(string input, string? label, InstrOpcode opcode, string? op1, string? op2, string? op3, string? comment)
     {
-        var parser = new Parser();
-        var res = parser.TryParseLine(input, out var component);
+        var res = CstParser.TryParseLine(input, out var component);
         Assert.IsTrue(res);
         Assert.IsInstanceOfType<CstInstruction>(component);
 
         var ci = component as CstInstruction;
+        Assert.AreEqual(opcode, ci?.Opcode);
         Assert.AreEqual(op1, ci?.Operand1);
         Assert.AreEqual(op2, ci?.Operand2);
         Assert.AreEqual(op3, ci?.Operand3);

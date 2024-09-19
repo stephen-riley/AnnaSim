@@ -102,10 +102,11 @@ public class Compiler
                 sched.Optimize(compiler.ShowOptimizationComments);
             }
 
+            // TODO: replace with StringWriter?
             using var ms = new MemoryStream();
             using var writer = new StreamWriter(ms) { AutoFlush = true };
             sched.Render(writer);
-            asmSource = Encoding.ASCII.GetString(ms.ToArray());
+            asmSource = Encoding.UTF8.GetString(ms.ToArray());
             return true;
         }
         else
