@@ -3,6 +3,7 @@ using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
+using AnnaSim.AsmParsing;
 
 namespace AnnaSim.Assembler;
 
@@ -46,7 +47,7 @@ public partial class AnnaAssembler
                 list.Add(line);
             }
             lines = [.. list];
-            Console.Error.WriteLine("got these lines:\n" + string.Join("\n", lines));
+            // Console.Error.WriteLine("got these lines:\n" + string.Join("\n", lines));
             Assemble(lines);
         }
         else if (filename != "")
@@ -60,15 +61,47 @@ public partial class AnnaAssembler
         }
     }
 
-    public void Assemble(IEnumerable<string> lines)
+    public IEnumerable<CstInstruction> Assemble(IEnumerable<string> lines)
     {
-        foreach (var (index, line) in lines.SelectWithIndex(1, l => Regex.Replace(l, @"#.*", "")))
+        // First build a list of CstInstructions.
+        var instructions = CstParser.ParseLines(lines);
+
+        // Now assemble them.  The resulting bits are stored in the
+        //  CstInstructions themselves.
+        foreach (var ci in instructions)
         {
-            lineMap[Addr] = index;
-            AssembleLine(line);
+            // TODO: get rid of this ToString just to get the IDef
+            var mnemonic = ci.Opcode.ToString().ToLower().Replace('_', '.');
+
+            if (ISA.Lookup.TryGetValue(mnemonic, out var def))
+            {
+                def.Asm = this;
+                foreach (var l in ci.Labels)
+                {
+                    labels[l] = Addr;
+                }
+
+                def.Assemble(ci);
+            }
+            else
+            {
+                throw new AssemblerParseException("unknown reason");
+            }
         }
 
-        ResolveLabels();
+        // Now resolve any labels.
+        ResolveLabels(instructions);
+
+        // Finally, put all the CstInstructions' bits into the MemoryImage.
+        foreach (var ci in instructions)
+        {
+            ci.AssembledWords.Each((w, offset) =>
+            {
+                MemoryImage[ci.BaseAddress + (uint)offset] = w;
+            });
+        }
+
+        return instructions;
     }
 
     internal void AssembleLine(string line)
@@ -131,11 +164,58 @@ public partial class AnnaAssembler
         }
     }
 
-    internal void ResolveLabels()
+    internal void ResolveLabels(IEnumerable<CstInstruction> instructions)
+    {
+        var ciMap = instructions.ToDictionary(i => i.BaseAddress, i => i);
+
+        foreach ((var addr, var label) in resolutionToDo)
+        {
+            if (labels.TryGetValue(label[1..], out var targetAddr))
+            {
+                var ci = ciMap[addr];
+                var wordAtAddr = ci.AssembledWords[0];
+
+                var def = ISA.GetIdef(wordAtAddr);
+
+                if (def.IsBranch)
+                {
+                    var offset = (int)targetAddr - ((int)addr + 1);
+                    if (offset > MemoryImage.Length / 2)
+                    {
+                        offset -= MemoryImage.Length;
+                    }
+                    if (offset is > 127 or < -128)
+                    {
+                        throw new InvalidOpcodeException(def, "target address is too far away {offset}");
+                    }
+
+                    ci.AssembledWords[0] = wordAtAddr.SetLower(offset);
+                }
+                else if (def.Mnemonic == "lli")
+                {
+                    wordAtAddr = wordAtAddr.SetLower(targetAddr);
+                    ci.AssembledWords[0] = wordAtAddr;
+                }
+                else if (def.Mnemonic == "lui")
+                {
+                    ci.AssembledWords[0] = wordAtAddr.SetLower(targetAddr >> 8);
+                }
+                else
+                {
+                    throw new InvalidOpcodeException(def, "cannot use label as operand");
+                }
+            }
+            else
+            {
+                throw new LabelNotFoundException(label);
+            }
+        }
+    }
+    internal void ResolveLabelsOld()
     {
         foreach ((var addr, var label) in resolutionToDo)
         {
-            if (labels.TryGetValue(label, out var targetAddr))
+            if (labels.TryGetValue(label[1..], out var targetAddr))
             {
                 var wordAtAddr = MemoryImage[addr];
                 var def = ISA.GetIdef(wordAtAddr);

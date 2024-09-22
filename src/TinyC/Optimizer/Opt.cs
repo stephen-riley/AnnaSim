@@ -146,8 +146,10 @@ public class Opt
                     LeadingTrivia = leadingTrivia,
                     Labels = [.. prevLabels, .. curLabels],
                     Opcode = Mov,
-                    Operand1 = curOp2,
-                    Operand2 = prevOp2,
+                    OperandStrings = [
+                        curOp2 ?? throw new InvalidOperationException($"{nameof(curOp2)} is null"),
+                        prevOp2 ?? throw new InvalidOperationException($"{nameof(prevOp2)} is null")
+                    ],
                     Comment = $"transfer {prevOp2} to {curOp2}",
                     TrailingTrivia = cur.TrailingTrivia
                 });

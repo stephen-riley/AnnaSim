@@ -1,3 +1,5 @@
+using AnnaSim.Assembler;
+using AnnaSim.Cpu.Memory;
 using AnnaSim.Instructions;
 
 namespace AnnaSim.AsmParsing;
@@ -29,23 +31,47 @@ public class CstInstruction : ICstComponent
 {
     public List<string> Labels { get; set; } = [];
     public InstrOpcode Opcode { get; set; }
-    public string? Operand1 { get; set; }
-    public string? Operand2 { get; set; }
-    public string? Operand3 { get; set; }
-    public string? Comment { get; set; }
     public List<ICstComponent> LeadingTrivia { get; set; } = [];
     public List<ICstComponent> TrailingTrivia { get; set; } = [];
 
-    public IEnumerable<string> Operands { get => new List<string?> { Operand1, Operand2, Operand3 }.Cast<string>(); }
+    private Operand[] cachedOperands = null!;
+    public Operand[] Operands
+    {
+        get
+        {
+            cachedOperands ??= OperandStrings.Select(s => Operand.Parse(s)).ToArray();
+            return cachedOperands;
+        }
+    }
+
+    private string[] cachedOperandStrings = null!;
+    public string[] OperandStrings
+    {
+        get => cachedOperandStrings;
+        set
+        {
+            cachedOperandStrings = value;
+            cachedOperands = null!;
+        }
+    }
+
+    public string? Operand1 { get => OperandStrings.Length > 0 ? OperandStrings[0] : null; }
+    public string? Operand2 { get => OperandStrings.Length > 1 ? OperandStrings[1] : null; }
+    public string? Operand3 { get => OperandStrings.Length > 2 ? OperandStrings[2] : null; }
+    public string? Comment { get; set; }
+
+    public uint BaseAddress { get; set; }
+    public List<Word> AssembledWords { get; set; } = [];
+
+    public int Line { get; set; }
 
     public CstInstruction() { }
+
     public CstInstruction(string? label, InstrOpcode opcode, string? op1, string? op2 = null, string? op3 = null, string? comment = null)
     {
         Labels = label is not null ? [label] : Labels;
         Opcode = opcode;
-        Operand1 = op1;
-        Operand2 = op2;
-        Operand3 = op3;
+        OperandStrings = new List<string?>() { op1, op2, op3 }.Cast<string>().ToArray();
         Comment = comment;
     }
 
@@ -66,9 +92,7 @@ public class CstInstruction : ICstComponent
         {
             Labels = [.. Labels, .. s.Labels];
             Opcode = s.Opcode;
-            Operand1 = s.Operand1;
-            Operand2 = s.Operand2;
-            Operand3 = s.Operand3;
+            OperandStrings = (string[])s.OperandStrings.Clone();
             Comment = s.Comment;
 
             // We specifically do *not* copy trivia here.
@@ -79,6 +103,13 @@ public class CstInstruction : ICstComponent
         {
             throw new InvalidOperationException("cannot copy CstInstruction from null");
         }
+    }
+
+    public uint AssignBits(uint addr, params Word[] bits)
+    {
+        BaseAddress = addr;
+        AssembledWords.AddRange(bits);
+        return addr + (uint)bits.Length;
     }
 
     public void Render(StreamWriter writer)
@@ -95,7 +126,7 @@ public class CstInstruction : ICstComponent
             writer.WriteLine($"{l}:");
         }
 
-        writer.WriteLine($"{labelTerm}{opTerm}{string.Join(' ', Operands),-ICstComponent.OperandColLength}{commentTerm}");
+        writer.WriteLine($"{labelTerm}{opTerm}{string.Join(' ', OperandStrings),-ICstComponent.OperandColLength}{commentTerm}");
 
         TrailingTrivia.ForEach(t => t.Render(writer));
     }

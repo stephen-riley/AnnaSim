@@ -33,9 +33,13 @@ public static class CstParser
 
         var state = ParseState.BeforeInstruction;
 
+        int lineNumber = 0;
+
         foreach (var line in lines)
         {
-            if (TryParseLine(line, out var piece))
+            lineNumber++;
+
+            if (TryParseLine(line, out var piece, lineNumber))
             {
                 if (state == ParseState.BeforeInstruction)
                 {
@@ -93,28 +97,28 @@ public static class CstParser
         return instructions.Reverse().ToList();
     }
 
-    public static bool TryParseLine(string originalLine, [NotNullWhen(true)] out ICstComponent? piece)
+    public static bool TryParseLine(string originalLine, [NotNullWhen(true)] out ICstComponent? piece, int lineNumber = 0)
     {
         var line = new string(originalLine);
 
         if (line.Trim() == "")
         {
-            piece = new BlankLine();
+            piece = new BlankLine() { Line = lineNumber };
             return true;
         }
         else if (line.StartsWith('#'))
         {
-            piece = new HeaderComment() { Comment = line[1..].Trim() };
+            piece = new HeaderComment() { Comment = line[1..].Trim(), Line = lineNumber };
             return true;
         }
         else if (Regex.IsMatch(line, @"^[ \t]+#"))
         {
-            piece = new InlineComment() { Comment = line.Trim()[1..].Trim() };
+            piece = new InlineComment() { Comment = line.Trim()[1..].Trim(), Line = lineNumber };
             return true;
         }
         else if (Regex.IsMatch(line.Trim(), @"^[A-Za-z0-9_]+:$"))
         {
-            piece = new LabelComponent() { Label = line[0..^1] };
+            piece = new LabelComponent() { Label = line[0..^1], Line = lineNumber };
             return true;
         }
         else
@@ -124,6 +128,8 @@ public static class CstParser
             string? mnemonic;
             string[] operands;
             var opcode = InstrOpcode.Unknown;
+
+            line = line.Trim();
 
             var commentIndex = line.IndexOf('#');
             if (commentIndex >= 0)
@@ -138,9 +144,30 @@ public static class CstParser
                 label = line[0..colonIndex];
                 line = line[(colonIndex + 1)..].Trim();
             }
+
+            // At this point we've removed any labels and comments from the
+            //  line.  All that's left now is the mnemonic and operands.
+            // At this point in the assembly language, a string operand
+            //  can be the only operand for the directive, so either we
+            //  see a double quote and take the rest of the line as the
+            //  string operand, or we split on spaces. 
             var x = line.Split(' ', '\t').Where(p => p != "").ToArray();
             mnemonic = x[0];
-            operands = x[1..];
+            if (x.Length > 1)
+            {
+                if (x[1].StartsWith('"'))
+                {
+                    operands = [string.Join(' ', x[1..])];
+                }
+                else
+                {
+                    operands = x[1..];
+                }
+            }
+            else
+            {
+                operands = [];
+            }
 
             var str = mnemonic.Replace('.', '_');
             if (Enum.TryParse<InstrOpcode>(str, ignoreCase: true, out var result))
@@ -154,13 +181,11 @@ public static class CstParser
 
             piece = new CstInstruction()
             {
-                // Labels = label is not null ? [label] : [],
                 Labels = label != null ? [label] : [],
                 Comment = comment,
                 Opcode = opcode,
-                Operand1 = operands.Length > 0 ? operands[0] : null,
-                Operand2 = operands.Length > 1 ? operands[1] : null,
-                Operand3 = operands.Length > 2 ? operands[2] : null,
+                OperandStrings = operands,
+                Line = lineNumber
             };
 
             return true;

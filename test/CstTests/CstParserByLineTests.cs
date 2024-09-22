@@ -88,4 +88,29 @@ public class CstParserByLineTests
             Assert.AreEqual(comment, ci?.Comment);
         }
     }
+
+    [TestMethod]
+    public void TestFillParsing()
+    {
+        var line = "str:    .fill   1 2 3 4 5 6 7 8";
+        var res = CstParser.TryParseLine(line, out var component);
+        Assert.IsTrue(res);
+        Assert.IsInstanceOfType<CstInstruction>(component);
+        Assert.AreEqual("str", (component as CstInstruction)?.Labels[0]);
+        Assert.AreEqual(8, (component as CstInstruction)?.Operands.Length);
+    }
+
+    [TestMethod]
+    [DataRow("str:     .cstr   \"hello\"", "str", "hello")]
+    [DataRow(@"str:     .cstr   ""\n""", "str", @"\n")]
+    [DataRow("str:     .cstr   \": \"", "str", @": ")]
+    public void TestCstrParsing(string line, string label, string str)
+    {
+        var res = CstParser.TryParseLine(line, out var component);
+        Assert.IsTrue(res);
+        Assert.IsInstanceOfType<CstInstruction>(component);
+        Assert.AreEqual(label, (component as CstInstruction)?.Labels[0]);
+        Assert.AreEqual(1, (component as CstInstruction)?.Operands.Length);
+        Assert.AreEqual($"\"{str}\"", (component as CstInstruction)?.Operand1);
+    }
 }

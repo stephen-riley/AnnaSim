@@ -125,9 +125,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         {
             Labels = label is not null ? [label] : [],
             Opcode = op is null ? InstrOpcode.Unknown : ToEnum(op),
-            Operand1 = op1,
-            Operand2 = op2,
-            Operand3 = op3,
+            OperandStrings = operands is not null ? operands : [],
             Comment = comment,
         });
     }
