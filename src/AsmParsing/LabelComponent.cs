@@ -6,5 +6,6 @@ public class LabelComponent : ICstComponent
 
     public int Line { get; set; }
 
-    public void Render(StreamWriter writer) => writer.WriteLine(Label + ':');
+    public void Render(StreamWriter writer, bool showDisassembly = false)
+        => writer.WriteLine((showDisassembly ? new string(' ', ICstComponent.BitColLength) : "") + Label + ':');
 }

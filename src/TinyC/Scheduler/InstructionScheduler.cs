@@ -86,4 +86,13 @@ public class InstructionScheduler
             i.Render(writer);
         }
     }
+
+    public void RenderDisassembly()
+    {
+        var fw = new StreamWriter("/tmp/out.dasm");
+        foreach (var i in Instructions.Reverse())
+        {
+            i.Render(fw, true);
+        }
+    }
 }

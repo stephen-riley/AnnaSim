@@ -78,7 +78,7 @@ public abstract partial class InstructionDefinition
 
     public Instruction ToInstruction(Operand[] operands)
     {
-        operands.Where(o => o.Type == OperandType.Label).ForEach(o => Asm.resolutionToDo[Addr] = o.Str);
+        // operands.Where(o => o.Type == OperandType.Label).ForEach(o => Asm.resolutionToDo[Addr] = o.Str);
         return ToInstructionImpl(operands);
     }
 

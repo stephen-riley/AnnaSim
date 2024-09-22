@@ -34,7 +34,7 @@ public partial class CstrDirective
         var str = Regex.Unescape(operands[0].Str);
         var words = str.Select(c => (Word)c).ToArray();
 
-        Addr = ci.AssignBits(Addr, words);
+        Addr = ci.AssignBits(Addr, [.. words, 0]);
     }
 
     public override Instruction ToInstructionImpl(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");

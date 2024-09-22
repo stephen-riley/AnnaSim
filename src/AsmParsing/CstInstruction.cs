@@ -112,9 +112,9 @@ public class CstInstruction : ICstComponent
         return addr + (uint)bits.Length;
     }
 
-    public void Render(StreamWriter writer)
+    public void Render(StreamWriter writer, bool showDisassembly = false)
     {
-        LeadingTrivia.ForEach(t => t.Render(writer));
+        LeadingTrivia.ForEach(t => t.Render(writer, showDisassembly));
 
         var commentTerm = Comment is not null ? $"# {Comment}" : "";
         var labelTerm = Labels.Count > 0 ? $"{Labels[^1] + ':',-ICstComponent.LabelColLength}" : new string(' ', ICstComponent.LabelColLength);
@@ -123,11 +123,28 @@ public class CstInstruction : ICstComponent
 
         foreach (var l in Labels.Take(Labels.Count - 1))
         {
-            writer.WriteLine($"{l}:");
+            writer.WriteLine($"{(showDisassembly ? new string(' ', ICstComponent.BitColLength) : "")}{l}:");
         }
 
-        writer.WriteLine($"{labelTerm}{opTerm}{string.Join(' ', OperandStrings),-ICstComponent.OperandColLength}{commentTerm}");
+        var firstBitsTerm = "";
+        List<string> bits = [];
+        if (showDisassembly)
+        {
+            var addr = BaseAddress;
+            bits = AssembledWords.Select(w => $"[{addr++:x4}: {(uint)w:x4}]").ToList();
+            firstBitsTerm = bits.Count > 0 ? $"{bits[0],-ICstComponent.BitColLength}" : new string(' ', ICstComponent.BitColLength);
+        }
 
-        TrailingTrivia.ForEach(t => t.Render(writer));
+        writer.WriteLine($"{firstBitsTerm}{labelTerm}{opTerm}{string.Join(' ', OperandStrings),-ICstComponent.OperandColLength}{commentTerm}");
+
+        if (showDisassembly && bits.Count > 0)
+        {
+            foreach (var b in bits[1..])
+            {
+                writer.WriteLine(b);
+            }
+        }
+
+        TrailingTrivia.ForEach(t => t.Render(writer, showDisassembly));
     }
 }

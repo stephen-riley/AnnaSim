@@ -15,6 +15,9 @@ public class RunCliOptions
     [Option('s', "screendump", HelpText = "Dump screen to STDOUT after execution")]
     public bool DumpScreen { get; set; }
 
+    [Option("dump-disassembly", HelpText = "Dump the disassembled form")]
+    public string DumpFilename { get; set; } = "";
+
     private static readonly UnParserSettings settings = new()
     {
         GroupSwitches = true,

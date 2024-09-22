@@ -193,7 +193,7 @@ public class AssemblerInternalsTests
         asm.labels["label"] = targetAddr;
         var cis = asm.Assemble(["beq r1 &label"]);
 
-        Assert.AreEqual("&label", asm.resolutionToDo[0]);
+        Assert.AreEqual("&label", asm.resolutionToDo[(0, 0)]);
         Assert.IsTrue(asm.labels.ContainsKey("label"));
 
         asm.ResolveLabels(cis);
