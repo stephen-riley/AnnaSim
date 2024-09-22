@@ -16,7 +16,7 @@ public partial class OrgDirective
         Asm.Addr = (uint)(int)operands[0];
     }
 
-    protected override void AssembleImpl(CstInstruction ci) => Asm.Addr = (uint)(int)ci.Operands[0];
+    protected override void AssembleImpl(CstInstruction ci) => Asm.Addr = (uint)ci.Operands[0];
 
     public override Instruction ToInstructionImpl(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
 }

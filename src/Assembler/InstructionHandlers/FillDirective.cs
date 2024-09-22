@@ -16,7 +16,7 @@ public partial class FillDirective
 
     protected override void AssembleImpl(CstInstruction ci)
     {
-        throw new NotImplementedException(nameof(AssembleImpl));
+        Addr = ci.AssignBits(Addr, ci.Operands.Select(o => (Word)o.AsUInt()).ToArray());
     }
 
     public override Instruction ToInstructionImpl(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");

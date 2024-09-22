@@ -166,7 +166,7 @@ public partial class AnnaAssembler
 
     internal void ResolveLabels(IEnumerable<CstInstruction> instructions)
     {
-        var ciMap = instructions.ToDictionary(i => i.BaseAddress, i => i);
+        var ciMap = instructions.ThatOccupyMemory().ToDictionary(i => i.BaseAddress, i => i);
 
         foreach ((var addr, var label) in resolutionToDo)
         {
