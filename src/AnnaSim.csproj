@@ -9,8 +9,12 @@
 
     <Copyright>Copyright 2024, Stephen Riley</Copyright>
     <Company>Seattle University</Company>
-    <Version>1.0.0-beta</Version>
+    <Version>0.1.0</Version>
     <AssemblyTitle>AnnaSim</AssemblyTitle>
+
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>anna</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
