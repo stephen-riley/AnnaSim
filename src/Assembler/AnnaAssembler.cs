@@ -3,6 +3,7 @@ using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 using AnnaSim.Extensions;
+using AnnaSim.AsmParsing;
 
 namespace AnnaSim.Assembler;
 
@@ -10,7 +11,8 @@ public partial class AnnaAssembler
 {
     internal readonly Dictionary<string, uint> labels = [];
 
-    internal readonly Dictionary<uint, string> resolutionToDo = [];
+    // key tuple is (CstInstruction index, AssembledWords[] offset)
+    internal readonly Dictionary<(uint, int), string> resolutionToDo = [];
 
     internal readonly Dictionary<string, string> registerAliases = [];
 
@@ -46,31 +48,69 @@ public partial class AnnaAssembler
                 list.Add(line);
             }
             lines = [.. list];
-            Console.Error.WriteLine("got these lines:\n" + string.Join("\n", lines));
-            Assemble(lines);
+            // Console.Error.WriteLine("got these lines:\n" + string.Join("\n", lines));
         }
         else if (filename != "")
         {
             lines = File.ReadAllLines(filename);
-            Assemble(lines);
         }
         else
         {
             return;
         }
+
+        var cis = Assemble(lines);
+        var fw = new StreamWriter("/tmp/out.dasm") { AutoFlush = true };
+        foreach (var i in cis)
+        {
+            i.Render(fw, true);
+        }
     }
 
-    public void Assemble(IEnumerable<string> lines)
+    public IEnumerable<CstInstruction> Assemble(IEnumerable<string> lines)
     {
-        foreach (var (index, line) in lines.SelectWithIndex(1, l => Regex.Replace(l, @"#.*", "")))
+        // First build a list of CstInstructions.
+        var instructions = CstParser.ParseLines(lines);
+
+        // Now assemble them.  The resulting bits are stored in the
+        //  CstInstructions themselves.
+        foreach (var ci in instructions)
         {
-            lineMap[Addr] = index;
-            AssembleLine(line);
+            // TODO: get rid of this ToString just to get the IDef
+            var mnemonic = ci.Opcode.ToString().ToLower().Replace('_', '.');
+
+            if (ISA.Lookup.TryGetValue(mnemonic, out var def))
+            {
+                def.Asm = this;
+                foreach (var l in ci.Labels)
+                {
+                    labels[l] = Addr;
+                }
+
+                def.Assemble(ci);
+            }
+            else
+            {
+                throw new AssemblerParseException("unknown reason");
+            }
         }
 
-        ResolveLabels();
+        // Now resolve any labels.
+        ResolveLabels(instructions);
+
+        // Finally, put all the CstInstructions' bits into the MemoryImage.
+        foreach (var ci in instructions)
+        {
+            ci.AssembledWords.Each((w, offset) =>
+            {
+                MemoryImage[ci.BaseAddress + (uint)offset] = w;
+            });
+        }
+
+        return instructions;
     }
 
+    // TODO: remove this method
     internal void AssembleLine(string line)
     {
         var rawPieces = new Regex(@"\s+").Split(line).Where(s => s != "").ToArray();
@@ -97,6 +137,7 @@ public partial class AnnaAssembler
         AssembleLine([.. pieces]);
     }
 
+    // TODO: remove this method
     internal void AssembleLine(string[] pieces)
     {
         try
@@ -131,37 +172,56 @@ public partial class AnnaAssembler
         }
     }
 
-    internal void ResolveLabels()
+    internal void ResolveLabels(IEnumerable<CstInstruction> instructions)
     {
-        foreach ((var addr, var label) in resolutionToDo)
+        var ciTbd = instructions.ThatOccupyMemory();
+        var ciMap = ciTbd.ToDictionary(i => i.BaseAddress, i => i);
+
+        // TODO: shouldn't be necessary
+        resolutionToDo.Clear();
+
+        foreach (var ci in ciTbd)
         {
-            if (labels.TryGetValue(label, out var targetAddr))
+            var labelOperand = ci.Operands.Where(o => o.Type == OperandType.Label);
+            if (labelOperand.Any())
             {
-                var wordAtAddr = MemoryImage[addr];
+                var label = labelOperand.First().Str;
+                ci.AssembledWords.Each((w, offset) => resolutionToDo[(ci.BaseAddress, offset)] = label);
+            }
+        }
+
+        foreach (((var baseAddr, var offset), var label) in resolutionToDo)
+        {
+            if (labels.TryGetValue(label[1..], out var targetAddr))
+            {
+                var ci = ciMap[baseAddr];
+                var wordAtAddr = ci.AssembledWords[offset];
+
                 var def = ISA.GetIdef(wordAtAddr);
 
                 if (def.IsBranch)
                 {
-                    var offset = (int)targetAddr - ((int)addr + 1);
-                    if (offset > MemoryImage.Length / 2)
+                    var brOffset = (int)targetAddr - ((int)baseAddr + 1);
+                    if (brOffset > MemoryImage.Length / 2)
                     {
-                        offset -= MemoryImage.Length;
+                        brOffset -= MemoryImage.Length;
                     }
                     if (offset is > 127 or < -128)
                     {
                         throw new InvalidOpcodeException(def, "target address is too far away {offset}");
                     }
 
-                    MemoryImage[addr] = MemoryImage[addr].SetLower(offset);
+                    ci.AssembledWords[offset] = wordAtAddr.SetLower(brOffset);
                 }
                 else if (def.Mnemonic == "lli")
                 {
                     wordAtAddr = wordAtAddr.SetLower(targetAddr);
-                    MemoryImage[addr] = wordAtAddr;
+                    ci.AssembledWords[offset] = wordAtAddr;
                 }
                 else if (def.Mnemonic == "lui")
                 {
-                    MemoryImage[addr] = MemoryImage[addr].SetLower(targetAddr >> 8);
+                    wordAtAddr = wordAtAddr.SetLower(targetAddr >> 8);
+                    ci.AssembledWords[offset] = wordAtAddr;
                 }
                 else
                 {
@@ -174,6 +234,51 @@ public partial class AnnaAssembler
             }
         }
     }
+
+    // TODO: remove this method
+    // internal void ResolveLabelsOld()
+    // {
+    //     foreach ((var addr, var label) in resolutionToDo)
+    //     {
+    //         if (labels.TryGetValue(label[1..], out var targetAddr))
+    //         {
+    //             var wordAtAddr = MemoryImage[addr];
+    //             var def = ISA.GetIdef(wordAtAddr);
+
+    //             if (def.IsBranch)
+    //             {
+    //                 var offset = (int)targetAddr - ((int)addr + 1);
+    //                 if (offset > MemoryImage.Length / 2)
+    //                 {
+    //                     offset -= MemoryImage.Length;
+    //                 }
+    //                 if (offset is > 127 or < -128)
+    //                 {
+    //                     throw new InvalidOpcodeException(def, "target address is too far away {offset}");
+    //                 }
+
+    //                 MemoryImage[addr] = MemoryImage[addr].SetLower(offset);
+    //             }
+    //             else if (def.Mnemonic == "lli")
+    //             {
+    //                 wordAtAddr = wordAtAddr.SetLower(targetAddr);
+    //                 MemoryImage[addr] = wordAtAddr;
+    //             }
+    //             else if (def.Mnemonic == "lui")
+    //             {
+    //                 MemoryImage[addr] = MemoryImage[addr].SetLower(targetAddr >> 8);
+    //             }
+    //             else
+    //             {
+    //                 throw new InvalidOpcodeException(def, "cannot use label as operand");
+    //             }
+    //         }
+    //         else
+    //         {
+    //             throw new LabelNotFoundException(label);
+    //         }
+    //     }
+    // }
 
     public static Operand Register(string r) => new(r, OperandType.Register);
 
@@ -238,6 +343,7 @@ public partial class AnnaAssembler
         }
     }
 
+    // TODO: change over to CstInstructions
     public PdbInfo GetPdb() => new()
     {
         Labels = labels,

@@ -1,12 +1,19 @@
 using AnnaSim.Cpu;
 using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
+using AnnaSim.Assembler;
 
 namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
 public class Imm8TypeInstructionExecutionTests
 {
+    static Imm8TypeInstructionExecutionTests()
+    {
+        // This is required to run these tests individually.
+        InstructionDefinition.SetAssembler(new AnnaAssembler());
+    }
+
     [TestMethod]
     [DataRow(0, 100, 101)]
     // target is instruction's address (0) + 1 (PC+1 per instruction), + 65536 (normalize negative address)

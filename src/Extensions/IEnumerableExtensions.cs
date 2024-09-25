@@ -10,6 +10,9 @@ public static class IEnumerableExtensions
         }
     }
 
+    public static IEnumerable<(int index, T element)> SelectWithIndex<T>(this IEnumerable<T> @this, Func<T, T> selector)
+        => SelectWithIndex<T>(@this, 0, selector);
+
     public static IEnumerable<(int index, T element)> SelectWithIndex<T>(this IEnumerable<T> @this, int startIndex, Func<T, T> selector)
     {
         var result = @this.Select(selector);

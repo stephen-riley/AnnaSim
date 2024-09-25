@@ -1,7 +1,7 @@
+using AnnaSim.AsmParsing;
 using AnnaSim.TinyC.Optimizer;
-using AnnaSim.TinyC.Scheduler.Instructions;
 
-using static AnnaSim.TinyC.Scheduler.Instructions.InstrOpcode;
+using static AnnaSim.Instructions.InstrOpcode;
 
 namespace AnnaSim.Test.CompilerTests;
 
@@ -11,7 +11,7 @@ public class OptimizerTests
     [TestMethod]
     public void TestNoOptimizationsRun()
     {
-        var instructions = new List<ScheduledInstruction>()
+        var instructions = new List<CstInstruction>()
         {
             new(null, And, "r0", "r1", "r2"),
             new(null, Or, "r0", "r1", "r2"),
@@ -28,7 +28,7 @@ public class OptimizerTests
     public void TestPushPopSameRegister()
     {
         // these cancel each other out; should remove both
-        var instructions = new List<ScheduledInstruction>()
+        var instructions = new List<CstInstruction>()
         {
             new(null, Push, "r7", "r3"),
             new(null, Pop, "r7", "r3"),
@@ -44,7 +44,7 @@ public class OptimizerTests
     public void TestPushPopDifferentRegister()
     {
         // these almost cancel each other out--just move r2 <- r3
-        var instructions = new List<ScheduledInstruction>()
+        var instructions = new List<CstInstruction>()
         {
             new(null, Push, "r7", "r3"),
             new(null, Pop, "r7", "r2"),
@@ -66,7 +66,7 @@ public class OptimizerTests
     {
         // No instructions between the branch and the target.
         // Remove the first instruction.
-        var instructions = new List<ScheduledInstruction>()
+        var instructions = new List<CstInstruction>()
         {
             new(null, Beq, "r0", "&somewhere"),
             new("somewhere", Beq, "r0", "&somewhere_else"),
@@ -88,7 +88,7 @@ public class OptimizerTests
     {
         // No instructions between the branch and the target.
         // Remove the first instruction.
-        var instructions = new List<ScheduledInstruction>()
+        var instructions = new List<CstInstruction>()
         {
             new(null, Beq, "r0", "1"),
             new("somwhere", Beq, "r0", "&somewhere_else"),
@@ -110,7 +110,7 @@ public class OptimizerTests
     {
         // Back to back jumps (beq r0) where the second one
         //  has no label--second can be removed.
-        var instructions = new List<ScheduledInstruction>()
+        var instructions = new List<CstInstruction>()
         {
             new(null, Beq, "r0", "&somewhere"),
             new(null, Beq, "r0", "&somewhere_else"),
@@ -132,7 +132,7 @@ public class OptimizerTests
         //  by label, it might be a target by offset.
         // Maybe at some point we can fix that, but not
         //  today.
-        var instructions = new List<ScheduledInstruction>()
+        var instructions = new List<CstInstruction>()
         {
             new("label1", Beq, "r0", "&somewhere"),
             new("label2", Beq, "r0", "&somewhere_else"),

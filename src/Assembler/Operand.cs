@@ -60,6 +60,17 @@ public class Operand
         };
     }
 
+    public int AsInt()
+    {
+        return Type switch
+        {
+            OperandType.UnsignedInt => (int)UnsignedInt,
+            OperandType.SignedInt => SignedInt,
+            OperandType.Label => 0xffff,
+            _ => throw new InvalidCastException($"Operand is of type {Type}, requested (uint) or (int)")
+        };
+    }
+
     public static implicit operator Operand(int n) => new(n);
 
     public static implicit operator Operand(uint n) => new(n);
@@ -90,6 +101,8 @@ public class Operand
 
     public static Operand Label(string l) => new(l, OperandType.Label);
 
+    public static Operand String(string s) => new(s, OperandType.String);
+
     public static Operand Parse(string s, OperandType type = OperandType.UnsignedInt)
     {
         if (s.StartsWith('&'))
@@ -99,6 +112,10 @@ public class Operand
         else if (s.StartsWith('r'))
         {
             return Register(s);
+        }
+        else if (s.StartsWith('"'))
+        {
+            return String(s[1..^1]);
         }
 
         int negative = s.StartsWith('-') ? 1 : 0;
@@ -115,6 +132,7 @@ public class Operand
     {
         OperandType.SignedInt => SignedInt.ToString(),
         OperandType.UnsignedInt => UnsignedInt.ToString(),
+        OperandType.String => $"\"{Str}\"",
         OperandType.Label or OperandType.Register => Str,
         _ => throw new InvalidOperationException("ToString() on an Operand of type Unknown")
     };

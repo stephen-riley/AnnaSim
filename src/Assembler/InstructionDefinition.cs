@@ -1,3 +1,4 @@
+using AnnaSim.AsmParsing;
 using AnnaSim.Assembler;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
@@ -41,7 +42,27 @@ public abstract partial class InstructionDefinition
         AssembleImpl(operands, label);
     }
 
+
+    public void Assemble(CstInstruction ci)
+    {
+        if (Asm is null)
+        {
+            throw new NullReferenceException($"{nameof(Asm)} must be set before use");
+        }
+
+        ValidateOperands(ci.Operands);
+        AssembleImpl(ci);
+    }
+
+    public void Assemble(AnnaAssembler asm, CstInstruction ci)
+    {
+        Asm = asm;
+        Assemble(ci);
+    }
+
     protected abstract void AssembleImpl(Operand[] operands, string? label);
+
+    protected abstract void AssembleImpl(CstInstruction ci);
 
     public Instruction ToInstruction(uint? rd = null, uint? rs1 = null, uint? rs2 = null, int? imm6 = null, int? imm8 = null)
     {
@@ -57,7 +78,7 @@ public abstract partial class InstructionDefinition
 
     public Instruction ToInstruction(Operand[] operands)
     {
-        operands.Where(o => o.Type == OperandType.Label).ForEach(o => Asm.resolutionToDo[Addr] = o.Str);
+        // operands.Where(o => o.Type == OperandType.Label).ForEach(o => Asm.resolutionToDo[Addr] = o.Str);
         return ToInstructionImpl(operands);
     }
 

@@ -2,6 +2,7 @@ using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 using AnnaSim.Assembler;
 using AnnaSim.Instructions;
+using AnnaSim.AsmParsing;
 
 namespace AnnaSim.Test.AssemblerTests;
 
@@ -189,13 +190,13 @@ public class AssemblerInternalsTests
     public void TestBranchToLabel(uint targetAddr, uint expectedOffset)
     {
         var asm = new AnnaAssembler();
-        asm.AssembleLine("beq r1 &label");
         asm.labels["label"] = targetAddr;
+        var cis = asm.Assemble(["beq r1 &label"]);
 
-        Assert.AreEqual("label", asm.resolutionToDo[0]);
+        Assert.AreEqual("&label", asm.resolutionToDo[(0, 0)]);
         Assert.IsTrue(asm.labels.ContainsKey("label"));
 
-        asm.ResolveLabels();
+        asm.ResolveLabels(cis);
 
         uint offset = asm.MemoryImage[0] & 0x00ff;
         Assert.AreEqual(expectedOffset, offset);
@@ -206,10 +207,12 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
         asm.labels["label"] = 0x050c;
-        asm.AssembleLine("lli r1 &label");
-        asm.AssembleLine("lui r1 &label");
+        var cis = asm.Assemble([
+            "lli r1 &label",
+            "lui r1 &label"
+        ]);
 
-        asm.ResolveLabels();
+        asm.ResolveLabels(cis);
 
         Assert.AreEqual(0x0c, asm.MemoryImage[0] & 0xff);
         Assert.AreEqual(0x05, asm.MemoryImage[1] & 0xff);
@@ -219,10 +222,14 @@ public class AssemblerInternalsTests
     public void TestLliLuiFromConstant()
     {
         var asm = new AnnaAssembler();
-        asm.AssembleLine("lli r1 1");
-        asm.AssembleLine("lui r1 1");
+        asm.labels["label"] = 0x050c;
+        var cis = asm.Assemble([
+            "lli r1 1",
+            "lui r1 1"
+        ]);
 
-        asm.ResolveLabels();
+        asm.ResolveLabels(cis);
+
 
         Assert.AreEqual(1, asm.MemoryImage[0] & 0xff);
         Assert.AreEqual(0, asm.MemoryImage[1] & 0xff);
@@ -234,12 +241,11 @@ public class AssemblerInternalsTests
     public void TestBranchToFarLabel(uint targetAddr)
     {
         var asm = new AnnaAssembler();
-        asm.AssembleLine("beq r1 &label");
         asm.labels["label"] = targetAddr;
 
         Assert.ThrowsException<InvalidOpcodeException>(() =>
         {
-            asm.ResolveLabels();
+            asm.Assemble(["beq r1 &label"]);
         });
     }
 
@@ -253,8 +259,8 @@ public class AssemblerInternalsTests
         asm.labels["target"] = labelAddr;
         asm.Addr = instrAddr;
 
-        asm.AssembleLine(instruction.Split(' '));
-        asm.ResolveLabels();
+        var cis = asm.Assemble([instruction]);
+        asm.ResolveLabels(cis);
 
         Assert.AreEqual(expected, (uint)asm.MemoryImage[instrAddr]);
     }

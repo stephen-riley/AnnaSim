@@ -1,11 +1,18 @@
 using AnnaSim.Instructions;
 using AnnaSim.Exceptions;
+using AnnaSim.Assembler;
 
 namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
 public class InstructionTests
 {
+    static InstructionTests()
+    {
+        // This is required to run these tests individually.
+        InstructionDefinition.SetAssembler(new AnnaAssembler());
+    }
+
     [TestMethod]
     public void TestMathRTypeConstructor()
     {

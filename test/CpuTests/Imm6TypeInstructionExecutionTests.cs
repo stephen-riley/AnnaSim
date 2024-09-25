@@ -1,12 +1,19 @@
 using AnnaSim.Cpu;
 using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
+using AnnaSim.Assembler;
 
 namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
 public class Imm6TypeInstructionExecutionTests
 {
+    static Imm6TypeInstructionExecutionTests()
+    {
+        // This is required to run these tests individually.
+        InstructionDefinition.SetAssembler(new AnnaAssembler());
+    }
+
     [TestMethod]
     [DataRow(23, 5, 28)]
     [DataRow(20, -5, 15)]

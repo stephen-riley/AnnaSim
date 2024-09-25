@@ -2,6 +2,29 @@
 
 See paper at http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
 
+## Installation
+
+AnnaSim is installed as a `dotnet tool`.
+
+To install:
+
+(Note: if you have previously installed AnnaSim, you must first uninstall it.  See below.)
+1. Download or pull this source code.
+2. `cd` into this directory.
+3. `dotnet pack`
+4. `dotnet tool install --global --add-source src/nupkg AnnaSim`
+
+To uninstall:
+`dotnet tool uninstall --global AnnaSim`
+
+## Usage
+
+The root command is `anna`.  
+
+Type `anna --help` for a list of subcommands.
+
+To get help for a given subcommand, such as `debug`, type `anna debug --help`.
+
 ## Docs
 
 * [ANNA Guide](docs/ANNA_Guide.pdf)
@@ -9,30 +32,4 @@ See paper at http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
 
 ## TODO
 
-- [ ] Debugger
-    - [X] Run mode
-    - [X] Debug mode
-    - [X] Allow file load from STDIN
-    - [X] Allow debugging of .mem files
-    - [ ] Add stack display to VT100 dbg
-    - [ ] Fix print w/out newline in V100 dbg
-    - [ ] Be able to label stack elements per PDB stack frames
-- [ ] Tiny C compiler!
-    - [ ] #include in C
-    - [ ] for loop
-    - [ ] while loop
-    - [ ] do-while loop
-    - [ ] postfix increment/decrement
-    - [ ] optimizer
-- [ ] Assembler enhancements
-    - [ ] Allow + unary in asm (eg. for FP offsets)
-    - [ ] Expressions in assembler?
-    - [ ] .include directive
-    - [ ] add jmp/br pseudo op
-    - [ ] dump listing with addresses
-    - [ ] add mul, div, mod instructions
-    - [ ] add stack frames to PDB
-- [ ] switch to $ for hex?
-- [ ] build annalib.asm
-- [ ] Prebuilt single-file executables?
-- [ ] dotnet tool
+See [TODO.md](TODO.md)

@@ -33,6 +33,9 @@ public class CompileCliOptions
     [Option('g', "optimization-level", HelpText = "Optimization level (0 for none)")]
     public int Optimize { get; set; }
 
+    [Option("dump-disassembly", HelpText = "Dump the disassembled form")]
+    public string DumpFilename { get; set; } = "";
+
     private static readonly UnParserSettings settings = new()
     {
         GroupSwitches = true,

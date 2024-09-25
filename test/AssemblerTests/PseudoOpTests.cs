@@ -49,7 +49,7 @@ public class PseudoOpTests
         """.Split('\n');
 
         var asm = new AnnaAssembler();
-        asm.Assemble(src);
+        var cis = asm.Assemble(src);
 
         // lli r1 0x34
         Assert.AreEqual(0b1000_001_0_0011_0100, asm.MemoryImage[0]);

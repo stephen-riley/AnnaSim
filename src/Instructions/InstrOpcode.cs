@@ -1,4 +1,4 @@
-namespace AnnaSim.TinyC.Scheduler.Instructions;
+namespace AnnaSim.Instructions;
 
 public enum InstrOpcode
 {
