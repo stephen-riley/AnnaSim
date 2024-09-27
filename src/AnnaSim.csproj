@@ -29,4 +29,13 @@
     <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Antlr4 Include="TinyC/AnnaCc.g4">
+      <Error>true</Error>
+      <Listener>false</Listener>
+      <Visitor>true</Visitor>
+      <Package>AnnaSim.TinyC.Antlr</Package>
+    </Antlr4>
+  </ItemGroup>
+
 </Project>

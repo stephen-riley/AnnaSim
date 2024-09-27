@@ -66,8 +66,8 @@ type        : 'char*'
 
 expr        : lh = expr op = ( '&&' | '||' | '^') rh = expr
             | lh = expr op = ( '>=' | '<=' | '>' | '<' | '==' ) rh = expr
-	        | lh = expr op = ('*' | '/') rh = expr
-	        | lh = expr op = ( '+' | '-') rh = expr
+	          | lh = expr op = ('*' | '/') rh = expr
+	          | lh = expr op = ( '+' | '-') rh = expr
             | '(' inner=expr ')'
             | a=atom
             ;
