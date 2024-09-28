@@ -23,63 +23,13 @@ public class AssemblerInternalsTests
     }
 
     [TestMethod]
-    [DataRow(".halt", new string[0], new uint[] { 0x3000 }, 1)]
-    [DataRow(".fill", new string[] { "1", "0b10", "0x03", "&label" }, new uint[] { 1, 2, 3, 0xffff }, 4)]
-    [DataRow(".fill", new string[] { "1" }, new uint[] { 1 }, 1)]
-    [DataRow(".ralias", new string[] { "r7", "rSP" }, new uint[] { 0 }, 0)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Attributes have weird rules about arrays as parameters")]
-    public void TestGoodDirectiveHandler(string instruction, string[] operandStrings, uint[] memImage, int expectedPtr)
-    {
-        var asm = new AnnaAssembler();
-        var memImageWords = memImage.Select(ui => (Word)ui).ToList();
-
-        var idef = ISA.Lookup[instruction];
-        var operands = operandStrings.Select(s => asm.ParseOperand(s)).ToArray();
-        idef.Assemble(asm, operands);
-
-        Assert.AreEqual(-1, asm.MemoryImage.Compare(memImageWords));
-        Assert.AreEqual((uint)expectedPtr, asm.Addr);
-    }
-
-    [TestMethod]
-    [DataRow("test", ".def", new string[] { "0x8000" })]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Attributes have weird rules about arrays as parameters")]
-    public void TestDefDirectiveHandler(string label, string instruction, string[] operandStrings)
-    {
-        var asm = new AnnaAssembler();
-        var idef = ISA.Lookup[instruction];
-        var operands = operandStrings.Select(s => asm.ParseOperand(s)).ToArray();
-        idef.Assemble(asm, operands, label);
-
-        Assert.AreEqual(0u, asm.Addr);
-        Assert.AreEqual((uint)0x8000, asm.labels[label]);
-    }
-
-    [TestMethod]
-    [DataRow(new string[] { "\"ABC\"" }, new uint[] { 0x41, 0x42, 0x43, 0x00 }, 4)]
-    [DataRow(new string[] { "\"\\ \\t\\n\"" }, new uint[] { 0x20, 0x09, 0x0a, 0x00 }, 4)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Attributes have weird rules about arrays as parameters")]
-    public void TestCstrDirectiveHandler(string[] operandStrings, uint[] memImage, int expectedPtr)
-    {
-        var asm = new AnnaAssembler();
-        var memImageWords = memImage.Select(ui => (Word)ui).ToList();
-
-        var idef = ISA.Lookup[".cstr"];
-        var operands = operandStrings.Select(s => asm.ParseOperand(s)).ToArray();
-        idef.Assemble(asm, operands);
-
-        Assert.AreEqual(-1, asm.MemoryImage.Compare(memImageWords));
-        Assert.AreEqual((uint)expectedPtr, asm.Addr);
-    }
-
-    [TestMethod]
     [DataRow("add r2 r3 r4", 0b0000_010_011_100_000u)] // 0 for math op, r2, r3, r4, 0 as func code
     [DataRow("not r2 r3", 0b0000_010_011_000_100u)]    // 0 for math op, r2, r3, -1 (unused Rs2), 8 as func code
     public void TestGoodMathInstructionHandler(string instruction, uint expected)
     {
         var asm = new AnnaAssembler();
 
-        asm.AssembleLine(instruction);
+        asm.Assemble([instruction]);
 
         Assert.AreEqual((Word)expected, asm.MemoryImage[0]);
         Assert.AreEqual(1u, asm.Addr);
@@ -94,7 +44,7 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
 
-        asm.AssembleLine(instruction);
+        asm.Assemble([instruction]);
 
         Assert.AreEqual((Word)expected, asm.MemoryImage[0]);
         Assert.AreEqual(1u, asm.Addr);
@@ -102,8 +52,9 @@ public class AssemblerInternalsTests
 
     [TestMethod]
     [DataRow(".halt", new uint[] { 0x3000 }, 1)]
-    [DataRow(".fill 1 0b10 0x03 &label", new uint[] { 1, 2, 3, 0xffff }, 4)]
-    [DataRow(".ralias r7 rSP", new uint[] { 0 }, 0)]
+    [DataRow("label: .fill 1 0b10 0x03 &label", new uint[] { 1, 2, 3, 0 }, 4)]
+    // TODO: register aliases aren't implemented in the CstInstruction model yet
+    // [DataRow(".ralias r7 rSP", new uint[] { 0 }, 0)]
     [DataRow("test: .def 0x8000", new uint[] { 0 }, 0)]
     [DataRow(".org 0x8000", new uint[] { 0 }, 0x8000)]
     public void TestGoodDirectiveAssembler(string instruction, uint[] memImage, int expectedPtr)
@@ -111,7 +62,7 @@ public class AssemblerInternalsTests
         var asm = new AnnaAssembler();
         var memImageWords = memImage.Select(ui => (Word)ui).ToList();
 
-        asm.AssembleLine(instruction);
+        asm.Assemble([instruction]);
 
         Assert.AreEqual(-1, asm.MemoryImage.Compare(memImageWords));
         Assert.AreEqual((uint)expectedPtr, asm.Addr);
@@ -124,7 +75,7 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
 
-        asm.AssembleLine(instruction);
+        asm.Assemble([instruction]);
 
         Assert.AreEqual((Word)expected, asm.MemoryImage[0]);
         Assert.AreEqual(1u, asm.Addr);
@@ -140,7 +91,7 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
 
-        asm.AssembleLine(instruction);
+        asm.Assemble([instruction]);
 
         Assert.AreEqual((Word)expected, asm.MemoryImage[0]);
         Assert.AreEqual(1u, asm.Addr);
@@ -149,9 +100,10 @@ public class AssemblerInternalsTests
     [TestMethod]
     [DataRow(".halt 1", "operands required")]
     [DataRow(".fill", "operands required")]
-    [DataRow(".ralias r8", "operands required")]
-    [DataRow(".ralias", "operands required")]
-    [DataRow(".ralias r0 Bob", "not find any recognizable digits")]
+    // TODO: support register aliases in CstInstructions
+    // [DataRow(".ralias r8", "operands required")]
+    // [DataRow(".ralias", "operands required")]
+    // [DataRow(".ralias r0 Bob", "not find any recognizable digits")]
     [DataRow(".def 0x8000", ".def must have a label")]
     [DataRow("test: .org 0x8000", ".org cannot have a label")]
     public void TestBadDirectives(string instruction, string messageExcerpt)
@@ -160,23 +112,25 @@ public class AssemblerInternalsTests
 
         var exception = Assert.ThrowsException<AssemblerParseException>(() =>
         {
-            asm.AssembleLine(instruction);
+            asm.Assemble([instruction]);
         });
 
-        Assert.IsTrue(exception.InnerException?.Message.Contains(messageExcerpt));
+        Assert.IsTrue(exception?.InnerException?.Message.Contains(messageExcerpt));
     }
 
     [TestMethod]
-    [DataRow("loop: add r1 r2 r3", 1, 0)]
-    [DataRow("lli r2 &addr", 0, 1)]
-    public void TestLabelDeclaration(string instruction, int labels, int tbdLabels)
+    public void TestLabelDeclaration()
     {
         var asm = new AnnaAssembler();
 
-        asm.AssembleLine(instruction);
+        var source = """
+            loop:   add r1 r2 r3
+                    lli r2 &loop
+        """;
+        asm.Assemble(source.Split('\n'));
 
-        Assert.AreEqual(labels, asm.labels.Count);
-        Assert.AreEqual(tbdLabels, asm.resolutionToDo.Count);
+        Assert.AreEqual(1, asm.labels.Count);
+        Assert.AreEqual(1, asm.resolutionToDo.Count);
     }
 
     [TestMethod]

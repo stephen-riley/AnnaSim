@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Emit;
 using System.Text.RegularExpressions;
+using AnnaSim.Exceptions;
 using AnnaSim.Instructions;
 
 namespace AnnaSim.AsmParsing;
@@ -39,53 +39,60 @@ public static class CstParser
         {
             lineNumber++;
 
-            if (TryParseLine(line, out var piece, lineNumber))
+            try
             {
-                if (state == ParseState.BeforeInstruction)
+                if (TryParseLine(line, out var piece, lineNumber))
                 {
-                    if (piece is CstInstruction ci)
+                    if (state == ParseState.BeforeInstruction)
                     {
-                        ci.LeadingTrivia.AddRange(trivia);
-                        ci.Labels.InsertRange(0, labels.Select(l => l.Label));
-                        instructions.Push(ci);
-                        trivia.Clear();
-                        labels.Clear();
-                        state = ParseState.AfterInstruction;
-                    }
-                    else if (piece is LabelComponent l)
-                    {
-                        labels.Add(l);
-                        // state remains BeforeInstruction
+                        if (piece is CstInstruction ci)
+                        {
+                            ci.LeadingTrivia.AddRange(trivia);
+                            ci.Labels.InsertRange(0, labels.Select(l => l.Label));
+                            instructions.Push(ci);
+                            trivia.Clear();
+                            labels.Clear();
+                            state = ParseState.AfterInstruction;
+                        }
+                        else if (piece is LabelComponent l)
+                        {
+                            labels.Add(l);
+                            // state remains BeforeInstruction
+                        }
+                        else
+                        {
+                            trivia.Add(piece);
+                            // state remains BeforeInstruction
+                        }
                     }
                     else
                     {
-                        trivia.Add(piece);
-                        // state remains BeforeInstruction
+                        if (piece is BlankLine)
+                        {
+                            instructions.Peek().TrailingTrivia.Add(piece);
+                            // state remains AfterInstruction
+                        }
+                        else if (piece is CstInstruction ci)
+                        {
+                            instructions.Push(ci);
+                            // state remains AfterInstruction
+                        }
+                        else if (piece is LabelComponent l)
+                        {
+                            labels.Add(l);
+                            state = ParseState.BeforeInstruction;
+                        }
+                        else
+                        {
+                            trivia.Add(piece);
+                            state = ParseState.BeforeInstruction;
+                        }
                     }
                 }
-                else
-                {
-                    if (piece is BlankLine)
-                    {
-                        instructions.Peek().TrailingTrivia.Add(piece);
-                        // state remains AfterInstruction
-                    }
-                    else if (piece is CstInstruction ci)
-                    {
-                        instructions.Push(ci);
-                        // state remains AfterInstruction
-                    }
-                    else if (piece is LabelComponent l)
-                    {
-                        labels.Add(l);
-                        state = ParseState.BeforeInstruction;
-                    }
-                    else
-                    {
-                        trivia.Add(piece);
-                        state = ParseState.BeforeInstruction;
-                    }
-                }
+            }
+            catch (Exception e)
+            {
+                throw new AssemblerParseException(line, e);
             }
         }
 
@@ -176,13 +183,14 @@ public static class CstParser
             }
             else
             {
-                throw new InvalidOperationException($"InstrOpcode ToEnum failed on input \"{opcode}\"");
+                throw new AssemblerParseException($"InstrOpcode ToEnum failed on input \"{str}\"");
             }
 
             piece = new CstInstruction()
             {
                 Labels = label != null ? [label] : [],
                 Comment = comment,
+                Mnemonic = x[0],
                 Opcode = opcode,
                 OperandStrings = operands,
                 Line = lineNumber

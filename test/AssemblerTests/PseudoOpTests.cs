@@ -1,6 +1,4 @@
 using AnnaSim.Assembler;
-using AnnaSim.Cpu.Memory;
-using AnnaSim.Instructions;
 
 namespace AnnaSim.Test.AssemblerTests;
 

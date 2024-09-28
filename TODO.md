@@ -5,15 +5,15 @@
 - [ ] switch to $ for hex?
 - [ ] build annalib.asm
 - [ ] Prebuilt single-file executables?
-- [ ] ...or dotnet tool?
+- [X] ...or dotnet tool?
 
 ## Assembler
 
+- [X] dump listing with addresses
 - [ ] Allow + unary in asm (eg. for FP offsets)
-- [ ] Expressions in assembler?
+- [ ] Expressions in assembler? like + and - (store offsets in label operands)
 - [ ] .include directive
 - [ ] add jmp/br pseudo op
-- [X] dump listing with addresses
 - [ ] add mul, div, mod instructions
 - [ ] add stack frames to PDB
 
@@ -24,15 +24,16 @@
 - [X] Allow file load from STDIN
 - [X] Allow debugging of .mem files
 - [X] Add stack display to VT100 dbg
+- [ ] Trace mode w/ register and stack dumps
 - [ ] Fix print w/out newline in V100 dbg
 - [ ] Be able to label stack elements per PDB stack frames
 
 ## C Compiler
 
+- [X] optimizer
 - [ ] #include in C
 - [ ] link (really include) .mem files
 - [ ] for loop
 - [ ] while loop
 - [ ] do-while loop
 - [ ] postfix increment/decrement
-- [X] optimizer

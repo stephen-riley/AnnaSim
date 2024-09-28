@@ -30,9 +30,12 @@ namespace AnnaSim.AsmParsing;
 public class CstInstruction : ICstComponent
 {
     public List<string> Labels { get; set; } = [];
+    public string Mnemonic { get; set; } = null!;
     public InstrOpcode Opcode { get; set; }
     public List<ICstComponent> LeadingTrivia { get; set; } = [];
     public List<ICstComponent> TrailingTrivia { get; set; } = [];
+
+    public InstructionDefinition Def { get; set; } = null!;
 
     private Operand[] cachedOperands = null!;
     public Operand[] Operands
@@ -70,6 +73,16 @@ public class CstInstruction : ICstComponent
     public CstInstruction(string? label, InstrOpcode opcode, string? op1, string? op2 = null, string? op3 = null, string? comment = null)
     {
         Labels = label is not null ? [label] : Labels;
+        Mnemonic = opcode.ToString().Replace('_', '.');
+        Opcode = opcode;
+        OperandStrings = new List<string?>() { op1, op2, op3 }.Cast<string>().ToArray();
+        Comment = comment;
+    }
+
+    public CstInstruction(string? label, string mnemonic, InstrOpcode opcode, string? op1, string? op2 = null, string? op3 = null, string? comment = null)
+    {
+        Labels = label is not null ? [label] : Labels;
+        Mnemonic = mnemonic;
         Opcode = opcode;
         OperandStrings = new List<string?>() { op1, op2, op3 }.Cast<string>().ToArray();
         Comment = comment;

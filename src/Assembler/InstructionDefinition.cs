@@ -1,7 +1,6 @@
 using AnnaSim.AsmParsing;
 using AnnaSim.Assembler;
 using AnnaSim.Cpu.Memory;
-using AnnaSim.Extensions;
 
 namespace AnnaSim.Instructions;
 
@@ -25,24 +24,6 @@ public abstract partial class InstructionDefinition
         }
     }
 
-    public void Assemble(AnnaAssembler asm, Operand[] operands, string? label = null)
-    {
-        Asm = asm;
-        Assemble(operands, label);
-    }
-
-    public void Assemble(Operand[] operands, string? label = null)
-    {
-        if (Asm is null)
-        {
-            throw new NullReferenceException($"{nameof(Asm)} must be set before use");
-        }
-
-        ValidateOperands(operands);
-        AssembleImpl(operands, label);
-    }
-
-
     public void Assemble(CstInstruction ci)
     {
         if (Asm is null)
@@ -59,8 +40,6 @@ public abstract partial class InstructionDefinition
         Asm = asm;
         Assemble(ci);
     }
-
-    protected abstract void AssembleImpl(Operand[] operands, string? label);
 
     protected abstract void AssembleImpl(CstInstruction ci);
 

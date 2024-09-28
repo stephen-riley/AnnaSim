@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
@@ -76,22 +75,27 @@ public partial class AnnaAssembler
         //  CstInstructions themselves.
         foreach (var ci in instructions)
         {
-            // TODO: get rid of this ToString just to get the IDef
-            var mnemonic = ci.Opcode.ToString().ToLower().Replace('_', '.');
-
-            if (ISA.Lookup.TryGetValue(mnemonic, out var def))
+            try
             {
-                def.Asm = this;
-                foreach (var l in ci.Labels)
+                if (ISA.Lookup.TryGetValue(ci.Mnemonic, out var def))
                 {
-                    labels[l] = Addr;
-                }
+                    def.Asm = this;
+                    ci.Def = def;
+                    foreach (var l in ci.Labels)
+                    {
+                        labels[l] = Addr;
+                    }
 
-                def.Assemble(ci);
+                    def.Assemble(ci);
+                }
+                else
+                {
+                    throw new AssemblerParseException("unknown reason");
+                }
             }
-            else
+            catch (Exception e)
             {
-                throw new AssemblerParseException("unknown reason");
+                throw new AssemblerParseException("TODO", e);
             }
         }
 
@@ -110,83 +114,34 @@ public partial class AnnaAssembler
         return instructions;
     }
 
-    // TODO: remove this method
-    internal void AssembleLine(string line)
-    {
-        var rawPieces = new Regex(@"\s+").Split(line).Where(s => s != "").ToArray();
-        if (rawPieces.Length == 0)
-        {
-            return;
-        }
-
-        var pieces = new List<string>();
-
-        var i = 0;
-        do
-        {
-            if (rawPieces[i].StartsWith('"'))
-            {
-                pieces.Add(string.Join(" ", rawPieces[i..]));
-                break;
-            }
-
-            pieces.Add(rawPieces[i]);
-            i++;
-        } while (i < rawPieces.Length);
-
-        AssembleLine([.. pieces]);
-    }
-
-    // TODO: remove this method
-    internal void AssembleLine(string[] pieces)
-    {
-        try
-        {
-            int idx = 0;
-            string? label = null;
-            if (pieces[0].EndsWith(':'))
-            {
-                label = pieces[0][0..^1];
-                labels[label] = Addr;
-                idx++;
-            }
-
-            if (idx == pieces.Length)
-            {
-                return;
-            }
-
-            if (ISA.Lookup.TryGetValue(pieces[idx], out var def))
-            {
-                def.Asm = this;
-                def.Assemble(pieces[(idx + 1)..].Select(s => ParseOperand(s)).ToArray(), label);
-            }
-            else
-            {
-                throw new AssemblerParseException(string.Join(' ', pieces));
-            }
-        }
-        catch (Exception e)
-        {
-            throw new AssemblerParseException(string.Join(' ', pieces), e);
-        }
-    }
-
     internal void ResolveLabels(IEnumerable<CstInstruction> instructions)
     {
         var ciTbd = instructions.ThatOccupyMemory();
         var ciMap = ciTbd.ToDictionary(i => i.BaseAddress, i => i);
-
-        // TODO: shouldn't be necessary
-        resolutionToDo.Clear();
 
         foreach (var ci in ciTbd)
         {
             var labelOperand = ci.Operands.Where(o => o.Type == OperandType.Label);
             if (labelOperand.Any())
             {
-                var label = labelOperand.First().Str;
-                ci.AssembledWords.Each((w, offset) => resolutionToDo[(ci.BaseAddress, offset)] = label);
+                // Most of the pseudo-ops expand to two instructions, so we need to
+                //  apply the label to both.  However, the .fill directive can have
+                //  a mix of labels and non-labels.
+                if (ci.Opcode == InstrOpcode._Fill)
+                {
+                    ci.AssembledWords.Each((w, offset) =>
+                    {
+                        if (ci.Operands[offset].Type == OperandType.Label)
+                        {
+                            resolutionToDo[(ci.BaseAddress, offset)] = ci.Operands[offset].Str;
+                        }
+                    });
+                }
+                else
+                {
+                    var label = labelOperand.First().Str;
+                    ci.AssembledWords.Each((w, offset) => resolutionToDo[(ci.BaseAddress, offset)] = label);
+                }
             }
         }
 
@@ -195,37 +150,47 @@ public partial class AnnaAssembler
             if (labels.TryGetValue(label[1..], out var targetAddr))
             {
                 var ci = ciMap[baseAddr];
-                var wordAtAddr = ci.AssembledWords[offset];
 
-                var def = ISA.GetIdef(wordAtAddr);
-
-                if (def.IsBranch)
+                if (ci.Opcode == InstrOpcode._Fill)
                 {
-                    var brOffset = (int)targetAddr - ((int)baseAddr + 1);
-                    if (brOffset > MemoryImage.Length / 2)
-                    {
-                        brOffset -= MemoryImage.Length;
-                    }
-                    if (offset is > 127 or < -128)
-                    {
-                        throw new InvalidOpcodeException(def, "target address is too far away {offset}");
-                    }
-
-                    ci.AssembledWords[offset] = wordAtAddr.SetLower(brOffset);
-                }
-                else if (def.Mnemonic == "lli")
-                {
-                    wordAtAddr = wordAtAddr.SetLower(targetAddr);
-                    ci.AssembledWords[offset] = wordAtAddr;
-                }
-                else if (def.Mnemonic == "lui")
-                {
-                    wordAtAddr = wordAtAddr.SetLower(targetAddr >> 8);
-                    ci.AssembledWords[offset] = wordAtAddr;
+                    ci.AssembledWords[offset] = targetAddr;
                 }
                 else
                 {
-                    throw new InvalidOpcodeException(def, "cannot use label as operand");
+                    // Now we have to get the idef object from the wordAtAddr
+                    //  because the CI we have here might be a pseudo-op
+                    //  or directive with >1 words.
+                    var wordAtAddr = ci.AssembledWords[offset];
+                    var def = ISA.GetIdef(wordAtAddr);
+
+                    if (def.IsBranch)
+                    {
+                        var brOffset = (int)targetAddr - ((int)baseAddr + 1);
+                        if (brOffset > MemoryImage.Length / 2)
+                        {
+                            brOffset -= MemoryImage.Length;
+                        }
+                        if (brOffset is > 127 or < -128)
+                        {
+                            throw new InvalidOpcodeException(ci.Def, "target address is too far away {offset}");
+                        }
+
+                        ci.AssembledWords[offset] = wordAtAddr.SetLower(brOffset);
+                    }
+                    else if (def.Mnemonic == "lli")
+                    {
+                        wordAtAddr = wordAtAddr.SetLower(targetAddr);
+                        ci.AssembledWords[offset] = wordAtAddr;
+                    }
+                    else if (def.Mnemonic == "lui")
+                    {
+                        wordAtAddr = wordAtAddr.SetLower(targetAddr >> 8);
+                        ci.AssembledWords[offset] = wordAtAddr;
+                    }
+                    else
+                    {
+                        throw new InvalidOpcodeException(ci.Def, "cannot use label as operand");
+                    }
                 }
             }
             else
@@ -234,51 +199,6 @@ public partial class AnnaAssembler
             }
         }
     }
-
-    // TODO: remove this method
-    // internal void ResolveLabelsOld()
-    // {
-    //     foreach ((var addr, var label) in resolutionToDo)
-    //     {
-    //         if (labels.TryGetValue(label[1..], out var targetAddr))
-    //         {
-    //             var wordAtAddr = MemoryImage[addr];
-    //             var def = ISA.GetIdef(wordAtAddr);
-
-    //             if (def.IsBranch)
-    //             {
-    //                 var offset = (int)targetAddr - ((int)addr + 1);
-    //                 if (offset > MemoryImage.Length / 2)
-    //                 {
-    //                     offset -= MemoryImage.Length;
-    //                 }
-    //                 if (offset is > 127 or < -128)
-    //                 {
-    //                     throw new InvalidOpcodeException(def, "target address is too far away {offset}");
-    //                 }
-
-    //                 MemoryImage[addr] = MemoryImage[addr].SetLower(offset);
-    //             }
-    //             else if (def.Mnemonic == "lli")
-    //             {
-    //                 wordAtAddr = wordAtAddr.SetLower(targetAddr);
-    //                 MemoryImage[addr] = wordAtAddr;
-    //             }
-    //             else if (def.Mnemonic == "lui")
-    //             {
-    //                 MemoryImage[addr] = MemoryImage[addr].SetLower(targetAddr >> 8);
-    //             }
-    //             else
-    //             {
-    //                 throw new InvalidOpcodeException(def, "cannot use label as operand");
-    //             }
-    //         }
-    //         else
-    //         {
-    //             throw new LabelNotFoundException(label);
-    //         }
-    //     }
-    // }
 
     public static Operand Register(string r) => new(r, OperandType.Register);
 

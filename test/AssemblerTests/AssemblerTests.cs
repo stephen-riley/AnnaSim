@@ -66,4 +66,13 @@ public class AssemblerTests
         var asm = new AnnaAssembler();
         asm.Assemble(src);
     }
+
+    [TestMethod]
+    [DataRow("lw r1 r2 0")]
+    [DataRow("lw r1 r2")]
+    public void TestVariableOperandLw(string src)
+    {
+        var asm = new AnnaAssembler();
+        asm.Assemble([src]);
+    }
 }
