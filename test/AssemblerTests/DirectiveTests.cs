@@ -13,7 +13,7 @@ public class DirectiveTests
         """.Split('\n');
 
         var asm = new AnnaAssembler();
-        var cis = asm.Assemble(src);
-        CollectionAssert.AreEqual(new int[] { 1, 2, 3, 4, 5 }, cis.First().Operands.Select(o => o.AsInt()).ToList());
+        var program = asm.Assemble(src);
+        CollectionAssert.AreEqual(new int[] { 1, 2, 3, 4, 5 }, program.Instructions.First().Operands.Select(o => o.AsInt()).ToList());
     }
 }

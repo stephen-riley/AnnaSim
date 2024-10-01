@@ -3,6 +3,7 @@ using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
 using AnnaSim.Assembler;
 using AnnaSim.Exceptions;
+using AnnaSim.AsmParsing;
 
 namespace AnnaSim.Cpu;
 public class AnnaMachine
@@ -10,6 +11,7 @@ public class AnnaMachine
     public Queue<Word> Inputs { get; internal set; } = [];
     public MemoryFile Memory { get; internal set; } = new();
     public PdbInfo Pdb { get; internal set; } = new();
+    public CstProgram? Program { get; internal set; }
     public RegisterFile Registers { get; internal set; } = new();
     public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
     public Action<string> OutputStringCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
@@ -20,6 +22,7 @@ public class AnnaMachine
     public uint Pc { get; internal set; } = 0;
     public Word MemoryAtPc => Memory[Pc];
     public bool IsPcBreakpoint => Memory.Get32bits(Pc).IsBreakpoint;
+    public bool Trace { get; set; }
 
     public AnnaMachine()
     {
@@ -93,6 +96,7 @@ public class AnnaMachine
             var asm = new AnnaAssembler(CurrentFile);
             Memory = asm.MemoryImage;
             Pdb = asm.GetPdb();
+            Program = asm.Program;
         }
 
         Pc = 0;
@@ -131,6 +135,37 @@ public class AnnaMachine
         };
     }
 
+    void DumpTrace(uint addr, CstInstruction? ci, Instruction? instr)
+    {
+        int maxLabelLength = 0;
+        int maxInstructionLength = 0;
+
+        // render current instruction
+        if (ci is not null)
+        {
+            Console.Write(ci.RenderSimpleInstruction(ref maxLabelLength, ref maxInstructionLength));
+        }
+        else
+        {
+            Console.Write($"[{addr:x4}] {instr,-58}");
+        }
+
+        Console.Write("  ");
+
+        // render registers
+        Console.Write(
+            string.Join(' ',
+                Registers
+                    .registers
+                    .SelectWithIndex()
+                    .Select(tuple => $"r{tuple.index}:{tuple.element.bits:x4}"
+                )
+            )
+        );
+
+        Console.WriteLine();
+    }
+
     public HaltReason Execute(int maxCycles = 10_000)
     {
         while (maxCycles > 0)
@@ -156,6 +191,12 @@ public class AnnaMachine
 
                 Pc = instruction.Execute();
                 CyclesExecuted++;
+
+                if (Trace)
+                {
+                    Pdb.AddrCstMap.TryGetValue(Pc, out var ci);
+                    DumpTrace(Pc, ci, instruction);
+                }
 
                 if (Status == CpuStatus.Halted)
                 {

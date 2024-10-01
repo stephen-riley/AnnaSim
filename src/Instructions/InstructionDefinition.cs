@@ -22,9 +22,17 @@ public abstract partial class InstructionDefinition
         var fillOkay = OperandCount == -1 && operands.Length >= 1;
         var mismatch = operands.Length != OperandCount;
 
+        // lw and sw can have 2 operands and assume the third is 0
+        if (Mnemonic.EndsWith('w'))
+        {
+            mismatch = OperandCount is > 3 or < 2;
+        }
+
         if (!fillOkay && mismatch)
         {
-            throw new InvalidOpcodeException($"{OperandCount} operands required for {Mnemonic}, got {string.Join(' ', (IEnumerable<Operand>)operands)}");
+            var operandsTerm = operands.Length > 0 ? string.Join(' ', (IEnumerable<Operand>)operands) : "none";
+            var requiredCountTerm = OperandCount != -1 ? OperandCount.ToString() : "Some";
+            throw new InvalidOpcodeException($"{requiredCountTerm} operands required for {Mnemonic}, got {operandsTerm}");
         }
     }
 

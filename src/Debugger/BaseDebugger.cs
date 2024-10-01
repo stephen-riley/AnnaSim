@@ -94,9 +94,9 @@ public abstract class BaseDebugger
                         }
                         else
                         {
-                            if (Cpu.Pdb.LineAddrMap.ContainsKey(numeric))
+                            if (Cpu.Pdb.LineCstMap.ContainsKey((uint)numeric))
                             {
-                                breakAddr = Cpu.Pdb.LineAddrMap[numeric];
+                                breakAddr = Cpu.Pdb.LineCstMap[(uint)numeric].BaseAddress;
                                 descriptor = $"line {numeric}";
                             }
                             else
@@ -178,11 +178,11 @@ public abstract class BaseDebugger
                     break;
 
                 case 'p':
-                    foreach (var kvp in Cpu.Pdb.Labels)
+                    foreach ((var label, var labelAddr) in Cpu.Pdb.Labels)
                     {
-                        var line = Cpu.Pdb.LineAddrMap.Where(e => e.Value == kvp.Value).Select(e => e.Key).FirstOrDefault();
+                        var line = Cpu.Pdb.LineCstMap.Where(el => el.Value.BaseAddress == labelAddr).Select(e => e.Key).FirstOrDefault();
                         var lineStr = line != 0 ? $" (line {line})" : "";
-                        TerminalWrite($" 0x{kvp.Value:x4} {kvp.Key}{lineStr}");
+                        TerminalWrite($" 0x{labelAddr:x4} {label}{lineStr}");
                     }
                     break;
 

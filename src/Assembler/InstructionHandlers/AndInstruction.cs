@@ -6,11 +6,6 @@ namespace AnnaSim.Instructions.Definitions;
 
 public partial class AndInstruction
 {
-    protected override void AssembleImpl(Operand[] operands, string? label)
-    {
-        MemoryImage[Addr] = ToInstruction(operands); Addr++;
-    }
-
     protected override void AssembleImpl(CstInstruction ci) => Addr = ci.AssignBits(Addr, (Word)ToInstruction(ci.Operands));
 
     public override Instruction ToInstructionImpl(Operand[] operands)

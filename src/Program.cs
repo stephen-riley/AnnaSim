@@ -30,7 +30,7 @@ catch (Exception e)
 
 void HandleRun(RunCliOptions opt)
 {
-    var runner = new Runner(opt.Filename, opt.Inputs.ToArray());
+    var runner = new Runner(opt.Filename, opt.Inputs.ToArray(), trace: opt.Trace);
     runner.Run(opt.DumpScreen);
 }
 void HandleDebug(DebugCliOptions opt)

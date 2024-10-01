@@ -6,11 +6,6 @@ namespace AnnaSim.Instructions.Definitions;
 
 public partial class HaltDirective
 {
-    protected override void AssembleImpl(Operand[] operands, string? label)
-    {
-        MemoryImage[Addr] = ISA.Lookup["out"].ToInstruction(rd: 0); Addr++;
-    }
-
     protected override void AssembleImpl(CstInstruction ci) => Addr = ci.AssignBits(Addr, (Word)ISA.Lookup["out"].ToInstruction([Operand.Register("r0")]));
 
     public override Instruction ToInstructionImpl(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");

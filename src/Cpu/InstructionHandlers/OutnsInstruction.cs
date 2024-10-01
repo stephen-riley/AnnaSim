@@ -1,4 +1,3 @@
-using System.Text;
 using AnnaSim.Cpu;
 
 namespace AnnaSim.Instructions.Definitions;
