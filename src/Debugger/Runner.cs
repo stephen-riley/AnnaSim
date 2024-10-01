@@ -15,7 +15,7 @@ public class Runner
     public List<Word> Outputs { get; init; } = [];
     public HaltReason Status { get; private set; }
 
-    public Runner(string fname, string[] inputs, int screenMap = 0xc000)
+    public Runner(string fname, string[] inputs, int screenMap = 0xc000, bool trace = false)
     {
         origFilename = fname;
         origInputs = inputs.Select(AnnaMachine.ParseInputString).ToArray();
@@ -24,7 +24,8 @@ public class Runner
         Cpu = new AnnaMachine(fname, origInputs)
         {
             OutputCallback = Outputs.Add,
-            OutputStringCallback = Console.Write
+            OutputStringCallback = Console.Write,
+            Trace = trace
         };
     }
 

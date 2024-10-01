@@ -15,9 +15,12 @@ public partial class AnnaAssembler
 
     internal readonly Dictionary<string, string> registerAliases = [];
 
-    internal readonly Dictionary<uint, int> lineMap = [];
-
     public MemoryFile MemoryImage { get; internal set; }
+
+    public CstProgram Program { get; internal set; } = null!;
+
+    public Dictionary<uint, CstInstruction> AddrCstMap { get; internal set; } = [];
+    public Dictionary<uint, CstInstruction> LineCstMap { get; internal set; } = [];
 
     internal uint Addr = 0u;
 
@@ -32,12 +35,13 @@ public partial class AnnaAssembler
     public AnnaAssembler(string filename, int memorySize = 65536)
         : this(memorySize)
     {
-        Assemble(filename);
+        Program = Assemble(filename);
     }
 
-    public void Assemble(string filename)
+    public CstProgram Assemble(string filename)
     {
         string[] lines;
+
         if (filename == "-" && Console.IsInputRedirected)
         {
             var list = new List<string>();
@@ -47,7 +51,6 @@ public partial class AnnaAssembler
                 list.Add(line);
             }
             lines = [.. list];
-            // Console.Error.WriteLine("got these lines:\n" + string.Join("\n", lines));
         }
         else if (filename != "")
         {
@@ -55,18 +58,20 @@ public partial class AnnaAssembler
         }
         else
         {
-            return;
+            return new CstProgram([]);
         }
 
-        var cis = Assemble(lines);
+        var program = Assemble(lines);
         var fw = new StreamWriter("/tmp/out.dasm") { AutoFlush = true };
-        foreach (var i in cis)
+        foreach (var i in program.Instructions)
         {
             i.Render(fw, true);
         }
+
+        return program;
     }
 
-    public IEnumerable<CstInstruction> Assemble(IEnumerable<string> lines)
+    public CstProgram Assemble(IEnumerable<string> lines)
     {
         // First build a list of CstInstructions.
         var instructions = CstParser.ParseLines(lines);
@@ -111,7 +116,7 @@ public partial class AnnaAssembler
             });
         }
 
-        return instructions;
+        return new CstProgram(instructions);
     }
 
     internal void ResolveLabels(IEnumerable<CstInstruction> instructions)
@@ -263,11 +268,11 @@ public partial class AnnaAssembler
         }
     }
 
-    // TODO: change over to CstInstructions
     public PdbInfo GetPdb() => new()
     {
         Labels = labels,
         RegisterAliases = registerAliases,
-        LineAddrMap = lineMap.Select(kvp => KeyValuePair.Create(kvp.Value, kvp.Key)).ToDictionary(),
+        AddrCstMap = AddrCstMap,
+        LineCstMap = LineCstMap,
     };
 }

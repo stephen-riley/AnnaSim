@@ -1,5 +1,6 @@
 using AnnaSim.Assembler;
 using AnnaSim.Cpu.Memory;
+using AnnaSim.Extensions;
 using AnnaSim.Instructions;
 
 namespace AnnaSim.AsmParsing;
@@ -66,7 +67,7 @@ public class CstInstruction : ICstComponent
     public uint BaseAddress { get; set; }
     public List<Word> AssembledWords { get; set; } = [];
 
-    public int Line { get; set; }
+    public uint Line { get; set; }
 
     public CstInstruction() { }
 
@@ -159,5 +160,34 @@ public class CstInstruction : ICstComponent
         }
 
         TrailingTrivia.ForEach(t => t.Render(writer, showDisassembly));
+    }
+
+    public string RenderSimpleInstruction(ref int maxLabelLength, ref int maxInstructionLength)
+    {
+        var labelTerm = "";
+        if (Labels.Count > 0)
+        {
+            var label = Labels[^1] + ':';
+            maxLabelLength = int.Max(label.Length, maxLabelLength);
+            // labelTerm = label.ToWidth(maxLabelLength);
+            labelTerm = label.ToWidth(10);
+            Console.Error.WriteLine($"** setting label term length to {maxLabelLength}");
+        }
+        else
+        {
+            labelTerm = labelTerm.ToWidth(maxLabelLength);
+        }
+
+        var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-ICstComponent.OpcodeColLength}";
+        // var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-ICstComponent.OpcodeColLength}";
+        var operands = string.Join(' ', OperandStrings);
+        var instr = $"{labelTerm} {opTerm}  {operands}";
+
+        maxInstructionLength = int.Max(instr.Length, maxInstructionLength);
+        var instrTerm = instr.ToWidth(maxInstructionLength);
+
+        var bits = $"[{BaseAddress:x4}: {AssembledWords[0]:x4}]";
+
+        return $"{bits} {labelTerm} {instrTerm}";
     }
 }

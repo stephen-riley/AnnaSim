@@ -33,7 +33,7 @@ public static class CstParser
 
         var state = ParseState.BeforeInstruction;
 
-        int lineNumber = 0;
+        uint lineNumber = 0;
 
         foreach (var line in lines)
         {
@@ -104,7 +104,7 @@ public static class CstParser
         return instructions.Reverse().ToList();
     }
 
-    public static bool TryParseLine(string originalLine, [NotNullWhen(true)] out ICstComponent? piece, int lineNumber = 0)
+    public static bool TryParseLine(string originalLine, [NotNullWhen(true)] out ICstComponent? piece, uint lineNumber = 0)
     {
         var line = new string(originalLine);
 

@@ -18,6 +18,9 @@ public class RunCliOptions
     [Option("dump-disassembly", HelpText = "Dump the disassembled form")]
     public string DumpFilename { get; set; } = "";
 
+    [Option('t', "trace", HelpText = "Trace output")]
+    public bool Trace { get; set; }
+
     private static readonly UnParserSettings settings = new()
     {
         GroupSwitches = true,

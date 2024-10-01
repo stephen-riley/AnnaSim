@@ -145,12 +145,12 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
         asm.labels["label"] = targetAddr;
-        var cis = asm.Assemble(["beq r1 &label"]);
+        var p = asm.Assemble(["beq r1 &label"]);
 
         Assert.AreEqual("&label", asm.resolutionToDo[(0, 0)]);
         Assert.IsTrue(asm.labels.ContainsKey("label"));
 
-        asm.ResolveLabels(cis);
+        asm.ResolveLabels(p.Instructions);
 
         uint offset = asm.MemoryImage[0] & 0x00ff;
         Assert.AreEqual(expectedOffset, offset);
@@ -161,12 +161,12 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
         asm.labels["label"] = 0x050c;
-        var cis = asm.Assemble([
+        var p = asm.Assemble([
             "lli r1 &label",
             "lui r1 &label"
         ]);
 
-        asm.ResolveLabels(cis);
+        asm.ResolveLabels(p.Instructions);
 
         Assert.AreEqual(0x0c, asm.MemoryImage[0] & 0xff);
         Assert.AreEqual(0x05, asm.MemoryImage[1] & 0xff);
@@ -177,12 +177,12 @@ public class AssemblerInternalsTests
     {
         var asm = new AnnaAssembler();
         asm.labels["label"] = 0x050c;
-        var cis = asm.Assemble([
+        var p = asm.Assemble([
             "lli r1 1",
             "lui r1 1"
         ]);
 
-        asm.ResolveLabels(cis);
+        asm.ResolveLabels(p.Instructions);
 
 
         Assert.AreEqual(1, asm.MemoryImage[0] & 0xff);
@@ -213,8 +213,8 @@ public class AssemblerInternalsTests
         asm.labels["target"] = labelAddr;
         asm.Addr = instrAddr;
 
-        var cis = asm.Assemble([instruction]);
-        asm.ResolveLabels(cis);
+        var p = asm.Assemble([instruction]);
+        asm.ResolveLabels(p.Instructions);
 
         Assert.AreEqual(expected, (uint)asm.MemoryImage[instrAddr]);
     }
