@@ -1,9 +1,9 @@
-using AnnaSim.Instructions;
-using AnnaSim.Cpu.Memory;
-using AnnaSim.Extensions;
-using AnnaSim.Assembler;
-using AnnaSim.Exceptions;
 using AnnaSim.AsmParsing;
+using AnnaSim.Assembler;
+using AnnaSim.Cpu.Memory;
+using AnnaSim.Exceptions;
+using AnnaSim.Extensions;
+using AnnaSim.Instructions;
 
 namespace AnnaSim.Cpu;
 public class AnnaMachine
@@ -15,6 +15,8 @@ public class AnnaMachine
     public RegisterFile Registers { get; internal set; } = new();
     public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
     public Action<string> OutputStringCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
+    public Action? PreInstructionExecutionCallback { get; set; }
+    public Action? PostInstructionExecutionCallback { get; set; }
     public CpuStatus Status { get; internal set; } = CpuStatus.Halted;
     public int CyclesExecuted { get; internal set; } = 0;
 
@@ -23,7 +25,7 @@ public class AnnaMachine
     public bool IsPcBreakpoint => Memory.Get32bits(Pc).IsBreakpoint;
     public bool Trace { get; set; }
 
-    private ushort[] lastRegisterValues = [];
+    private ushort[] lastTracedRegisterValues = [];
 
     public AnnaMachine()
     {
@@ -121,30 +123,62 @@ public class AnnaMachine
         };
     }
 
-    int maxLabelLength = 6;
-    int maxInstructionLength = 18;
+    int maxLabelLength = 0;
+    int maxOpcodeOperandLength = 18;
+    int maxInstructionLength = 10;
 
-    void DumpTraceInstruction(Instruction? instr)
+    void TracePreExecution(uint tracedPc, Instruction instr)
     {
-        Program.AddrMap.TryGetValue(Pc, out var ci);
+        Program.AddrMap.TryGetValue(tracedPc, out var ci);
 
-        // render current instruction
+        // If we're dealing with a CstInstruction, we only want to print the
+        // *first* underlying instruction, and only show the effects after the
+        // *last* underlying instruction.
+        //
+        // If we aren't dealing with a CstInstruction, just show it.
         if (ci is not null)
         {
-            Console.Error.Write(ci.RenderSimpleInstruction(ref maxLabelLength, ref maxInstructionLength));
+            if (Pc == ci.BaseAddress)
+            {
+                lastTracedRegisterValues = Registers.registers.Select(r => r.bits).ToArray();
+                var prevMaxLength = maxInstructionLength;
+                var s = ci.RenderSimpleInstruction(ref maxLabelLength, ref maxOpcodeOperandLength, ref maxInstructionLength);
+
+                if ((prevMaxLength != maxInstructionLength) || (ci.Labels.Count > 0))
+                {
+                    Console.Error.WriteLine();
+                }
+
+                Console.Error.Write(s);
+            }
+            else
+            {
+                return;
+            }
         }
         else
         {
-            Console.Error.Write($"[{Pc:x4}] {instr,-58}");
+            lastTracedRegisterValues = Registers.registers.Select(r => r.bits).ToArray();
+            Console.Error.Write($"[{tracedPc:x4}: {Memory[tracedPc]}] {instr.ToString().ToWidth(maxInstructionLength)}");
         }
 
         Console.Error.Write("  |  ");
     }
 
-    void DumpTraceResults()
+    void TracePostExecution(uint tracedPc)
     {
-        // render changed register
-        var changedRegister = Enumerable.Range(0, Registers.Length).Aggregate(-1, (changed, index) => lastRegisterValues[index] != Registers[(uint)index].bits ? index : changed);
+        Program.AddrMap.TryGetValue(tracedPc, out var ci);
+
+        // See comments in `TracePreExection` for what this is about.
+        if (ci is not null && tracedPc != ci.BaseAddress + ci.AssembledWords.Count - 1)
+        {
+            return;
+        }
+
+        // Render changed register.  We go in reverse order because pops may change
+        // both the SP (r7) and the destination register `Rd`; since the SP is usually
+        // shown anyway, we want to capture the `Rd` change.
+        var changedRegister = Enumerable.Range(0, Registers.Length).Reverse().Aggregate(-1, (changed, index) => lastTracedRegisterValues[index] != Registers[(uint)index].bits ? index : changed);
         if (changedRegister > -1)
         {
             Console.Error.Write($"r{changedRegister}: 0x{Registers[(uint)changedRegister].bits:x4}");
@@ -156,7 +190,7 @@ public class AnnaMachine
 
         if (Registers[7] != 0)
         {
-            Console.Error.Write($"  |  SP:{Registers[7].bits:x4}");
+            Console.Error.Write($"  |  [SP:{Registers[7].bits:x4}]");
 
             const uint stackDepth = 8;
             var stackStart = 0x8000 - Registers[7] > stackDepth ? Registers[7] - stackDepth : 0x8000;
@@ -175,6 +209,8 @@ public class AnnaMachine
         Console.Error.WriteLine();
     }
 
+    private uint tracedPc;
+
     public HaltReason Execute(int maxCycles = 10_000)
     {
         while (maxCycles > 0)
@@ -191,7 +227,10 @@ public class AnnaMachine
 
             try
             {
-                lastRegisterValues = Registers.registers.Select(r => r.bits).ToArray();
+                if (PreInstructionExecutionCallback is not null)
+                {
+                    PreInstructionExecutionCallback();
+                }
 
                 var instruction = ISA.Instruction((Word)mw);
 
@@ -202,7 +241,8 @@ public class AnnaMachine
 
                 if (Trace)
                 {
-                    DumpTraceInstruction(instruction);
+                    tracedPc = Pc;
+                    TracePreExecution(tracedPc, instruction);
                 }
 
                 Pc = instruction.Execute();
@@ -210,7 +250,12 @@ public class AnnaMachine
 
                 if (Trace)
                 {
-                    DumpTraceResults();
+                    TracePostExecution(tracedPc);
+                }
+
+                if (PostInstructionExecutionCallback is not null)
+                {
+                    PostInstructionExecutionCallback();
                 }
 
                 if (Status == CpuStatus.Halted)

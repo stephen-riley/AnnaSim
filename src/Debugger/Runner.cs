@@ -17,6 +17,8 @@ public class Runner
     public HaltReason Status { get; private set; }
     public int MaxCycles { get; set; } = 10_000;
 
+    private string? outputString;
+
     public Runner(CstProgram program, string[] inputs, int screenMap = 0xc000, bool trace = false)
     {
         this.program = program;
@@ -26,7 +28,22 @@ public class Runner
         Cpu = new AnnaMachine(program, origInputs)
         {
             OutputCallback = Outputs.Add,
-            OutputStringCallback = Console.Write,
+            OutputStringCallback = (s) => outputString = s,
+            PreInstructionExecutionCallback = () => outputString = null,
+            PostInstructionExecutionCallback = () =>
+            {
+                if (outputString is not null)
+                {
+                    if (trace)
+                    {
+                        Console.WriteLine((trace ? "\n" + new string('-', 14) + " " : "") + $"OUTS: «{outputString.Replace("\n", @"\n")}»{(trace ? "\n" : "")}");
+                    }
+                    else
+                    {
+                        Console.Write(outputString);
+                    }
+                }
+            },
             Trace = trace
         };
     }

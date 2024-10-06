@@ -162,7 +162,7 @@ public class CstInstruction : ICstComponent
         TrailingTrivia.ForEach(t => t.Render(writer, showDisassembly));
     }
 
-    public string RenderSimpleInstruction(ref int maxLabelLength, ref int maxInstructionLength)
+    public string RenderSimpleInstruction(ref int maxLabelLength, ref int maxOpcodeOperandLength, ref int maxInstructionLength)
     {
         var labelTerm = "";
         if (Labels.Count > 0)
@@ -170,21 +170,19 @@ public class CstInstruction : ICstComponent
             var label = Labels[^1] + ": ";
             maxLabelLength = int.Max(label.Length, maxLabelLength);
             labelTerm = label.ToWidth(maxLabelLength);
-            // labelTerm = label.ToWidth(10);
-            // Console.Error.WriteLine($"** setting label term length to {maxLabelLength}");
         }
         else
         {
             labelTerm = labelTerm.ToWidth(maxLabelLength);
         }
 
-        var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-ICstComponent.OpcodeColLength}";
-        // var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-ICstComponent.OpcodeColLength}";
+        var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.')}".ToWidth(ICstComponent.OpcodeColLength);
         var operands = string.Join(' ', OperandStrings);
-        var instr = $"{labelTerm}{opTerm}{operands}";
+        var opcodeOperandsTerm = $"{opTerm}{operands}".ToWidth(maxOpcodeOperandLength);
+        maxOpcodeOperandLength = int.Max(opcodeOperandsTerm.Length, maxOpcodeOperandLength);
 
-        maxInstructionLength = int.Max(instr.Length, maxInstructionLength);
-        var instrTerm = instr.ToWidth(maxInstructionLength);
+        var instrTerm = $"{labelTerm}{opcodeOperandsTerm}".ToWidth(maxOpcodeOperandLength);
+        maxInstructionLength = int.Max(instrTerm.Length, maxInstructionLength);
 
         var bits = $"[{BaseAddress:x4}: {AssembledWords[0]:x4}]";
 

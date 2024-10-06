@@ -16,7 +16,7 @@ public class RegisterFile
     public Word this[uint n]
     {
         get { return n == 0 ? (Word)0 : registers[n]; }
-        set { registers[n] = value; }
+        set { registers[n] = n > 0 ? value : (uint)0; }
     }
 
     public override string ToString()
