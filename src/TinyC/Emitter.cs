@@ -22,7 +22,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         Cc = cc;
     }
 
-    public static InstructionScheduler Emit(CompilerContext cc, ParserRuleContext context, string filename = "(no filename)")
+    public static InstructionScheduler Emit(CompilerContext cc, ParserRuleContext context, string filename)
     {
         var e = new Emitter(cc);
 

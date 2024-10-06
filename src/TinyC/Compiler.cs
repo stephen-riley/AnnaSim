@@ -2,6 +2,7 @@ using AnnaSim.TinyC.Antlr;
 using Antlr4.Runtime;
 using AnnaSim.TinyC.Errors;
 using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AnnaSim.TinyC;
 
@@ -69,10 +70,10 @@ public class Compiler
         }
     }
 
-    public static bool TryCompile(string filename, string input, out string? asmSource, bool showParseTree = false, int optimization = 2)
+    public static bool TryCompile(string csource, [NotNullWhen(true)] out string? asmSource, string? filename = null, bool showParseTree = false, int optimization = 2)
     {
         var compiler = new Compiler() { Trace = showParseTree, Optimize = optimization > 0, ShowOptimizationComments = optimization == 1 };
-        var success = compiler.BuildParseTree(input);
+        var success = compiler.BuildParseTree(csource);
 
         if (success)
         {
@@ -95,7 +96,7 @@ public class Compiler
                 return false;
             }
 
-            var sched = Emitter.Emit(sa.Cc, compiler.ParseTree, filename);
+            var sched = Emitter.Emit(sa.Cc, compiler.ParseTree, filename ?? "(STDIN)");
 
             if (compiler.Optimize)
             {

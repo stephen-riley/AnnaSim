@@ -2,10 +2,11 @@
 
 ## General
 
+- [X] ...or dotnet tool?
 - [ ] switch to $ for hex?
 - [ ] build annalib.asm
 - [ ] Prebuilt single-file executables?
-- [X] ...or dotnet tool?
+- [ ] add URL to reference docs in --help
 
 ## Assembler
 

@@ -1,3 +1,4 @@
+using AnnaSim.AsmParsing;
 using AnnaSim.Assembler;
 using AnnaSim.Cpu;
 using AnnaSim.Cpu.Memory;
@@ -8,8 +9,8 @@ namespace AnnaSim.Debugger;
 
 public abstract class BaseDebugger
 {
+    protected readonly CstProgram program;
     protected readonly uint[] origInputs = [];
-    protected readonly string origFilename;
     protected readonly string[] argv;
     protected readonly List<uint> watches = [];
     protected readonly List<string> terminalBuffer = [];
@@ -21,17 +22,17 @@ public abstract class BaseDebugger
     public List<Word> Outputs { get; init; } = [];
     public HaltReason Status { get; private set; }
 
-    protected BaseDebugger(string fname, string[] inputs, int screenMap = 0xc000) : this(fname, inputs, [], screenMap) { }
-    protected BaseDebugger(string fname, int screenMap = 0xc000) : this(fname, [], [], screenMap) { }
+    protected BaseDebugger(CstProgram program, string[] inputs, int screenMap = 0xc000) : this(program, inputs, [], screenMap) { }
+    protected BaseDebugger(CstProgram program, int screenMap = 0xc000) : this(program, [], [], screenMap) { }
 
-    protected BaseDebugger(string fname, string[] inputs, string[] argv, int screenMap = 0xc000)
+    protected BaseDebugger(CstProgram program, string[] inputs, string[] argv, int screenMap = 0xc000)
     {
-        origFilename = fname;
+        this.program = program;
         origInputs = inputs.Select(AnnaMachine.ParseInputString).ToArray();
         this.argv = argv;
         ScreenMap = (uint)screenMap;
 
-        Cpu = new AnnaMachine(fname, origInputs)
+        Cpu = new AnnaMachine(program, origInputs)
         {
             OutputCallback = (w) =>
             {
@@ -53,9 +54,9 @@ public abstract class BaseDebugger
         var readFromConsole = argv.Length == 0;
         var cmdQueue = new Queue<string>(argv);
 
-        DisplayBanner(origFilename);
+        DisplayBanner(program.Filename ?? "");
 
-        Cpu.Reset(origFilename);
+        Cpu.Reset();
         Cpu.Status = CpuStatus.Running;
 
         lastRegistersState = Cpu.Registers.Copy();
@@ -87,7 +88,7 @@ public abstract class BaseDebugger
 
                     if (AnnaAssembler.TryParseNumeric(cmd[2..], out var numeric))
                     {
-                        if (origFilename.EndsWith(".mem"))
+                        if (program.Filename?.EndsWith(".mem") ?? false)
                         {
                             breakAddr = (uint)numeric;
                             descriptor = $"address {numeric:x4}";
@@ -106,7 +107,7 @@ public abstract class BaseDebugger
                             }
                         }
                     }
-                    else if (origFilename.EndsWith(".mem"))
+                    else if (program.Filename?.EndsWith(".mem") ?? false)
                     {
                         TerminalWriteLine($"* Cannot use labels on .mem files");
                         continue;
@@ -162,7 +163,7 @@ public abstract class BaseDebugger
                     }
                     else
                     {
-                        Cpu.Reset(fname, origInputs);
+                        Cpu.Reset(origInputs);
                         TerminalWriteLine("Assembled file.");
                     }
                     break;
@@ -211,7 +212,7 @@ public abstract class BaseDebugger
                     break;
 
                 case 'R':
-                    if (origFilename == "-")
+                    if (program.Filename is null)
                     {
                         TerminalWriteLine("* cannot reset from STDIN");
                     }

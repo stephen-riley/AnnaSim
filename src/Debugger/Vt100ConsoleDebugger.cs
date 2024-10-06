@@ -1,3 +1,4 @@
+using AnnaSim.AsmParsing;
 using AnnaSim.Extensions;
 using AnnaSim.Instructions;
 
@@ -5,10 +6,10 @@ namespace AnnaSim.Debugger;
 
 public class Vt100ConsoleDebugger : BaseDebugger
 {
-    public Vt100ConsoleDebugger(string fname, string[] inputs, int screenMap = 0xc000) : this(fname, inputs, [], screenMap) { }
-    public Vt100ConsoleDebugger(string fname, int screenMap = 0xc000) : this(fname, [], [], screenMap) { }
+    public Vt100ConsoleDebugger(CstProgram program, string[] inputs, int screenMap = 0xc000) : this(program, inputs, [], screenMap) { }
+    public Vt100ConsoleDebugger(CstProgram program, int screenMap = 0xc000) : this(program, [], [], screenMap) { }
 
-    public Vt100ConsoleDebugger(string fname, string[] inputs, string[] argv, int screenMap = 0xc000) : base(fname, inputs, argv, screenMap) { }
+    public Vt100ConsoleDebugger(CstProgram program, string[] inputs, string[] argv, int screenMap = 0xc000) : base(program, inputs, argv, screenMap) { }
 
     protected override void Prerun() => Console.Clear();
 

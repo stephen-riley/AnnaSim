@@ -6,7 +6,6 @@
         in      r4          # input n
         add     r1 r0 r0    # a = 0
         addi    r2 r0 1     # b = 1
-        out     r2
 
 loop:   addi    r4 r4 -1    # decrement n
         beq     r4 &end     # branch if done

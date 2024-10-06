@@ -7,7 +7,7 @@ public class ParsingTests
 {
     private void Parse(string fname)
     {
-        Compiler.TryCompile(fname, File.ReadAllText(fname), out var asm);
+        Compiler.TryCompile(File.ReadAllText(fname), out var asm);
         Assert.IsNotNull(asm);
     }
 

@@ -1,3 +1,4 @@
+using AnnaSim.AsmParsing;
 using AnnaSim.Cpu;
 using AnnaSim.Cpu.Memory;
 
@@ -8,20 +9,21 @@ namespace AnnaSim.Debugger;
 public class Runner
 {
     protected readonly uint[] origInputs = [];
-    protected readonly string origFilename;
+    protected readonly CstProgram program;
 
     public Word ScreenMap { get; init; }
     public AnnaMachine Cpu { get; init; }
     public List<Word> Outputs { get; init; } = [];
     public HaltReason Status { get; private set; }
+    public int MaxCycles { get; set; } = 10_000;
 
-    public Runner(string fname, string[] inputs, int screenMap = 0xc000, bool trace = false)
+    public Runner(CstProgram program, string[] inputs, int screenMap = 0xc000, bool trace = false)
     {
-        origFilename = fname;
+        this.program = program;
         origInputs = inputs.Select(AnnaMachine.ParseInputString).ToArray();
         ScreenMap = (uint)screenMap;
 
-        Cpu = new AnnaMachine(fname, origInputs)
+        Cpu = new AnnaMachine(program, origInputs)
         {
             OutputCallback = Outputs.Add,
             OutputStringCallback = Console.Write,
@@ -29,12 +31,12 @@ public class Runner
         };
     }
 
-    public IEnumerable<Word> Run(bool dumpScreen)
+    public IEnumerable<Word> Run(bool dumpScreen = false)
     {
-        Cpu.Reset(origFilename);
+        Cpu.Reset();
         Cpu.Status = CpuStatus.Running;
 
-        Status = Cpu.Execute();
+        Status = Cpu.Execute(MaxCycles);
 
         Console.WriteLine($"{Status} at PC: 0x{Cpu.Pc:x4} ({Cpu.CyclesExecuted} cycles)");
 

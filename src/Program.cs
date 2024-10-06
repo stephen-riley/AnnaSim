@@ -1,5 +1,5 @@
-﻿using System.Text;
-using AnnaSim.Cli;
+﻿using AnnaSim.Assembler;
+using AnnaSim.Cpu;
 using AnnaSim.Debugger;
 using AnnaSim.TinyC;
 using CommandLine;
@@ -12,10 +12,8 @@ var cliParser = new Parser(settings =>
 
 try
 {
-    cliParser.ParseArguments<RunCliOptions, DebugCliOptions, CompileCliOptions>(args)
-        .WithParsed<RunCliOptions>(HandleRun)
-        .WithParsed<DebugCliOptions>(HandleDebug)
-        .WithParsed<CompileCliOptions>(HandleCompile);
+    cliParser.ParseArguments<AnnaSimContext>(args)
+        .WithParsed(ExecutionPipeline);
 }
 catch (Exception e)
 {
@@ -28,78 +26,109 @@ catch (Exception e)
     Console.WriteLine();
 }
 
-void HandleRun(RunCliOptions opt)
+void ExecutionPipeline(AnnaSimContext opt)
 {
-    var runner = new Runner(opt.Filename, opt.Inputs.ToArray(), trace: opt.Trace);
+    if (opt.InputFilename is not null && opt.InputFilename.EndsWith(".mem"))
+    {
+        throw new NotImplementedException(".mem files not yet supported");
+    }
+
+    opt.Source = ReadInputFile(opt);
+
+    if (opt.Cc || (opt.InputFilename?.EndsWith(".c") ?? false))
+    {
+        Compile(opt);
+    }
+
+    Assemble(opt);
+
+    if (opt.Run)
+    {
+        Run(opt);
+    }
+    else if (opt.Debug || opt.AdvancedDebug)
+    {
+        BaseDebugger debugger = opt.AdvancedDebug
+                       ? new global::AnnaSim.Debugger.Vt100ConsoleDebugger(opt.CstProgram, opt.Inputs.ToArray<string>(), opt.DebugCommands.ToArray<string>())
+                       : new global::AnnaSim.Debugger.ConsoleDebugger(opt.CstProgram, opt.Inputs.ToArray<string>(), opt.DebugCommands.ToArray<string>());
+
+        // TODO: implement DumpScreen option
+        debugger.Run();
+    }
+    else
+    {
+        opt.CstProgram.MemoryImage?.WriteMemFile("-");
+    }
+}
+
+void Compile(AnnaSimContext opt)
+{
+    if (Compiler.TryCompile(opt.Source, out var asmSource, opt.InputFilename, optimization: opt.OptimizationLevel))
+    {
+        opt.AsmSource = asmSource;
+        opt.Source = asmSource;
+
+        if (opt.SaveAsmFilename is not null)
+        {
+            File.WriteAllText(opt.SaveAsmFilename, asmSource);
+        }
+    }
+    else
+    {
+        throw new InvalidOperationException("compile failed");
+    }
+}
+
+void Assemble(AnnaSimContext opt)
+{
+    var asm = new AnnaAssembler();
+    opt.CstProgram = asm.Assemble(opt.Source);
+
+    if (opt.CstProgram is null)
+    {
+        throw new NullReferenceException($"{nameof(opt.CstProgram)} is null");
+    }
+
+    if (opt.MemoryFilename is not null)
+    {
+        opt.CstProgram.MemoryImage?.WriteMemFile(opt.MemoryFilename);
+    }
+
+    if (opt.DisassemblyFilename is not null)
+    {
+        using var fw = new StreamWriter(opt.DisassemblyFilename) { AutoFlush = true };
+        foreach (var i in opt?.CstProgram?.Instructions ?? [])
+        {
+            i.Render(fw, true);
+        }
+    }
+}
+
+void Run(AnnaSimContext opt)
+{
+    var runner = new Runner(opt.CstProgram, opt.Inputs.ToArray(), trace: opt.Trace);
     runner.Run(opt.DumpScreen);
 }
-void HandleDebug(DebugCliOptions opt)
-{
-    BaseDebugger debugger = opt.Vt100
-                   ? new Vt100ConsoleDebugger(opt.Filename, opt.Inputs.ToArray(), opt.DebugCommands.ToArray())
-                   : new ConsoleDebugger(opt.Filename, opt.Inputs.ToArray(), opt.DebugCommands.ToArray());
 
-    debugger.Run(opt.DumpScreen);
-}
-
-void HandleCompile(CompileCliOptions opt)
+string ReadInputFile(AnnaSimContext opt)
 {
-    string src;
-    if (opt.Filename != "-")
+    if (opt.InputFilename is not null)
     {
-        src = File.ReadAllText(opt.Filename);
+        return File.ReadAllText(opt.InputFilename);
+    }
+    else if (Console.IsInputRedirected)
+    {
+        var list = new List<string>();
+        string? line;
+        while ((line = Console.ReadLine()) != null)
+        {
+            list.Add(line);
+        }
+
+        return string.Join("\n", list);
     }
     else
     {
-        var sb = new StringBuilder();
-        string? s;
-        while ((s = Console.ReadLine()) != null)
-        {
-            sb.AppendLine(s);
-        }
-        src = sb.ToString();
-    }
-
-    if (Compiler.TryCompile(opt.Filename != "-" ? opt.Filename : "STDIN", src, out var asm, opt.Trace, opt.Optimize))
-    {
-        if (opt.Output != "-")
-        {
-            File.WriteAllText(opt.Output, asm);
-        }
-
-        if (opt.Debug || opt.Vt100 || opt.Run)
-        {
-            var filenameToUse = opt.Output;
-
-            if (opt.Output == "-")
-            {
-                var tmp = Path.GetTempFileName();
-                Console.Error.WriteLine($"writing assembly to temp file {tmp}");
-                File.WriteAllText(tmp, asm);
-                filenameToUse = tmp;
-            }
-
-            if (opt.Debug || opt.Vt100)
-            {
-                BaseDebugger debugger = opt.Vt100
-                   ? new Vt100ConsoleDebugger(filenameToUse, opt.Inputs.ToArray(), [])
-                   : new ConsoleDebugger(filenameToUse, opt.Inputs.ToArray(), []);
-
-                debugger.Run(opt.DumpScreen);
-            }
-            else
-            {
-                var runner = new Runner(filenameToUse, opt.Inputs.ToArray());
-                runner.Run(opt.DumpScreen);
-            }
-        }
-        else
-        {
-            Console.WriteLine(asm);
-        }
-    }
-    else
-    {
-        Environment.Exit(-1);
+        throw new InvalidOperationException("Must specify an input file or redirect STDIN");
     }
 }

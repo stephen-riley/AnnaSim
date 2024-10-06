@@ -11,12 +11,11 @@ public class AnnaMachine
     public Queue<Word> Inputs { get; internal set; } = [];
     public MemoryFile Memory { get; internal set; } = new();
     public PdbInfo Pdb { get; internal set; } = new();
-    public CstProgram? Program { get; internal set; }
+    public CstProgram Program { get; internal set; }
     public RegisterFile Registers { get; internal set; } = new();
     public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
     public Action<string> OutputStringCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
     public CpuStatus Status { get; internal set; } = CpuStatus.Halted;
-    public string CurrentFile { get; internal set; } = "";
     public int CyclesExecuted { get; internal set; } = 0;
 
     public uint Pc { get; internal set; } = 0;
@@ -24,27 +23,31 @@ public class AnnaMachine
     public bool IsPcBreakpoint => Memory.Get32bits(Pc).IsBreakpoint;
     public bool Trace { get; set; }
 
+    private ushort[] lastRegisterValues = [];
+
     public AnnaMachine()
     {
+        Program = new([]);
     }
 
-    public AnnaMachine(string filename) : this()
+    public AnnaMachine(CstProgram program) : this()
     {
-        CurrentFile = filename;
+        Program = program;
+        Memory = program.MemoryImage ?? throw new NullReferenceException($"{nameof(program)} should not be null here");
     }
 
-    public AnnaMachine(string filename, params string[] inputs)
-        : this(filename: filename)
+    public AnnaMachine(CstProgram program, params string[] inputs)
+        : this(program)
     {
         ParseMachineInputs(inputs).ForEach(Inputs.Enqueue);
     }
 
-    public AnnaMachine(string filename, params uint[] inputs) : this(filename: filename)
+    public AnnaMachine(CstProgram program, params uint[] inputs) : this(program)
     {
         inputs.Select(n => (Word)(ushort)n).ForEach(Inputs.Enqueue);
     }
 
-    internal AnnaMachine(int[] inputs)
+    internal AnnaMachine(int[] inputs) : this()
     {
         inputs.Select(n => (Word)(ushort)n).ForEach(Inputs.Enqueue);
     }
@@ -74,30 +77,13 @@ public class AnnaMachine
 
     public AnnaMachine(params string[] inputs) : this() => ParseMachineInputs(inputs).ForEach(Inputs.Enqueue);
 
-    public AnnaMachine Reset() => Reset("");
+    public AnnaMachine Reset() => Reset([]);
 
-    public AnnaMachine Reset(params uint[] inputs) => Reset("", inputs);
-
-    public AnnaMachine Reset(string filename, params uint[] inputs)
+    public AnnaMachine Reset(params uint[] inputs)
     {
         InstructionDefinition.SetCpu(this);
 
         Registers = new();
-
-        CurrentFile = filename;
-
-        if (CurrentFile.EndsWith(".mem"))
-        {
-            Memory = new MemoryFile().ReadMemFile(CurrentFile);
-            Pdb = new();
-        }
-        else
-        {
-            var asm = new AnnaAssembler(CurrentFile);
-            Memory = asm.MemoryImage;
-            Pdb = asm.GetPdb();
-            Program = asm.Program;
-        }
 
         Pc = 0;
         CyclesExecuted = 0;
@@ -135,35 +121,58 @@ public class AnnaMachine
         };
     }
 
-    void DumpTrace(uint addr, CstInstruction? ci, Instruction? instr)
+    int maxLabelLength = 6;
+    int maxInstructionLength = 18;
+
+    void DumpTraceInstruction(Instruction? instr)
     {
-        int maxLabelLength = 0;
-        int maxInstructionLength = 0;
+        Program.AddrMap.TryGetValue(Pc, out var ci);
 
         // render current instruction
         if (ci is not null)
         {
-            Console.Write(ci.RenderSimpleInstruction(ref maxLabelLength, ref maxInstructionLength));
+            Console.Error.Write(ci.RenderSimpleInstruction(ref maxLabelLength, ref maxInstructionLength));
         }
         else
         {
-            Console.Write($"[{addr:x4}] {instr,-58}");
+            Console.Error.Write($"[{Pc:x4}] {instr,-58}");
         }
 
-        Console.Write("  ");
+        Console.Error.Write("  |  ");
+    }
 
-        // render registers
-        Console.Write(
-            string.Join(' ',
-                Registers
-                    .registers
-                    .SelectWithIndex()
-                    .Select(tuple => $"r{tuple.index}:{tuple.element.bits:x4}"
-                )
-            )
-        );
+    void DumpTraceResults()
+    {
+        // render changed register
+        var changedRegister = Enumerable.Range(0, Registers.Length).Aggregate(-1, (changed, index) => lastRegisterValues[index] != Registers[(uint)index].bits ? index : changed);
+        if (changedRegister > -1)
+        {
+            Console.Error.Write($"r{changedRegister}: 0x{Registers[(uint)changedRegister].bits:x4}");
+        }
+        else
+        {
+            Console.Error.Write(new string(' ', 10));
+        }
 
-        Console.WriteLine();
+        if (Registers[7] != 0)
+        {
+            Console.Error.Write($"  |  SP:{Registers[7].bits:x4}");
+
+            const uint stackDepth = 8;
+            var stackStart = 0x8000 - Registers[7] > stackDepth ? Registers[7] - stackDepth : 0x8000;
+
+            for (uint addr = stackStart; addr >= stackStart - stackDepth; addr--)
+            {
+                if (addr == Registers[7])
+                {
+                    break;
+                }
+
+                Console.Error.Write($" {Memory[addr]:x4}");
+            }
+        }
+
+        Console.Error.WriteLine();
     }
 
     public HaltReason Execute(int maxCycles = 10_000)
@@ -182,6 +191,8 @@ public class AnnaMachine
 
             try
             {
+                lastRegisterValues = Registers.registers.Select(r => r.bits).ToArray();
+
                 var instruction = ISA.Instruction((Word)mw);
 
                 if (instruction.IsHalt)
@@ -189,13 +200,17 @@ public class AnnaMachine
                     break;
                 }
 
+                if (Trace)
+                {
+                    DumpTraceInstruction(instruction);
+                }
+
                 Pc = instruction.Execute();
                 CyclesExecuted++;
 
                 if (Trace)
                 {
-                    Pdb.AddrCstMap.TryGetValue(Pc, out var ci);
-                    DumpTrace(Pc, ci, instruction);
+                    DumpTraceResults();
                 }
 
                 if (Status == CpuStatus.Halted)

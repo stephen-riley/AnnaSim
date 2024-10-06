@@ -167,11 +167,11 @@ public class CstInstruction : ICstComponent
         var labelTerm = "";
         if (Labels.Count > 0)
         {
-            var label = Labels[^1] + ':';
+            var label = Labels[^1] + ": ";
             maxLabelLength = int.Max(label.Length, maxLabelLength);
-            // labelTerm = label.ToWidth(maxLabelLength);
-            labelTerm = label.ToWidth(10);
-            Console.Error.WriteLine($"** setting label term length to {maxLabelLength}");
+            labelTerm = label.ToWidth(maxLabelLength);
+            // labelTerm = label.ToWidth(10);
+            // Console.Error.WriteLine($"** setting label term length to {maxLabelLength}");
         }
         else
         {
@@ -181,13 +181,13 @@ public class CstInstruction : ICstComponent
         var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-ICstComponent.OpcodeColLength}";
         // var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-ICstComponent.OpcodeColLength}";
         var operands = string.Join(' ', OperandStrings);
-        var instr = $"{labelTerm} {opTerm}  {operands}";
+        var instr = $"{labelTerm}{opTerm}{operands}";
 
         maxInstructionLength = int.Max(instr.Length, maxInstructionLength);
         var instrTerm = instr.ToWidth(maxInstructionLength);
 
         var bits = $"[{BaseAddress:x4}: {AssembledWords[0]:x4}]";
 
-        return $"{bits} {labelTerm} {instrTerm}";
+        return $"{bits} {instrTerm}";
     }
 }

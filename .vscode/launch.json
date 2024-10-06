@@ -12,12 +12,13 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
             "args": [
-                "run",
-                "-f",
-                "../test/fixtures/fibonacci.asm",
+                "../test/fixtures/fibonacci_all.asm",
+                "-r",
                 "-i",
-                "5",
-                "-t",
+                "6",
+                "-t"
+                // "6",
+                // "-r",
                 // "cc",
                 // "-f",
                 // "../test/fixtures/simple_fibonacci.c",

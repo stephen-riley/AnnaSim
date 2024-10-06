@@ -1,13 +1,14 @@
+using AnnaSim.AsmParsing;
 using AnnaSim.Instructions;
 
 namespace AnnaSim.Debugger;
 
 public class ConsoleDebugger : BaseDebugger
 {
-    public ConsoleDebugger(string fname, string[] inputs, int screenMap = 0xc000) : this(fname, inputs, [], screenMap) { }
-    public ConsoleDebugger(string fname, int screenMap = 0xc000) : this(fname, [], [], screenMap) { }
+    public ConsoleDebugger(CstProgram program, string[] inputs, int screenMap = 0xc000) : this(program, inputs, [], screenMap) { }
+    public ConsoleDebugger(CstProgram program, int screenMap = 0xc000) : this(program, [], [], screenMap) { }
 
-    public ConsoleDebugger(string fname, string[] inputs, string[] argv, int screenMap = 0xc000) : base(fname, inputs, argv, screenMap)
+    public ConsoleDebugger(CstProgram program, string[] inputs, string[] argv, int screenMap = 0xc000) : base(program, inputs, argv, screenMap)
     {
         Console.CursorVisible = true;
     }

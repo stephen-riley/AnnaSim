@@ -32,42 +32,16 @@ public partial class AnnaAssembler
         Enumerable.Range(0, 8).ForEach(n => registerAliases[$"r{n}"] = $"r{n}");
     }
 
-    public AnnaAssembler(string filename, int memorySize = 65536)
+    public AnnaAssembler(string src, int memorySize = 65536)
         : this(memorySize)
     {
-        Program = Assemble(filename);
+        Program = Assemble(src);
     }
 
-    public CstProgram Assemble(string filename)
+    public CstProgram Assemble(string src)
     {
-        string[] lines;
-
-        if (filename == "-" && Console.IsInputRedirected)
-        {
-            var list = new List<string>();
-            string? line;
-            while ((line = Console.ReadLine()) != null)
-            {
-                list.Add(line);
-            }
-            lines = [.. list];
-        }
-        else if (filename != "")
-        {
-            lines = File.ReadAllLines(filename);
-        }
-        else
-        {
-            return new CstProgram([]);
-        }
-
-        var program = Assemble(lines);
-        var fw = new StreamWriter("/tmp/out.dasm") { AutoFlush = true };
-        foreach (var i in program.Instructions)
-        {
-            i.Render(fw, true);
-        }
-
+        var program = Assemble(src.Split('\n'));
+        program.MemoryImage = MemoryImage;
         return program;
     }
 

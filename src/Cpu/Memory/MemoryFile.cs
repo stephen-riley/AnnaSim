@@ -125,7 +125,18 @@ public class MemoryFile
 
         var addr = startAddr;
 
-        using StreamWriter sw = new(path);
+        StreamWriter sw;
+        var cachedConsoleOut = Console.Out;
+        if (path == "-")
+        {
+            sw = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
+            Console.SetOut(sw);
+        }
+        else
+        {
+            sw = new(path) { AutoFlush = true };
+        }
+
         sw.WriteLine($"{ImageFileHeader}:1.0");
         sw.WriteLine($":{startAddr:X4}");
 
@@ -134,6 +145,13 @@ public class MemoryFile
             var s = string.Join(" ", chunk.Select(w => w.ToString("X4")));
             sw.WriteLine(s);
         }
+
+        if (path == "-")
+        {
+            Console.SetOut(cachedConsoleOut);
+        }
+
+        sw.Dispose();
     }
 
     public int Compare(MemoryFile mem, int compareLength = -1)
