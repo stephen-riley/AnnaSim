@@ -11,6 +11,7 @@
 ## Assembler
 
 - [X] dump listing with addresses
+- [ ] add halt pseudo-op (but keep .halt for legacy)
 - [ ] Allow + unary in asm (eg. for FP offsets)
 - [ ] Expressions in assembler? like + and - (store offsets in label operands)
 - [ ] .include directive
