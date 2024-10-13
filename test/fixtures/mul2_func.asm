@@ -25,8 +25,8 @@ mul2:   sw      r6 r7 +0    # store orig FP at SP+0
         addi    r7 r7 -2    # bump SP by 3-1
 
         # mul2 body
-        lw      r1 r6 +1
-        add     r4 r1 r1
+        lw      r1 r6 +1    # load argument n -> r1
+        add     r4 r1 r1    # set return value to r1+r1
 
         # epilogue
 epi:    lw      r5 r6 -1    # load return addr from FP-1
