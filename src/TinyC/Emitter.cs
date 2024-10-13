@@ -249,7 +249,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             case "printn":
                 VisitExpr(args[0]);
                 EmitInstruction("pop", ["r7", "r3"], "pop value for output");
-                EmitInstruction("outns", ["r3"], "print int at r3");
+                EmitInstruction("outn", ["r3"], "print int at r3");
                 EmitBlankLine();
                 return true;
 

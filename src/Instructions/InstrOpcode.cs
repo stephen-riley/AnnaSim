@@ -11,7 +11,7 @@ public enum InstrOpcode
     Jalr,
     In,
     Out,
-    Outns,
+    Outn,
     Outs,
     Addi,
     Shf,

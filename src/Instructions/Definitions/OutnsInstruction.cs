@@ -1,11 +1,11 @@
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class OutnsInstruction : InstructionDefinition
+public partial class OutnInstruction : InstructionDefinition
 {
-    public OutnsInstruction() : base()
+    public OutnInstruction() : base()
     {
         Opcode = 3;
-        Mnemonic = "outns";
+        Mnemonic = "outn";
         OperandCount = 1;
         Type = InstructionType.R;
         MathOp = MathOperation.OutNumString;

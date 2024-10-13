@@ -37,14 +37,14 @@
 
               lwi     r1 &_var_i          # load address of variable i
               lw      r3 r1 0             # load variable "i" from data segment
-              outns   r3                  # print int at r3
+              outn   r3                  # print int at r3
 
               lwi     r3 &_cstr001        
               outs    r3                  # print string at r3
 
               lwi     r1 &_var_res        # load address of variable res
               lw      r3 r1 0             # load variable "res" from data segment
-              outns   r3                  # print int at r3
+              outn   r3                  # print int at r3
 
               lwi     r1 &__nl            # load addr of newline
               outs    r1                  # print newline
@@ -71,7 +71,7 @@ fib_body:     lwi     r3 &_cstr002
               outs    r3                  # print string at r3
 
               lw      r3 r6 1             # load "n" from FP+1
-              outns   r3                  # print int at r3
+              outn   r3                  # print int at r3
 
               lwi     r3 &_cstr003        
               outs    r3                  # print string at r3
@@ -132,13 +132,13 @@ ifb02:        lwi     r2 1
               outs    r3                  # print string at r3
 
               lw      r3 r6 1             # load "n" from FP+1
-              outns   r3                  # print int at r3
+              outn   r3                  # print int at r3
 
               lwi     r3 &_cstr005        
               outs    r3                  # print string at r3
 
               lw      r3 r6 -2            # load "res" from FP-2
-              outns   r3                  # print int at r3
+              outn   r3                  # print int at r3
 
               lwi     r1 &__nl            # load addr of newline
               outs    r1                  # print newline

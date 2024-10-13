@@ -2,7 +2,7 @@ using AnnaSim.Cpu;
 
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class OutnsInstruction
+public partial class OutnInstruction
 {
     protected override uint ExecuteImpl(Instruction instruction)
     {

@@ -13,7 +13,7 @@
     <AssemblyTitle>AnnaSim</AssemblyTitle>
 
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>anna</ToolCommandName>
+    <ToolCommandName>annasim</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
   </PropertyGroup>
 

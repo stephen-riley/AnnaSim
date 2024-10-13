@@ -9,10 +9,10 @@ AnnaSim is installed as a `dotnet tool`.
 To install:
 
 (Note: if you have previously installed AnnaSim, you must first uninstall it.  See below.)
-1. Download or pull this source code.
-2. `cd` into this directory.
-3. `dotnet pack`
-4. `dotnet tool install --global --add-source src/nupkg AnnaSim`
+1. Download this repo using the GitHub Desktop app or via command line: `git clone https://github.com/stephen-riley/AnnaSim`
+1. From the command line, `cd` into this directory; eg. `cd AnnaSim`
+1. If you have previously installed AnnaSim: `dotnet tool uninstall --global AnnaSim`
+1. Build and install AnnaSim: `dotnet pack && dotnet tool install --global --add-source src/nupkg AnnaSim`
 
 To uninstall:
 `dotnet tool uninstall --global AnnaSim`
@@ -21,9 +21,9 @@ To uninstall:
 
 The root command is `anna`.  
 
-Type `anna --help` for a list of subcommands.
+Type `annasim --help` for a list of subcommands.
 
-To get help for a given subcommand, such as `debug`, type `anna debug --help`.
+To get help for a given subcommand, such as `debug`, type `annasim debug --help`.
 
 ## Docs
 

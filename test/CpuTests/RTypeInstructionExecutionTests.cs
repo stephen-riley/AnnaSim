@@ -221,7 +221,7 @@ public class RTypeInstructionExecutionTests
             OutputStringCallback = queue.Enqueue
         };
 
-        var idef = ISA.Lookup["outns"];
+        var idef = ISA.Lookup["outn"];
         foreach (var n in tests)
         {
             cpu.Registers[1] = (uint)n;

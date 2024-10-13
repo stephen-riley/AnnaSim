@@ -4,7 +4,7 @@ using AnnaSim.Cpu.Memory;
 
 namespace AnnaSim.Instructions.Definitions;
 
-public partial class OutnsInstruction
+public partial class OutnInstruction
 {
     protected override void AssembleImpl(CstInstruction ci) => Addr = ci.AssignBits(Addr, (Word)ToInstruction(ci.Operands));
 
