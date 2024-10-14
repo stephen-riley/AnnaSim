@@ -76,10 +76,10 @@ public class AnnaSimContext
     public static void DisplayHelp<T>(ParserResult<T> result, IEnumerable<Error> errs)
     {
         var assembly = Assembly.GetExecutingAssembly();
-        var copyrightAttr = assembly.GetCustomAttribute(typeof(AssemblyCopyrightAttribute)) as AssemblyCopyrightAttribute ?? throw new NullReferenceException();
+        var version = assembly.GetName().Version?.ToString(3) ?? "(version unknown)";
         var helpText = HelpText.AutoBuild(result, ht =>
         {
-            ht.Heading = $"annasim {assembly.GetName().Version}\n  ANNA+ assembler and simulator\n";
+            ht.Heading = $"annasim {version}\n  ANNA+ assembler and simulator\n";
             ht.AdditionalNewLineAfterOption = false;
             ht.AddNewLineBetweenHelpSections = true;
             ht.AddPostOptionsLine("For more information, see github.com/stephen-riley/AnnaSim/blob/main/docs/ANNA_Guide.pdf");
