@@ -30,7 +30,6 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitBlankLine();
 
         EmitComment("set up main() stack frame");
-        // TODO: switch to register aliases
         EmitInstruction("lwi", ["rSP", "&_stack"], "initialize SP (r7)");
         EmitInstruction("mov", ["rFP", "rSP"], "initialize FP (r6)");
         EmitBlankLine();
@@ -49,7 +48,6 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             EmitStackFrameComments(scope);
 
             EmitLabel(name);
-            // EmitInstruction("mov", ["r6", "r7"], "set FP for our stack frame");
             // TODO: put SP and return address onto the stack using sw's,
             //  and then bump SP 2 + #locals
             EmitInstruction("push", ["rSP", "rFP"], "cache FP");

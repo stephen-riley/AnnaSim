@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using AnnaSim.Assembler;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
@@ -133,7 +134,8 @@ public class CstInstruction : ICstComponent
         var commentTerm = Comment is not null ? $"# {Comment}" : "";
         var labelTerm = Labels.Count > 0 ? $"{Labels[^1] + ':',-ICstComponent.LabelColLength}" : new string(' ', ICstComponent.LabelColLength);
 
-        var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.'),-ICstComponent.OpcodeColLength}";
+        var xOpcode = Opcode.ToString().ToLower().Replace('_', '.');
+        var opTerm = $"{xOpcode,-ICstComponent.OpcodeColLength}";
 
         foreach (var l in Labels.Take(Labels.Count - 1))
         {
@@ -149,7 +151,7 @@ public class CstInstruction : ICstComponent
             firstBitsTerm = bits.Count > 0 ? $"{bits[0],-ICstComponent.BitColLength}" : new string(' ', ICstComponent.BitColLength);
         }
 
-        writer.WriteLine($"{firstBitsTerm}{labelTerm}{opTerm}{string.Join(' ', OperandStrings),-ICstComponent.OperandColLength}{commentTerm}");
+        writer.WriteLine($"{firstBitsTerm}{labelTerm}{opTerm}{RenderOperands(xOpcode, OperandStrings),-ICstComponent.OperandColLength}{commentTerm}");
 
         if (showDisassembly && bits.Count > 0)
         {
@@ -176,8 +178,9 @@ public class CstInstruction : ICstComponent
             labelTerm = labelTerm.ToWidth(maxLabelLength);
         }
 
-        var opTerm = $"{Opcode.ToString().ToLower().Replace('_', '.')}".ToWidth(ICstComponent.OpcodeColLength);
-        var operands = string.Join(' ', OperandStrings);
+        var xOpcode = Opcode.ToString().ToLower().Replace('_', '.');
+        var opTerm = $"{xOpcode}".ToWidth(ICstComponent.OpcodeColLength);
+        var operands = RenderOperands(xOpcode, OperandStrings);
         var opcodeOperandsTerm = $"{opTerm}{operands}".ToWidth(maxOpcodeOperandLength);
         maxOpcodeOperandLength = int.Max(opcodeOperandsTerm.Length, maxOpcodeOperandLength);
 
@@ -187,5 +190,20 @@ public class CstInstruction : ICstComponent
         var bits = $"[{BaseAddress:x4}: {AssembledWords[0]:x4}]";
 
         return $"{bits} {instrTerm}";
+    }
+
+    // renders register offsets as expressions if Rs1 is an alias
+    private static string RenderOperands(string opcode, string[] operands)
+    {
+        if (opcode is "lw" or "sw" or "addi")
+        {
+            var op1IsPlainRegister = operands[1].StartsWith('r') && operands[1].Length == 2 && operands[1][1] is >= '0' and <= '7';
+            if (!op1IsPlainRegister && int.TryParse(operands[2], out int rs2))
+            {
+                return $"{operands[0]} {operands[1]}{(rs2 >= 0 ? "+" : "")}{operands[2]}";
+            }
+        }
+
+        return string.Join(' ', operands);
     }
 }

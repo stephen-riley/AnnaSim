@@ -106,6 +106,13 @@ public static class CstParser
 
     public static bool TryParseLine(string originalLine, [NotNullWhen(true)] out ICstComponent? piece, uint lineNumber = 0)
     {
+        // handle "expressions" for register offsets, eg. "lw r1 rFP-3" becomes "lw r1 rFP -3"
+        var match = Regex.Match(originalLine, @"^(.*?)(r[A-Za-z0-9_]+)([+\-]\d+)(.*)");
+        if (match.Success)
+        {
+            originalLine = $"{match.Groups[1].Value}{match.Groups[2].Value} {match.Groups[3].Value}{match.Groups[4].Value}";
+        }
+
         var line = new string(originalLine);
 
         if (line.Trim() == "")

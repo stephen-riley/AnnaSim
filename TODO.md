@@ -16,7 +16,7 @@
 - [X] add jmp and br pseudo ops
 - [X] add mul, div, mod instructions
 - [X] add register aliases (not hardcoded like SP and FP)
-- [ ] Expressions in assembler? like + and - (store offsets in label operands)
+- [X] Expressions in assembler? like + and - (store offsets in label operands)
 - [ ] .include directive
 - [ ] add stack frames to PDB
 

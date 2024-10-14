@@ -54,7 +54,6 @@ public class AssemblerInternalsTests
     [DataRow(".halt", new uint[] { 0x3000 }, 1)]
     [DataRow("halt", new uint[] { 0x3000 }, 1)]
     [DataRow("label: .fill 1 0b10 0x03 &label", new uint[] { 1, 2, 3, 0 }, 4)]
-    // TODO: register aliases aren't implemented in the CstInstruction model yet
     [DataRow(".ralias r7 rSP", new uint[] { 0 }, 0)]
     [DataRow("test: .def 0x8000", new uint[] { 0 }, 0)]
     [DataRow(".org 0x8000", new uint[] { 0 }, 0x8000)]
@@ -101,10 +100,9 @@ public class AssemblerInternalsTests
     [TestMethod]
     [DataRow(".halt 1", "operands required")]
     [DataRow(".fill", "operands required")]
-    // TODO: support register aliases in CstInstructions
-    // [DataRow(".ralias r8", "operands required")]
-    // [DataRow(".ralias", "operands required")]
-    // [DataRow(".ralias r0 Bob", "not find any recognizable digits")]
+    [DataRow(".ralias r8", "operands required")]
+    [DataRow(".ralias", "operands required")]
+    [DataRow(".ralias r7 Bob", "not find any recognizable digits")]
     [DataRow(".def 0x8000", ".def must have a label")]
     [DataRow("test: .org 0x8000", ".org cannot have a label")]
     public void TestBadDirectives(string instruction, string messageExcerpt)
@@ -218,5 +216,17 @@ public class AssemblerInternalsTests
         asm.ResolveLabels(p.Instructions);
 
         Assert.AreEqual(expected, (uint)asm.MemoryImage[instrAddr]);
+    }
+
+    [TestMethod]
+    [DataRow("lw r1 r6-3", 0b0110_001_110_111101u)]
+    [DataRow("sw r1 r6+3", 0b0111_001_110_000011u)]
+    public void TestOffsetExpressions(string instruction, uint expected)
+    {
+        var asm = new AnnaAssembler();
+
+        var p = asm.Assemble([instruction]);
+
+        Assert.AreEqual(expected, (uint)asm.MemoryImage[0]);
     }
 }
