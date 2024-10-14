@@ -202,7 +202,8 @@ public class AnnaMachine
                     break;
                 }
 
-                Console.Error.Write($" {Memory[addr]:x4}");
+                var fpLabel = addr == Registers[6] ? "FP:" : "";
+                Console.Error.Write($" {fpLabel}{Memory[addr]:x4}");
             }
         }
 

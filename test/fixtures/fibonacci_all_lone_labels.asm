@@ -18,4 +18,4 @@ loop:
         beq     r0 &loop
 
 end:    
-        .halt
+        halt

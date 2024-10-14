@@ -3,21 +3,21 @@
 ## General
 
 - [X] ...or dotnet tool?
+- [X] add URL to reference docs in --help
 - [ ] switch to $ for hex?
 - [ ] build annalib.asm
 - [ ] Prebuilt single-file executables?
-- [ ] add URL to reference docs in --help
 
 ## Assembler
 
 - [X] dump listing with addresses
 - [X] rename `outns` to `outn`
-- [ ] add halt pseudo-op (but keep .halt for legacy)
-- [ ] Allow + unary in asm (eg. for FP offsets)
+- [X] add halt pseudo-op (but keep .halt for legacy)
+- [X] add jmp and br pseudo ops
+- [X] add mul, div, mod instructions
+- [X] add register aliases (not hardcoded like SP and FP)
 - [ ] Expressions in assembler? like + and - (store offsets in label operands)
 - [ ] .include directive
-- [ ] add jmp and br pseudo ops
-- [ ] add mul, div, mod instructions
 - [ ] add stack frames to PDB
 
 ## Debugger

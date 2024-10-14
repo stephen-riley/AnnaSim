@@ -16,4 +16,4 @@ loop:   addi    r4 r4 -1    # decrement n
         out     r3
         beq     r0 &loop
 
-end:    .halt
+end:    halt

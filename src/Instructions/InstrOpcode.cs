@@ -3,11 +3,16 @@ namespace AnnaSim.Instructions;
 public enum InstrOpcode
 {
     Unknown = 0,
+
+    // Instructions
     Add,
     Sub,
     And,
     Or,
     Not,
+    Mul,
+    Div,
+    Mod,
     Jalr,
     In,
     Out,
@@ -19,19 +24,27 @@ public enum InstrOpcode
     Sw,
     Lli,
     Lui,
-    Lwi,
     Beq,
     Bne,
     Bgt,
     Bge,
     Blt,
     Ble,
+
+    // Pseudo-ops
+    Br,
+    Halt,
+    Jmp,
+    Lwi,
     Mov,
-    Push,
     Pop,
-    _Org,
-    _Fill,
+    Push,
+
+    // Directives
     _Cstr,
     _Def,
+    _Fill,
     _Halt,
+    _Org,
+    _Ralias,
 }

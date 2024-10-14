@@ -18,7 +18,7 @@ loop:   lw      r3 r1 0
         addi    r2 r2 1
         beq     r0 &loop
         
-done:   .halt
+done:   halt
 
 msg:    .cstr   "Hello, world!"
 screen: .def    0xc000

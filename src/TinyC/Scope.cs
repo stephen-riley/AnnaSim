@@ -67,7 +67,7 @@ public class Scope
             if (TryGetByName(name, out var varInfo))
             {
                 var offsetDisplay = varInfo.Offset >= 0 ? $"+{varInfo.Offset}" : varInfo.Offset.ToString();
-                return [("lw", ["r3", "r6", varInfo.Offset.ToString()], $"load \"{name}\" from FP{offsetDisplay}")];
+                return [("lw", ["r3", "rFP", varInfo.Offset.ToString()], $"load \"{name}\" from FP{offsetDisplay}")];
             }
             else
             {
@@ -91,7 +91,7 @@ public class Scope
             if (TryGetByName(name, out var varInfo))
             {
                 var offsetDisplay = varInfo.Offset >= 0 ? $"+{varInfo.Offset}" : varInfo.Offset.ToString();
-                return [("sw", ["r3", "r6", varInfo.Offset.ToString()], $"store \"{name}\" to FP{offsetDisplay}")];
+                return [("sw", ["r3", "rFP", varInfo.Offset.ToString()], $"store \"{name}\" to FP{offsetDisplay}")];
             }
             else
             {

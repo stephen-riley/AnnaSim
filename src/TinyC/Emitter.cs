@@ -30,7 +30,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         e.Visit(context);
 
-        e.EmitInstruction(".halt", [], "end program");
+        e.EmitInstruction("halt", [], "end program");
         e.EmitBlankLine();
 
         if (e.Cc.Functions.Count > 0)
@@ -78,7 +78,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitComment("begin while loop condition");
         EmitLabel(condLabel);
         VisitExpr(context.expr());
-        EmitInstruction("pop", ["r7", "r3"]);
+        EmitInstruction("pop", ["rSP", "r3"]);
         EmitInstruction("beq", ["r3", "&" + exitLabel], "exit on false");
         EmitBlankLine();
 
@@ -108,7 +108,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitComment("do-while loop condition");
         EmitLabel(condLabel);
         VisitExpr(context.expr());
-        EmitInstruction("pop", ["r7", "r3"]);
+        EmitInstruction("pop", ["rSP", "r3"]);
         EmitInstruction("beq", ["r3", "&" + exitLabel], "exit on false");
         EmitBlankLine();
 
@@ -138,7 +138,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         // handle if block
         EmitComment($"{start} test condition");
         VisitExpr(context.ifx);
-        EmitInstruction("pop", ["r7", "r2"]);
+        EmitInstruction("pop", ["rSP", "r2"]);
 
         if (degenerateIf)
         {
@@ -166,7 +166,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 EmitComment($"{oldNextLabel} elseif condition");
                 EmitLabel(oldNextLabel);
                 VisitExpr(context._elseifx[i]);
-                EmitInstruction("pop", ["r7", "r3"]);
+                EmitInstruction("pop", ["rSP", "r3"]);
                 EmitInstruction("beq", ["r3", "&" + next], "condition failed, goto next condition");
                 EmitComment($"{oldNextLabel} block");
                 EmitLabel(GetNextLabel("ifb"));
@@ -203,7 +203,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         if (context.e is not null)
         {
             VisitExpr(context.e);
-            EmitInstruction("pop", ["r7", "r3"], "load value from stack");
+            EmitInstruction("pop", ["rSP", "r3"], "load value from stack");
 
             foreach (var (op, operands, comment) in Cc.CurrentScope.GetStoreIntructions(name))
             {
@@ -219,7 +219,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     public override bool VisitReturn_stat([NotNull] AnnaCcParser.Return_statContext context)
     {
         VisitExpr(context.expr());
-        EmitInstruction("pop", ["r7", "r4"], "load function result -> r4");
+        EmitInstruction("pop", ["rSP", "r4"], "load function result -> r4");
         EmitInstruction("beq", ["r0", $"&{Cc.CurrentScope.Name}_exit"], "return (jump to func exit)");
 
         return true;
@@ -234,21 +234,21 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         {
             case "out":
                 VisitExpr(args[0]);
-                EmitInstruction("pop", ["r7", "r3"], "pop value for output");
+                EmitInstruction("pop", ["rSP", "r3"], "pop value for output");
                 EmitInstruction("out", ["r3"], "output r3");
                 EmitBlankLine();
                 return true;
 
             case "print":
                 VisitExpr(args[0]);
-                EmitInstruction("pop", ["r7", "r3"], "pop value for output");
+                EmitInstruction("pop", ["rSP", "r3"], "pop value for output");
                 EmitInstruction("outs", ["r3"], "print string at r3");
                 EmitBlankLine();
                 return true;
 
             case "printn":
                 VisitExpr(args[0]);
-                EmitInstruction("pop", ["r7", "r3"], "pop value for output");
+                EmitInstruction("pop", ["rSP", "r3"], "pop value for output");
                 EmitInstruction("outn", ["r3"], "print int at r3");
                 EmitBlankLine();
                 return true;
@@ -291,7 +291,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         if (Cc.Functions[funcName].Type != "void")
         {
-            EmitInstruction("push", ["r7", "r4"], $"push {funcName}(...)'s result");
+            EmitInstruction("push", ["rSP", "r4"], $"push {funcName}(...)'s result");
         }
 
         EmitBlankLine();
@@ -309,7 +309,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     {
         var id = context.ID().GetText();
         VisitExpr(context.expr());
-        EmitInstruction("pop", ["r7", "r3"], "load value from stack");
+        EmitInstruction("pop", ["rSP", "r3"], "load value from stack");
 
         if (Cc.CurrentScope.TryGetByName(id, out var scopeVar))
         {
@@ -385,9 +385,9 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             {
                 if (!constRhs)
                 {
-                    EmitInstruction("pop", ["r7", "r2"], $"pop arg2 for op \"{op}\"");
+                    EmitInstruction("pop", ["rSP", "r2"], $"pop arg2 for op \"{op}\"");
                 }
-                EmitInstruction("pop", ["r7", "r3"], $"pop arg1 for op \"{op}\"");
+                EmitInstruction("pop", ["rSP", "r3"], $"pop arg1 for op \"{op}\"");
                 EmitInstruction("sub", ["r2", "r3", "r2"], "compare r2 and r3");
                 EmitInstruction("lli", ["r3", "1"], "assume true preemptively");
                 EmitInstruction(instr, ["r2", "1"], $"jump past the next instruction if \"{op}\" is true");
@@ -398,13 +398,13 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 // TODO: fold constants if both sides are constant
                 if (!constRhs)
                 {
-                    EmitInstruction("pop", ["r7", "r2"], $"pop arg2 for op \"{op}\"");
+                    EmitInstruction("pop", ["rSP", "r2"], $"pop arg2 for op \"{op}\"");
                 }
-                EmitInstruction("pop", ["r7", "r3"], $"pop arg1 (lhs) for op \"{op}\"");
+                EmitInstruction("pop", ["rSP", "r3"], $"pop arg1 (lhs) for op \"{op}\"");
                 EmitInstruction(instr, ["r3", "r3", "r2"], $"perform \"{op}\" on r2, r3");
             }
 
-            EmitInstruction("push", ["r7", "r3"], $"push result of \"{context.GetText()}\"");
+            EmitInstruction("push", ["rSP", "r3"], $"push result of \"{context.GetText()}\"");
             EmitBlankLine();
         }
 
@@ -459,7 +459,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 VisitFunc_call(context.func_call());
             }
 
-            EmitInstruction("push", ["r7", "r3"], "push result");
+            EmitInstruction("push", ["rSP", "r3"], "push result");
             EmitBlankLine();
         }
 

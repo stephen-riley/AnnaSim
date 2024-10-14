@@ -1,26 +1,31 @@
 using AnnaSim.AsmParsing;
 using AnnaSim.Assembler;
-using AnnaSim.Cpu.Memory;
-using AnnaSim.Exceptions;
 
 namespace AnnaSim.Instructions.Definitions;
 
 public partial class RaliasDirective
 {
-    // protected override void AssembleImpl(Operand[] operands, string? label)
-    // {
-    //     if (operands[0].IsStandardRegisterName() && ((string)operands[1]).StartsWith('r'))
-    //     {
-    //         Asm.registerAliases[(string)operands[1]] = (string)operands[0];
-    //     }
-    //     else
-    //     {
-    //         throw new InvalidOpcodeException($"cannot parse directive {Mnemonic} {string.Join(' ', (IEnumerable<Operand>)operands)}");
-    //     }
-    // }
+    protected override void AssembleImpl(CstInstruction ci)
+    {
+        if (ci.Labels.Count > 0)
+        {
+            throw new InvalidOperationException(".ralias cannot have a label associated");
+        }
 
-    // TODO: implement according to above
-    protected override void AssembleImpl(CstInstruction ci) => throw new NotImplementedException(nameof(AssembleImpl));
+        if (ci.Operand1 is null || ci.Operand2 is null)
+        {
+            throw new InvalidOperationException(".ralias must have two operands");
+        }
+
+        if (ci.Operand1.StartsWith('r') && ci.Operand2.StartsWith('r'))
+        {
+            Asm.registerAliases[ci.Operand1] = ci.Operand2;
+        }
+        else
+        {
+            throw new InvalidOperationException("in .ralias, all aliases must start with r");
+        }
+    }
 
     public override Instruction ToInstructionImpl(Operand[] operands) => throw new InvalidOperationException($"Cannot create instruction from directive {Mnemonic}");
 }

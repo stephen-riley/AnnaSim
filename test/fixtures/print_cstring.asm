@@ -18,7 +18,7 @@ loop:   lw      r3 r1 0
         addi    r2 r2 1
         beq     r0 &loop
         
-done:   .halt
+done:   halt
 
 msg:    .fill   72 101 108 108 111 32 119 111 114 108 100 33 0
 

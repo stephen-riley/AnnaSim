@@ -21,6 +21,9 @@ public partial class AddInstruction
             MathOperation.And => rs1val & rs2val,
             MathOperation.Or => rs1val | rs2val,
             MathOperation.Not => ~rs1val,
+            MathOperation.Mul => rs1val * rs2val,
+            MathOperation.Div => rs1val / rs2val,
+            MathOperation.Mod => rs1val % rs2val,
             _ => throw new InvalidOperationException()
         };
 

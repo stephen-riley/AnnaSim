@@ -91,6 +91,53 @@ public class RTypeInstructionExecutionTests
     }
 
     [TestMethod]
+    public void TestMultiplication()
+    {
+        var cpu = new AnnaMachine();
+        cpu.Registers[2] = 32;
+        cpu.Registers[3] = 6;
+
+        // add r1, r2, r3
+        var idef = ISA.Lookup["mul"];
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
+        idef.Execute(cpu, instruction);
+
+        Assert.AreEqual((Word)192, cpu.Registers[1]);
+    }
+
+    [TestMethod]
+    public void TestDivision()
+    {
+        var cpu = new AnnaMachine();
+        cpu.Registers[2] = 32;
+        cpu.Registers[3] = 6;
+
+        // add r1, r2, r3
+        var idef = ISA.Lookup["div"];
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
+        idef.Execute(cpu, instruction);
+
+        Assert.AreEqual((Word)5, cpu.Registers[1]);
+    }
+
+    [TestMethod]
+    public void TestModulus()
+    {
+        var cpu = new AnnaMachine();
+        cpu.Registers[2] = 32;
+        cpu.Registers[3] = 6;
+
+        // add r1, r2, r3
+        var idef = ISA.Lookup["mod"];
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, rs2: 3);
+        idef.Execute(cpu, instruction);
+
+        Assert.AreEqual((Word)2, cpu.Registers[1]);
+    }
+
+
+
+    [TestMethod]
     public void TestJumpAndLinkRegisterAsSubroutineCall()
     {
         // Assume PC @10, calling subroutine @20

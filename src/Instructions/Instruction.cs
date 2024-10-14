@@ -100,7 +100,7 @@ public class Instruction
         }
         else if (bits == 0x3000)
         {
-            return ".halt";
+            return "halt";
         }
 
         var opcode = bits >> 12;

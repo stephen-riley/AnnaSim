@@ -36,4 +36,4 @@ done:   beq r5 &disp
         sub r4 r0 r4        # negate
         
 disp:   out r4
-        .halt
+        halt

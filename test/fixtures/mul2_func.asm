@@ -15,7 +15,7 @@ main:   in      r1
         lui     r3 &mul2
         jalr    r3 r5
         out     r4
-        .halt
+        halt
 
 # mul2(n)
         # prologue

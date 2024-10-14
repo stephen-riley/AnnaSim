@@ -52,9 +52,10 @@ public class AssemblerInternalsTests
 
     [TestMethod]
     [DataRow(".halt", new uint[] { 0x3000 }, 1)]
+    [DataRow("halt", new uint[] { 0x3000 }, 1)]
     [DataRow("label: .fill 1 0b10 0x03 &label", new uint[] { 1, 2, 3, 0 }, 4)]
     // TODO: register aliases aren't implemented in the CstInstruction model yet
-    // [DataRow(".ralias r7 rSP", new uint[] { 0 }, 0)]
+    [DataRow(".ralias r7 rSP", new uint[] { 0 }, 0)]
     [DataRow("test: .def 0x8000", new uint[] { 0 }, 0)]
     [DataRow(".org 0x8000", new uint[] { 0 }, 0x8000)]
     public void TestGoodDirectiveAssembler(string instruction, uint[] memImage, int expectedPtr)

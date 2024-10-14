@@ -47,7 +47,7 @@ public class AssemblerTests
         start:
             in      r4
         end:
-            .halt
+            halt
         """.Split('\n');
 
         var asm = new AnnaAssembler();

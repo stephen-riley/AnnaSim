@@ -52,7 +52,7 @@
               lwi     r1 &__nl            # load addr of newline
               outs    r1                  # print newline
 
-              .halt                       # end program
+              halt                       # end program
 
 # start of functions
 

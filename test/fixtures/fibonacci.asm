@@ -16,4 +16,4 @@ loop:   addi    r4 r4 -1    # decrement n
 
 end:    out     r3          # print result
 
-        .halt
+        halt

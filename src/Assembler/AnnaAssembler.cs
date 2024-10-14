@@ -74,7 +74,7 @@ public partial class AnnaAssembler
             }
             catch (Exception e)
             {
-                throw new AssemblerParseException("TODO", e);
+                throw new AssemblerParseException(ci.Line.ToString(), e);
             }
         }
 
@@ -229,8 +229,14 @@ public partial class AnnaAssembler
     {
         if (o.Type == OperandType.Register)
         {
-            var r = registerAliases[o.Str];
-            return Convert.ToUInt16(r[1..]);
+            if (registerAliases.TryGetValue(o.Str, out var r))
+            {
+                return Convert.ToUInt16(r[1..]);
+            }
+            else
+            {
+                throw new InvalidOperationException($"register alias {o.Str} not found");
+            }
         }
         else if (o.Type == OperandType.UnsignedInt)
         {

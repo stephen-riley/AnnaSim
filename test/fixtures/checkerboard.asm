@@ -38,7 +38,7 @@ while:  sub     r6 r1 r5
 dec:    addi    r1 r1 -1
         beq     r0 &while
 
-end:    .halt
+end:    halt
 
 screen: .def    0xc000
 scrend: .def    0xc3e7          # 0xc000 + 999 decimal,

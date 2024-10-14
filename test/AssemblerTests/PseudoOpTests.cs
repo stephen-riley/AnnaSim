@@ -69,4 +69,46 @@ public class PseudoOpTests
         // add r1 r2 0
         Assert.AreEqual(0b0000_001_010_000_000, asm.MemoryImage[0]);
     }
+
+    [TestMethod]
+    public void TestHaltPseudoOp()
+    {
+        var src = """
+            halt
+        """.Split('\n');
+
+        var asm = new AnnaAssembler();
+        asm.Assemble(src);
+
+        // out r0
+        Assert.AreEqual(0b0011_000_000_000_000, asm.MemoryImage[0]);
+    }
+
+    [TestMethod]
+    public void TestJmpPseudoOp()
+    {
+        var src = """
+            jmp     r1
+        """.Split('\n');
+
+        var asm = new AnnaAssembler();
+        asm.Assemble(src);
+
+        // jalr r1 r0
+        Assert.AreEqual(0b0001_001_000_000_000, asm.MemoryImage[0]);
+    }
+
+    [TestMethod]
+    public void TestBrPseudoOp()
+    {
+        var src = """
+            br     110
+        """.Split('\n');
+
+        var asm = new AnnaAssembler();
+        asm.Assemble(src);
+
+        // jalr r1 r0
+        Assert.AreEqual(0b1010_000_0_01101110, asm.MemoryImage[0]);
+    }
 }

@@ -20,6 +20,10 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitHeaderComment("  r7  stack pointer (SP)");
 
         EmitBlankLine();
+        EmitInstruction(".ralias", ["rFP", "r6"], "alias Frame Pointer to r6");
+        EmitInstruction(".ralias", ["rSP", "r7"], "alias Stack Pointer to r7");
+
+        EmitBlankLine();
         EmitHeaderComment(".text segment");
         EmitBlankLine();
         EmitInstruction(".org", ["0x0000"]);
@@ -27,8 +31,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         EmitComment("set up main() stack frame");
         // TODO: switch to register aliases
-        EmitInstruction("lwi", ["r7", "&_stack"], "initialize SP (r7)");
-        EmitInstruction("add", ["r6", "r7", "r0"], "initialize FP (r6)");
+        EmitInstruction("lwi", ["rSP", "&_stack"], "initialize SP (r7)");
+        EmitInstruction("mov", ["rFP", "rSP"], "initialize FP (r6)");
         EmitBlankLine();
         EmitHeaderComment("start of main");
     }
@@ -48,13 +52,13 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             // EmitInstruction("mov", ["r6", "r7"], "set FP for our stack frame");
             // TODO: put SP and return address onto the stack using sw's,
             //  and then bump SP 2 + #locals
-            EmitInstruction("push", ["r7", "r6"], "cache FP");
-            EmitInstruction("addi", ["r6", "r7", "1"], "set up new FP");
-            EmitInstruction("push", ["r7", "r5"], "push return address");
+            EmitInstruction("push", ["rSP", "rFP"], "cache FP");
+            EmitInstruction("addi", ["rFP", "rSP", "1"], "set up new FP");
+            EmitInstruction("push", ["rSP", "r5"], "push return address");
 
             if (scope.Vars.Count > 0)
             {
-                EmitInstruction("addi", ["r7", "r7", (-scope.Vars.Count).ToString()], $"create space for stack frame");
+                EmitInstruction("addi", ["rSP", "rSP", (-scope.Vars.Count).ToString()], $"create space for stack frame");
             }
             EmitBlankLine();
 
@@ -63,10 +67,10 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
             // unwind stack and return
             EmitLabel(epExit);
-            EmitInstruction("lw", ["r5", "r6", "-1"], "load return addr from FP-1");
-            EmitInstruction("lw", ["r6", "r6", "0"], "restore previous FP");
-            EmitInstruction("addi", ["r7", "r7", scope.FrameSize.ToString()], "collapse stack frame");
-            EmitInstruction("jalr", ["r5", "r0"], "return from function");
+            EmitInstruction("lw", ["r5", "rFP", "-1"], "load return addr from FP-1");
+            EmitInstruction("lw", ["r6", "rFP", "0"], "restore previous FP");
+            EmitInstruction("addi", ["rSP", "rSP", scope.FrameSize.ToString()], "collapse stack frame");
+            EmitInstruction("jmp", ["r5"], "return from function");
         }
     }
 

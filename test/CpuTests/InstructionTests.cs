@@ -139,9 +139,10 @@ public class InstructionTests
     [DataRow("blt r1 -63", 0b1110_001_0_11000001u)]
     [DataRow("ble r1 -63", 0b1111_001_0_11000001u)]
     [DataRow("0x0000", 0u)]
-    [DataRow(".halt", 0x3000u)]
+    [DataRow("halt", 0x3000u)]
     public void TestInstructionToString(string instr, uint bits)
     {
-        Assert.AreEqual(instr, ISA.Instruction((ushort)bits).ToString());
+        var i = ISA.Instruction((ushort)bits).ToString();
+        Assert.AreEqual(instr, i);
     }
 }

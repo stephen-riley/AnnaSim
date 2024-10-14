@@ -1,12 +1,19 @@
 using AnnaSim.Cpu;
 using AnnaSim.Instructions;
 using AnnaSim.Cpu.Memory;
+using AnnaSim.Assembler;
 
 namespace AnnaSim.Test.CpuTests;
 
 [TestClass]
 public class TwosComplementTests
 {
+    static TwosComplementTests()
+    {
+        // This is required to run these tests individually.
+        InstructionDefinition.SetAssembler(new AnnaAssembler());
+    }
+
     [TestMethod]
     [DataRow(1, 1, 2)]
     [DataRow(-2, -10, -12)]
