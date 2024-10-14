@@ -16,6 +16,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>annasim</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,5 +39,10 @@
       <Package>AnnaSim.TinyC.Antlr</Package>
     </Antlr4>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\readme.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
+
 
 </Project>
