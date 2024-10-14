@@ -7,10 +7,11 @@
     <Nullable>enable</Nullable>
     <RootNamespace>AnnaSim</RootNamespace>
 
-    <Copyright>Copyright 2024, Stephen Riley</Copyright>
+    <AssemblyTitle>AnnaSim</AssemblyTitle>
+    <Copyright>Copyright (c) 2024, Stephen Riley</Copyright>
     <Company>Seattle University</Company>
     <Version>0.1.0</Version>
-    <AssemblyTitle>AnnaSim</AssemblyTitle>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>annasim</ToolCommandName>

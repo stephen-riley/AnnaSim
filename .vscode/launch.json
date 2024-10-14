@@ -12,8 +12,9 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
             "args": [
-                "/tmp/asm.txt",
+                "../test/fixtures/eg_for_loop.c",
                 "-r",
+                "-d",
                 "-i",
                 "6",
                 "-t"

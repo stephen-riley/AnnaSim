@@ -4,16 +4,19 @@ using AnnaSim.Debugger;
 using AnnaSim.TinyC;
 using CommandLine;
 
-var cliParser = new Parser(settings =>
+var cliParser = new Parser(with =>
 {
-    settings.AllowMultiInstance = true;
-    settings.HelpWriter = Console.Error;
+    with.AllowMultiInstance = true;
+    with.HelpWriter = null;
 });
 
 try
 {
-    cliParser.ParseArguments<AnnaSimContext>(args)
+    var parserResult = cliParser
+        .ParseArguments<AnnaSimContext>(args)
         .WithParsed(ExecutionPipeline);
+
+    parserResult.WithNotParsed(errs => AnnaSimContext.DisplayHelp(parserResult, errs));
 }
 catch (Exception e)
 {
@@ -52,8 +55,7 @@ void ExecutionPipeline(AnnaSimContext opt)
                        ? new global::AnnaSim.Debugger.Vt100ConsoleDebugger(opt.CstProgram, opt.Inputs.ToArray<string>(), opt.DebugCommands.ToArray<string>())
                        : new global::AnnaSim.Debugger.ConsoleDebugger(opt.CstProgram, opt.Inputs.ToArray<string>(), opt.DebugCommands.ToArray<string>());
 
-        // TODO: implement DumpScreen option
-        debugger.Run();
+        debugger.Run(opt.DumpScreen);
     }
     else
     {
@@ -129,6 +131,6 @@ string ReadInputFile(AnnaSimContext opt)
     }
     else
     {
-        throw new InvalidOperationException("Must specify an input file or redirect STDIN");
+        throw new InvalidOperationException("Must specify an input file or redirect STDIN (did you mean to say --help?)");
     }
 }
