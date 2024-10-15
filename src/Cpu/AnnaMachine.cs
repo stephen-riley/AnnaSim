@@ -10,7 +10,6 @@ public class AnnaMachine
 {
     public Queue<Word> Inputs { get; internal set; } = [];
     public MemoryFile Memory { get; internal set; } = new();
-    public PdbInfo Pdb { get; internal set; } = new();
     public CstProgram Program { get; internal set; }
     public RegisterFile Registers { get; internal set; } = new();
     public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");

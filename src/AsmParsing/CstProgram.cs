@@ -19,6 +19,7 @@ public class CstProgram
     {
         Instructions = instructions.ToList();
         BuildMaps();
+        ExtractLabels();
     }
 
     private void BuildMaps()
@@ -28,6 +29,17 @@ public class CstProgram
         foreach (var ci in Instructions.ThatOccupyMemory())
         {
             ci.AssembledWords.SelectWithIndex().ForEach(tuple => AddrMap[ci.BaseAddress + (uint)tuple.index] = ci);
+        }
+    }
+
+    private void ExtractLabels()
+    {
+        foreach (var ci in Instructions)
+        {
+            foreach (var label in ci.Labels)
+            {
+                Labels[label] = ci.BaseAddress;
+            }
         }
     }
 }

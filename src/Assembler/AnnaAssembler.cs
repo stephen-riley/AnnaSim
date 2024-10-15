@@ -247,12 +247,4 @@ public partial class AnnaAssembler
             throw new InvalidCastException($"Operand is of type {o.Type}, requested Register");
         }
     }
-
-    public PdbInfo GetPdb() => new()
-    {
-        Labels = labels,
-        RegisterAliases = registerAliases,
-        AddrCstMap = AddrCstMap,
-        LineCstMap = LineCstMap,
-    };
 }

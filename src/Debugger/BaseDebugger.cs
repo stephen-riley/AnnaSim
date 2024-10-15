@@ -95,9 +95,9 @@ public abstract class BaseDebugger
                         }
                         else
                         {
-                            if (Cpu.Pdb.LineCstMap.ContainsKey((uint)numeric))
+                            if (program.LineMap.ContainsKey((uint)numeric))
                             {
-                                breakAddr = Cpu.Pdb.LineCstMap[(uint)numeric].BaseAddress;
+                                breakAddr = program.LineMap[(uint)numeric].BaseAddress;
                                 descriptor = $"line {numeric}";
                             }
                             else
@@ -114,7 +114,7 @@ public abstract class BaseDebugger
                     }
                     else
                     {
-                        breakAddr = Cpu.Pdb.Labels[cmd[2..]];
+                        breakAddr = program.Labels[cmd[2..]];
                         descriptor = $"label {cmd[2..]}";
                     }
 
@@ -179,12 +179,14 @@ public abstract class BaseDebugger
                     break;
 
                 case 'p':
-                    foreach ((var label, var labelAddr) in Cpu.Pdb.Labels)
+                    TerminalWrite("Program symbols:");
+                    foreach ((var label, var labelAddr) in program.Labels)
                     {
-                        var line = Cpu.Pdb.LineCstMap.Where(el => el.Value.BaseAddress == labelAddr).Select(e => e.Key).FirstOrDefault();
+                        var line = program.LineMap.Where(el => el.Value.BaseAddress == labelAddr).Select(e => e.Key).FirstOrDefault();
                         var lineStr = line != 0 ? $" (line {line})" : "";
                         TerminalWrite($" 0x{labelAddr:x4} {label}{lineStr}");
                     }
+                    TerminalWrite();
                     break;
 
                 case 'q': goto breakLoop;
