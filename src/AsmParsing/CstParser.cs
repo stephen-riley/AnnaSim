@@ -40,12 +40,12 @@ public static class CstParser
         {
             lineNumber++;
 
-            if (line.Trim().StartsWith("#*"))
+            if (line.Trim().StartsWith("/*"))
             {
                 inBlockComment = true;
                 continue;
             }
-            else if (line.Trim().EndsWith("*#"))
+            else if (line.Trim().EndsWith("*/"))
             {
                 inBlockComment = false;
                 continue;

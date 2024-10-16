@@ -82,15 +82,15 @@ public class AssemblerTests
     {
         var src = """
                 .org 0x000
-                #* 
+                /* 
                     open block comment!
                     So much fun.
-                *#
+                */
 
         stack:  .def    0x8000
         start:  lwi     r7 &stack
 
-        #* And now we get on with our lives... *#
+        /* And now we get on with our lives... */
 
                 addi    r6 r7 +1
         """;
