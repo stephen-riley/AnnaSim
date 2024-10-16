@@ -1,5 +1,6 @@
 using AnnaSim.Assembler;
 using AnnaSim.Cpu.Memory;
+using AnnaSim.Extensions;
 using AnnaSim.Instructions;
 
 namespace AnnaSim.Test.AssemblerTests;
@@ -74,5 +75,29 @@ public class AssemblerTests
     {
         var asm = new AnnaAssembler();
         asm.Assemble([src]);
+    }
+
+    [TestMethod]
+    public void TestBlockComments()
+    {
+        var src = """
+                .org 0x000
+                #* 
+                    open block comment!
+                    So much fun.
+                *#
+
+        stack:  .def    0x8000
+        start:  lwi     r7 &stack
+
+        #* And now we get on with our lives... *#
+
+                addi    r6 r7 +1
+        """;
+
+        var asm = new AnnaAssembler();
+        var program = asm.Assemble(src);
+        var instrCount = program.Instructions.ThatOccupyMemory().Count();
+        Assert.AreEqual(1, instrCount);
     }
 }

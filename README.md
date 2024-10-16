@@ -6,7 +6,13 @@ See paper at http://fac-staff.seattleu.edu/elarson/web/Research/fie08.pdf
 
 AnnaSim is installed as a `dotnet tool`.
 
-To install:
+**If you are using macOS, Linux, or WSL on Windows, you can run this script to uninstall and reinstall:**
+
+```bash
+./install.sh
+```
+
+### To install:
 
 (Note: if you have previously installed AnnaSim, you must first uninstall it.  See below.)
 1. Download this repo using the GitHub Desktop app or via command line: `git clone https://github.com/stephen-riley/AnnaSim`
@@ -14,14 +20,30 @@ To install:
 1. If you have previously installed AnnaSim: `dotnet tool uninstall --global AnnaSim`
 1. Build and install AnnaSim: `dotnet pack && dotnet tool install --global --add-source src/nupkg AnnaSim`
 
-To uninstall:
-`dotnet tool uninstall --global AnnaSim`
+In one copy-paste:
+
+```bash
+git clone https://github.com/stephen-riley/AnnaSim
+cd AnnaSim
+dotnet tool uninstall --global AnnaSim > /dev/null 2>&1
+dotnet pack && dotnet tool install --global --add-source src/nupkg AnnaSim
+```
+
+### To uninstall:
+
+```bash
+dotnet tool uninstall --global AnnaSim
+```
 
 ## Usage
 
 The root command is `annasim`.  
 
-Type `annasim --help` for a list of command switches and arguments.
+To see command line options and switches:
+
+```bash
+annasim --help
+```
 
 ```
 annasim 1.0.0
@@ -64,6 +86,16 @@ github.com/stephen-riley/AnnaSim/blob/main/docs/ANNA_Guide.pdf
 
 * [ANNA Guide](docs/ANNA_Guide.pdf)
 * [ANNA Card](docs/ANNA_Card.pdf)
+
+## Notable changes from ANNA 2.0
+
+* Supports `mul`tiplication, `div`ision, and `mod`ulo
+* Introduces programmer quality of life *pseudo-ops* such as `push`, `pop`, `lwi`, and others
+* Adds the `.cstr` directive for easily declaring strings
+* Adds `.org` directive
+* Adds `.def` directive
+* Adds `.ralias` directive to declare aliases for registers (eg. `rSP` to refer to `r7`)
+* Supports block comments (`/* ... */`) -- see [ANNA Guide](docs/ANNA_Guide.pdf) for grammar
 
 ## TODO
 

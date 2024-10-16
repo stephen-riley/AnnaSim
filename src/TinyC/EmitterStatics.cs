@@ -66,7 +66,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             // unwind stack and return
             EmitLabel(epExit);
             EmitInstruction("lw", ["r5", "rFP", "-1"], "load return addr from FP-1");
-            EmitInstruction("lw", ["r6", "rFP", "0"], "restore previous FP");
+            EmitInstruction("lw", ["rFP", "rFP", "0"], "restore previous FP");
             EmitInstruction("addi", ["rSP", "rSP", scope.FrameSize.ToString()], "collapse stack frame");
             EmitInstruction("jmp", ["r5"], "return from function");
         }
@@ -82,7 +82,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             EmitHeaderComment($" FP+{a.Offset}  {a.Name}");
         }
 
-        EmitHeaderComment(" FP+0  previous SP");
+        EmitHeaderComment(" FP+0  previous FP");
         EmitHeaderComment(" FP-1  return addr");
 
         foreach (var v in scope.Vars)

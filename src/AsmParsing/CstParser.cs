@@ -34,10 +34,27 @@ public static class CstParser
         var state = ParseState.BeforeInstruction;
 
         uint lineNumber = 0;
+        bool inBlockComment = false;
 
         foreach (var line in lines)
         {
             lineNumber++;
+
+            if (line.Trim().StartsWith("#*"))
+            {
+                inBlockComment = true;
+                continue;
+            }
+            else if (line.Trim().EndsWith("*#"))
+            {
+                inBlockComment = false;
+                continue;
+            }
+            else if (inBlockComment)
+            {
+                continue;
+            }
+
 
             try
             {

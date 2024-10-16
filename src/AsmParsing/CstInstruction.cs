@@ -200,7 +200,7 @@ public class CstInstruction : ICstComponent
             var op1IsPlainRegister = operands[1].StartsWith('r') && operands[1].Length == 2 && operands[1][1] is >= '0' and <= '7';
             if (!op1IsPlainRegister && int.TryParse(operands[2], out int rs2))
             {
-                return $"{operands[0]} {operands[1]}{(rs2 >= 0 ? "+" : "")}{operands[2]}";
+                return $"{operands[0]} {operands[1]}{(rs2 >= 0 ? "+" : "")}{rs2}";
             }
         }
 
