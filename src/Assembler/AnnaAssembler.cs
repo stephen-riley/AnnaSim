@@ -21,8 +21,11 @@ public partial class AnnaAssembler
 
     public Dictionary<uint, CstInstruction> AddrCstMap { get; internal set; } = [];
     public Dictionary<uint, CstInstruction> LineCstMap { get; internal set; } = [];
+    public Dictionary<string, FrameDef> FrameDefs { get; internal set; } = [];
 
     internal uint Addr = 0u;
+
+    internal FrameDef TmpFrameDef = null!;
 
     public AnnaAssembler(int memorySize = 65536)
     {
@@ -90,7 +93,7 @@ public partial class AnnaAssembler
             });
         }
 
-        return new CstProgram(instructions);
+        return new CstProgram(instructions, FrameDefs.Values);
     }
 
     internal void ResolveLabels(IEnumerable<CstInstruction> instructions)

@@ -17,6 +17,7 @@ public static class CstrInstructionExtensions
             _Org => false,
             _Def => false,
             _Ralias => false,
+            _Frame => false,
             _ => true
         };
     }

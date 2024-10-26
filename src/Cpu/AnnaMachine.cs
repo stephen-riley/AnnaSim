@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AnnaSim.AsmParsing;
 using AnnaSim.Assembler;
 using AnnaSim.Cpu.Memory;
@@ -28,7 +29,7 @@ public class AnnaMachine
 
     public AnnaMachine()
     {
-        Program = new([]);
+        Program = new([], []);
     }
 
     public AnnaMachine(CstProgram program) : this()
@@ -293,6 +294,34 @@ public class AnnaMachine
         else
         {
             return Convert.ToUInt32(o);
+        }
+    }
+
+    public FrameDef? GetCurrentFrameDef(uint addr)
+    {
+        foreach (var entry in Program.FrameAddrMap)
+        {
+            if (entry.Key.Contains((int)addr))
+            {
+                return entry.Value;
+            }
+        }
+
+        return null;
+    }
+
+    public bool TryGetCurrentFrameDef(uint addr, [NotNullWhen(true)] out FrameDef frameDef)
+    {
+        var fd = GetCurrentFrameDef(addr);
+        if (fd is not null)
+        {
+            frameDef = fd;
+            return true;
+        }
+        else
+        {
+            frameDef = null!;
+            return false;
         }
     }
 }

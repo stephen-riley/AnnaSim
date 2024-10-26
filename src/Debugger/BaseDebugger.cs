@@ -140,6 +140,34 @@ public abstract class BaseDebugger
                     DumpScreen();
                     break;
 
+                case 'f':
+                    var levels = 0;
+                    if (cmd.Length > 1)
+                    {
+                        levels = int.Parse(cmd[2..]);
+                        if (levels > 0)
+                        {
+                            TerminalWriteLine("* Number of levels must be negative.");
+                            break;
+                        }
+                        levels = -levels;
+                    }
+                    var fp = Cpu.Registers[6];
+                    for (var i = 0; i < levels; i++)
+                    {
+                        fp = Cpu.Memory[fp];
+                    }
+                    if (Cpu.TryGetCurrentFrameDef(Cpu.Pc, out var fd))
+                    {
+                        DumpStackFrame(fp, fd);
+                    }
+                    else
+                    {
+                        TerminalWrite("No active frame.");
+                    }
+                    TerminalWrite();
+                    break;
+
                 case 'h': RenderHelp(); break;
 
                 case 'i' when cmd.Length > 1:
@@ -283,6 +311,15 @@ public abstract class BaseDebugger
         Console.WriteLine();
     }
 
+    private void DumpStackFrame(uint addr, FrameDef frameDef)
+    {
+        foreach (var entry in frameDef.Members.Reverse())
+        {
+            var fpOffset = $"FP{(entry.Key < 0 ? "" : "+")}{entry.Key}";
+            TerminalWrite($"{fpOffset}: 0x{Cpu.Memory[addr + (uint)entry.Key]:x4} ({entry.Value})");
+        }
+    }
+
     protected abstract string ReadDebuggerCommand();
 
     protected abstract void UpdateScreen(Instruction? instr);
@@ -306,6 +343,7 @@ public abstract class BaseDebugger
         TerminalWrite("b [line]   set or clear Breakpoint at addr");
         TerminalWrite("b [sym]    set Breakpoint at symbol");
         TerminalWrite("c          Continue execution until halted");
+        TerminalWrite("f          Dump current stack frame");
         TerminalWrite("d          Dump screen memory");
         TerminalWrite("i [inputs] add Inputs to input queue");
         TerminalWrite("l [file]   Load .asm or .mem file");

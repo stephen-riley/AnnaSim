@@ -44,6 +44,7 @@ public enum InstrOpcode
     _Cstr,
     _Def,
     _Fill,
+    _Frame,
     _Halt,
     _Org,
     _Ralias,

@@ -60,8 +60,12 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             }
             EmitBlankLine();
 
+            EmitInstruction(".frame", ["\"on\""]);
             EmitLabel($"{name}_body");
             e.VisitBlock(scope.Body);
+
+            EmitBlankLine();
+            EmitInstruction(".frame", ["\"off\""]);
 
             // unwind stack and return
             EmitLabel(epExit);
@@ -77,6 +81,17 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         var argList = string.Join(", ", scope.Args.Select(a => $"{a.Type} {a.Name}"));
         EmitHeaderComment($"function `{scope.Type} {scope.Name}({argList})`");
 
+        var frameDef = scope.Name;
+        foreach (var a in scope.Args)
+        {
+            frameDef += $"|{a.Offset}~{a.Name}";
+        }
+        frameDef += "|0~prev FP|-1~ret addr";
+        foreach (var v in scope.Vars)
+        {
+            frameDef += $"|{v.Offset}~{v.Name}";
+        }
+
         foreach (var a in scope.Args)
         {
             EmitHeaderComment($" FP+{a.Offset}  {a.Name}");
@@ -90,6 +105,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             EmitHeaderComment($" FP{v.Offset}  {v.Name}");
         }
         EmitBlankLine();
+        EmitInstruction(".frame", ['"' + frameDef + '"']);
     }
 
     private void EmitGlobalVars(Emitter e)

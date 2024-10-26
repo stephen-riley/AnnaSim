@@ -4,9 +4,11 @@
 
 - [X] ...or dotnet tool?
 - [X] add URL to reference docs in --help
-- [ ] switch to $ for hex?
+- [ ] ~~switch to $ for hex?~~ just remove 0x in advanced debugger
 - [ ] build annalib.asm
-- [ ] Prebuilt single-file executables?
+- ~~[ ] Prebuilt single-file executables?~~
+- [ ] add interrupt support (add function code to `in`)
+- [ ] add `out` variant to put char to screen
 
 ## Assembler
 
@@ -17,8 +19,8 @@
 - [X] add mul, div, mod instructions
 - [X] add register aliases (not hardcoded like SP and FP)
 - [X] Expressions in assembler? like + and - (store offsets in label operands)
+- [X] add stack frames to PDB
 - [ ] .include directive
-- [ ] add stack frames to PDB
 
 ## Debugger
 
