@@ -229,4 +229,27 @@ public class AssemblerInternalsTests
 
         Assert.AreEqual(expected, (uint)asm.MemoryImage[0]);
     }
+
+    [TestMethod]
+    public void TestBranchToLabelWithPseudoOpsInTheMiddle()
+    {
+        var src = """
+                br      &dest       # at 0
+                push    r7 r0       # at 1 and 2
+                lwi     r4 0x1234   # at 3 and 4
+                addi    r4 r0 -1    # at 5
+        dest:   .halt               # at 6
+
+                # br offset should be &dest - br + 1 = 5
+        """.Split('\n');
+
+        var asm = new AnnaAssembler();
+        asm.Assemble(src);
+
+        // if this is 3, then the offset calculator is not taking
+        //  multiple-instruction pseudo-ops into account
+        int brOffset = asm.MemoryImage[0] & 0xff;
+
+        Assert.AreEqual(5, brOffset);
+    }
 }
