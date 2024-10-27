@@ -20,6 +20,7 @@
 - [X] add register aliases (not hardcoded like SP and FP)
 - [X] Expressions in assembler? like + and - (store offsets in label operands)
 - [X] add stack frames to PDB
+- [ ] allow labels on their own line
 - [ ] .include directive
 
 ## Debugger
