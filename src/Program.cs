@@ -1,8 +1,14 @@
-﻿using AnnaSim.Assembler;
+﻿using System.Reflection;
+using AnnaSim.Assembler;
 using AnnaSim.Cpu;
 using AnnaSim.Debugger;
 using AnnaSim.TinyC;
 using CommandLine;
+
+
+var assembly = Assembly.GetExecutingAssembly();
+var fullVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+Console.Error.WriteLine($"annasim {fullVersion}\n  ANNA+ assembler and simulator");
 
 var cliParser = new Parser(with =>
 {
