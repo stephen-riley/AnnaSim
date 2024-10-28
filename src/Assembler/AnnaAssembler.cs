@@ -43,7 +43,7 @@ public partial class AnnaAssembler
 
     public CstProgram Assemble(string src)
     {
-        var program = Assemble(src.Split('\n'));
+        var program = Assemble(src.Split(["\r\n", "\r", "\n"], StringSplitOptions.None));
         program.MemoryImage = MemoryImage;
         return program;
     }

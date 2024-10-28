@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using AnnaSim.Exceptions;
+using AnnaSim.Extensions;
 using AnnaSim.Instructions;
 
 namespace AnnaSim.AsmParsing;
@@ -17,7 +18,7 @@ public static class CstParser
         => ParseLines(File.ReadAllLines(filename));
 
     public static List<CstInstruction> ParseSource(string source)
-        => ParseLines(source.Split("\n"));
+        => ParseLines(source.Split(["\r\n", "\r", "\n"], StringSplitOptions.None));
 
     // We're going to collect all trivia and attach it to the first instruction we see.
     // Thereafter, collect all blank lines after an instruction.  When we see something
@@ -33,13 +34,11 @@ public static class CstParser
 
         var state = ParseState.BeforeInstruction;
 
-        uint lineNumber = 0;
         bool inBlockComment = false;
 
-        foreach (var line in lines)
+        // foreach (var line in lines)
+        foreach ((var lineNumber, var line) in lines.SelectWithIndex(1))
         {
-            lineNumber++;
-
             if (line.Trim().StartsWith("/*"))
             {
                 inBlockComment = true;
@@ -58,7 +57,7 @@ public static class CstParser
 
             try
             {
-                if (TryParseLine(line, out var piece, lineNumber))
+                if (TryParseLine(line, out var piece, (uint)lineNumber))
                 {
                     if (state == ParseState.BeforeInstruction)
                     {
