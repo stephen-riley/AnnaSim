@@ -12,10 +12,10 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
             "args": [
-                "-a",
-                "/tmp/fib_rec2.asm",
+                "-rt",
+                "/tmp/fib_rec.asm",
                 "--disasm",
-                "/tmp/fib_rec2.dasm",
+                "/tmp/fib_rec.dasm",
                 "-i",
                 "3"
             ],

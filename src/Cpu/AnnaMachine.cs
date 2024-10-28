@@ -193,8 +193,9 @@ public class AnnaMachine
             Console.Error.Write($"  |  [SP:{Registers[7].bits:x4}]");
 
             const uint stackDepth = 8;
-            var stackStart = 0x8000 - Registers[7] > stackDepth ? Registers[7] - stackDepth : 0x8000;
+            var stackStart = uint.Min(0x8000, stackDepth + Registers[7]);
 
+            int count = 0;
             for (uint addr = stackStart; addr >= stackStart - stackDepth; addr--)
             {
                 if (addr == Registers[7])
@@ -204,6 +205,7 @@ public class AnnaMachine
 
                 var fpLabel = addr == Registers[6] ? "FP:" : "";
                 Console.Error.Write($" {fpLabel}{Memory[addr]:x4}");
+                count++;
             }
         }
 

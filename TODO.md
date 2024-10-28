@@ -20,8 +20,8 @@
 - [X] add register aliases (not hardcoded like SP and FP)
 - [X] Expressions in assembler? like + and - (store offsets in label operands)
 - [X] add stack frames to PDB
+- [X] test frame pointer activation -- sometimes it's not recognizing the frame region
 - [ ] allow labels on their own line
-- [ ] test frame pointer activation -- sometimes it's not recognizing the frame region
 - [ ] .include directive
 
 ## Debugger
