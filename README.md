@@ -46,7 +46,7 @@ annasim --help
 ```
 
 ```
-annasim 1.0.5.27
+annasim 1.0.6.28
   ANNA+ assembler and simulator
 
 Copyright (c) 2024, Stephen Riley

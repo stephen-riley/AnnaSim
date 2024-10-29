@@ -60,6 +60,7 @@ void ExecutionPipeline(AnnaSimContext opt)
         BaseDebugger debugger = opt.AdvancedDebug
                        ? new global::AnnaSim.Debugger.Vt100ConsoleDebugger(opt.CstProgram, opt.Inputs.ToArray<string>(), opt.DebugCommands.ToArray<string>())
                        : new global::AnnaSim.Debugger.ConsoleDebugger(opt.CstProgram, opt.Inputs.ToArray<string>(), opt.DebugCommands.ToArray<string>());
+        debugger.CyclesRemaining = opt.MaxCycles;
 
         debugger.Run(opt.DumpScreen);
     }
@@ -114,7 +115,7 @@ void Assemble(AnnaSimContext opt)
 
 void Run(AnnaSimContext opt)
 {
-    var runner = new Runner(opt.CstProgram, opt.Inputs.ToArray(), trace: opt.Trace);
+    var runner = new Runner(opt.CstProgram, opt.Inputs.ToArray(), trace: opt.Trace) { MaxCycles = opt.MaxCycles };
     runner.Run(opt.DumpScreen);
 }
 

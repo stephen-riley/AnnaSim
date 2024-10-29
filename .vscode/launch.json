@@ -12,12 +12,14 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
             "args": [
-                "-rt",
-                "/tmp/fib_rec.asm",
+                "-a",
+                "/tmp/hw5.asm",
                 "--disasm",
                 "/tmp/fib_rec.dasm",
                 "-i",
-                "3"
+                "12",
+                "-y",
+                "15000"
             ],
             "cwd": "${workspaceFolder}/src",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

@@ -10,7 +10,7 @@
     <AssemblyTitle>AnnaSim</AssemblyTitle>
     <Copyright>Copyright (c) 2024, Stephen Riley</Copyright>
     <Company>Seattle University</Company>
-    <Version>1.0.5.27</Version>
+    <Version>1.0.6.28</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
     <PackAsTool>true</PackAsTool>

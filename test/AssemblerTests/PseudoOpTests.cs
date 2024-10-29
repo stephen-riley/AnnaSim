@@ -1,4 +1,5 @@
 using AnnaSim.Assembler;
+using AnnaSim.Debugger;
 
 namespace AnnaSim.Test.AssemblerTests;
 
@@ -6,7 +7,7 @@ namespace AnnaSim.Test.AssemblerTests;
 public class PseudoOpTests
 {
     [TestMethod]
-    public void TestPushPseudoOp()
+    public void TestPushPseudoOpAssemble()
     {
         var src = """
             push    r7 r1
@@ -23,7 +24,7 @@ public class PseudoOpTests
     }
 
     [TestMethod]
-    public void TestPopPseudoOp()
+    public void TestPopPseudoOpAssemble()
     {
         var src = """
             pop    r7 r1
@@ -40,7 +41,7 @@ public class PseudoOpTests
     }
 
     [TestMethod]
-    public void TestLwiPseudoOp()
+    public void TestLwiPseudoOpAssemble()
     {
         var src = """
             lwi     r1 0x1234
@@ -57,7 +58,7 @@ public class PseudoOpTests
     }
 
     [TestMethod]
-    public void TestMovPseudoOp()
+    public void TestMovPseudoOpAssemble()
     {
         var src = """
             mov     r1 r2
@@ -71,7 +72,7 @@ public class PseudoOpTests
     }
 
     [TestMethod]
-    public void TestHaltPseudoOp()
+    public void TestHaltPseudoOpAssemble()
     {
         var src = """
             halt
@@ -85,7 +86,7 @@ public class PseudoOpTests
     }
 
     [TestMethod]
-    public void TestJmpPseudoOp()
+    public void TestJmpPseudoOpAssemble()
     {
         var src = """
             jmp     r1
@@ -99,7 +100,7 @@ public class PseudoOpTests
     }
 
     [TestMethod]
-    public void TestBrPseudoOp()
+    public void TestBrPseudoOpAssemble()
     {
         var src = """
             br     110
@@ -110,5 +111,45 @@ public class PseudoOpTests
 
         // jalr r1 r0
         Assert.AreEqual(0b1010_000_0_01101110, asm.MemoryImage[0]);
+    }
+
+    // This sets up a scenario that a student was seeing.
+    [TestMethod]
+    public void TestPushPseudoOp()
+    {
+        var src = """
+            stack:  .def    0x8000
+            lwi     r7 &stack
+
+            lli     r1 1
+            lli     r2 8
+
+            push    r7 r0       # 0x8000: 0
+            push    r7 r0       # 0x7fff: 0
+            push    r7 r2       # 0x7ffe: 8
+            push    r7 r1       # 0x7ffd: 1
+            push    r7 r0       # 0x7ffc: 0
+            push    r7 r1       # 0x7ffb: 1
+
+            out     r7          # should be 0x7ffa
+
+            lwi     r1 0
+
+            push    r7 r1       # 0x7ffa should be 0
+            out     r7          # should be 0x7ff9
+
+            lw      r3 r7 +1
+            out     r3          # should be 0
+        """;
+
+        var asm = new AnnaAssembler();
+        var program = asm.Assemble(src);
+        var runner = new Runner(program, []);
+        runner.Run();
+
+        Assert.AreEqual(0, runner.Cpu.Registers[3]);
+        Assert.AreEqual(0x7ffa, runner.Outputs[0]);
+        Assert.AreEqual(0x7ff9, runner.Outputs[1]);
+        Assert.AreEqual(0, runner.Outputs[2]);
     }
 }

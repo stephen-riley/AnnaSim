@@ -22,6 +22,8 @@ public abstract class BaseDebugger
     public List<Word> Outputs { get; init; } = [];
     public HaltReason Status { get; private set; }
 
+    public int CyclesRemaining { get; set; } = 10_000;
+
     protected BaseDebugger(CstProgram program, string[] inputs, int screenMap = 0xc000) : this(program, inputs, [], screenMap) { }
     protected BaseDebugger(CstProgram program, int screenMap = 0xc000) : this(program, [], [], screenMap) { }
 
@@ -133,7 +135,10 @@ public abstract class BaseDebugger
 
                 case 'c':
                     lastRegistersState = Cpu.Registers.Copy();
-                    Status = Cpu.Execute();
+                    int prevCycles = Cpu.CyclesExecuted;
+                    Status = Cpu.Execute(CyclesRemaining);
+                    int cyclesThatTime = Cpu.CyclesExecuted - prevCycles;
+                    CyclesRemaining -= cyclesThatTime;
                     break;
 
                 case 'd':
