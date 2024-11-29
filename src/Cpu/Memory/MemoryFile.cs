@@ -31,7 +31,7 @@ public class MemoryFile
         set
         {
             n = (uint)((n < 0 ? n + Length : n) % Length);
-            memory[n] = (memory[n].bits & 0xff00) | value;
+            memory[n] = (memory[n].bits & 0xffff0000) | value;
         }
     }
 

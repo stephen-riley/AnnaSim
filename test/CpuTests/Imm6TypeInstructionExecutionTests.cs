@@ -67,17 +67,23 @@ public class Imm6TypeInstructionExecutionTests
     }
 
     [TestMethod]
-    [DataRow(1, 5, 32)]
-    [DataRow(32, -5, 1)]
-    public void TestSwInstruction(int start, int bitShift, int expected)
+    [DataRow(1u, 1, 32)]
+    [DataRow(16u, -2, -1)]
+    [DataRow(32u, 3, 1)]
+    [DataRow(48u, -4, 127)]
+    public void TestSwInstruction(uint addrBase, int offset, int value)
     {
         var cpu = new AnnaMachine();
-        cpu.Registers[2] = (uint)start;
+        cpu.Memory.Initialize(0u, Enumerable.Range(0, cpu.Memory.Length).Reverse().Select(n => (Word)(uint)n).ToArray());
+        cpu.Registers[2] = addrBase;
 
-        InstructionDefinition idef = ISA.Lookup["shf"];
-        var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: (short)bitShift);
+        cpu.Registers[1] = (uint)value;
+        cpu.Registers[2] = addrBase;
+        InstructionDefinition idef = ISA.Lookup["sw"];
+
+        var instruction = idef.ToInstruction(rd: 1, rs1: 2, imm6: (short)offset);
         idef.Execute(cpu, instruction);
 
-        Assert.AreEqual(expected, cpu.Registers[1]);
+        Assert.AreEqual((Word)(uint)value, cpu.Memory[(uint)(addrBase + offset)]);
     }
 }
