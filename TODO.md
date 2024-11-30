@@ -21,7 +21,7 @@
 - [X] Expressions in assembler? like + and - (store offsets in label operands)
 - [X] add stack frames to PDB
 - [X] test frame pointer activation -- sometimes it's not recognizing the frame region
-- [ ] allow labels on their own line
+- [X] allow labels on their own line
 - [ ] .include directive
 
 ## Debugger
@@ -41,11 +41,11 @@
 - [X] do-while loop
 - [X] while loop
 - [X] add out() intrinsic
+- [X] add in() intrinsic
+- [X] postfix increment/decrement
+- [ ] for loop
 - [ ] #include in C
 - [ ] link (really include) .mem files
-- [ ] for loop
-- [ ] postfix increment/decrement
-- [ ] add in() intrinsic
 - [ ] optimize back to back sw-lw to same var (see Note 1, below)
 - [ ] optimize `l*i rX ...` followed by `mov rY rX` to just `l*i rY ...` (see Note 2, below)
 - [ ] don't constantly load the same value into a register if that register hasn't changed (see Note 3, below)

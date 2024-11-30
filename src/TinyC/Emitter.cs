@@ -232,6 +232,11 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         switch (funcName)
         {
+            case "in":
+                EmitInstruction("in", ["r3"]);
+                EmitInstruction("push", ["rSP", "r3"], "push input onto stack");
+                return true;
+
             case "out":
                 VisitExpr(args[0]);
                 EmitInstruction("pop", ["rSP", "r3"], "pop value for output");

@@ -1,5 +1,4 @@
 using AnnaSim.Assembler;
-using AnnaSim.Cpu;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Debugger;
 using AnnaSim.TinyC;
@@ -11,9 +10,10 @@ public class ExecutionTests
 {
     private List<Word> ZeroToNine = Enumerable.Range(0, 10).Select(n => (Word)(uint)n).ToList();
 
-    private void RunFile(string fname, List<Word> expected) => Run(File.ReadAllText(fname), expected);
+    private void RunFile(string fname, List<Word> expected) => Run([], File.ReadAllText(fname), expected);
+    private void RunFile(List<Word> inputs, string fname, List<Word> expected) => Run(inputs, File.ReadAllText(fname), expected);
 
-    private void Run(string src, List<Word> expected)
+    private void Run(List<Word> inputs, string src, List<Word> expected)
     {
         Compiler.TryCompile(src, out var asm);
         if (asm is null)
@@ -24,7 +24,8 @@ public class ExecutionTests
         var assembler = new AnnaAssembler();
         var program = assembler.Assemble(asm);
 
-        var runner = new Runner(program, []);
+        var strInputs = inputs.Select(i => i.ToString()).ToArray();
+        var runner = new Runner(program, strInputs);
         runner.Run();
 
         CollectionAssert.AreEqual(expected, runner.Outputs);
@@ -47,4 +48,7 @@ public class ExecutionTests
 
     [TestMethod]
     public void TestOpEqualAssignments() => RunFile("fixtures/op_equal.c", [3, 8, 15, 8]);
+
+    [TestMethod]
+    public void TestInIntrinsic() => RunFile([6], "fixtures/simple_fibonacci.c", [8]);
 }

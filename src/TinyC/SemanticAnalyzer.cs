@@ -148,14 +148,14 @@ public class SemanticAnalyzer : AnnaCcBaseVisitor<bool>
     public override bool VisitFunc_call([NotNull] AnnaCcParser.Func_callContext context)
     {
         // TODO: need to set up a dictionary of builtins that this and the emitter can use
-        if (context.name.Text is "out" or "print" or "printn" or "println")
+        if (context.name.Text is "in" or "out" or "print" or "printn" or "println")
         {
             return true;
         }
 
         if (!Cc.Functions.ContainsKey(context.name.Text))
         {
-            Errors.Add($"function named {context.name.Text} does not exist (AnnaCC does not support foreward references)");
+            Errors.Add($"function named {context.name.Text} does not exist (AnnaCC does not support forward references)");
             return false;
         }
         else
