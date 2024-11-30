@@ -330,7 +330,46 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     public override bool VisitExpr([NotNull] AnnaCcParser.ExprContext context)
     {
-        if (context.inner is not null)
+        if (context.unary is not null)
+        {
+            if (context.op.Text == "*")
+            {
+                throw new InvalidOperationException($"unary operator {context.op.Text} not yet supported");
+            }
+
+            if (context.unary.Start.Type == AnnaCcLexer.INT)
+            {
+                var strValue = context.unary.GetText();
+                var intValue = (int)AnnaMachine.ParseMachineInputs([strValue]).First();
+                var signedValue = context.op.Text == "-" ? -intValue : intValue;
+                var opcode = (signedValue is >= -128 and <= 127) ? "lli" : "lwi";
+                if (context.op.Text == "-")
+                {
+                    EmitInstruction(opcode, ["r3", signedValue.ToString()], $"load constant {signedValue} -> r3");
+                }
+                EmitInstruction(opcode, ["r3", strValue], $"load constant {strValue} -> r3");
+                EmitInstruction("push", ["rSP", "r3"]);
+            }
+            else
+            {
+                VisitExpr(context.unary);
+                if (context.op.Text == "+")
+                {
+                    EmitComment($"redundant unary + ignored in expression {context.GetText()}");
+                }
+                else if (context.op.Text == "-")
+                {
+                    EmitInstruction("pop", ["rSP", "r3"], "pop value to invert it");
+                    EmitInstruction("sub", ["r3", "r0", "r3"], "invert r3");
+                    EmitInstruction("push", ["rSP", "r3"], "push inverted value onto stack");
+                }
+                else
+                {
+                    throw new InvalidOperationException($"unknown unary operator {context.op.Text}");
+                }
+            }
+        }
+        else if (context.inner is not null)
         {
             VisitExpr(context.inner);
         }
@@ -348,7 +387,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             if (context.rh.Start.Type == AnnaCcLexer.INT)
             {
                 // EmitComment("OPTMIZATION: don't push rhs constant onto stack");
-                EmitInstruction("lwi", ["r2", context.rh.GetText()]);
+                EmitInstruction("lwi", ["r2", context.rh.GetText()], "directly load rhs constant");
                 constRhs = true;
             }
             else
@@ -365,6 +404,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 "-" => "sub",
                 "*" => "mul",
                 "/" => "div",
+                "%" => "mod",
                 "&&" => "add",
                 "||" => "or",
                 "^" => "not",
@@ -377,11 +417,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 _ => throw new InvalidOperationException($"invalid operator {context.op.Text}")
             };
 
-            if (op is "*" or "/")
-            {
-                throw new InvalidOperationException("AnnaCC does not support * or /");
-            }
-            else if (instr.StartsWith('b'))
+            if (instr.StartsWith('b'))
             {
                 if (!constRhs)
                 {

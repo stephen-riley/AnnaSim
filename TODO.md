@@ -38,10 +38,32 @@
 ## C Compiler
 
 - [X] optimizer
+- [X] do-while loop
+- [X] while loop
+- [X] add out() intrinsic
 - [ ] #include in C
 - [ ] link (really include) .mem files
 - [ ] for loop
-- [ ] while loop
-- [ ] do-while loop
 - [ ] postfix increment/decrement
-- [ ] add in() and out() intrinsics
+- [ ] add in() intrinsic
+- [ ] optimize back to back sw-lw to same var (see Note 1, below)
+
+### Note 1
+
+In this case, the second half (`lwi` of `&_var_b` and then the `lw`) should be
+optimized away.
+
+```
+lwi     r1 &_var_b          # load address of variable "b"
+sw      r3 r1 0             # store variable "b" to data segment
+
+lwi     r1 &_var_b          # load address of variable b
+lw      r3 r1 0             # load variable "b" from data segment
+```
+
+should simply become
+
+```
+lwi     r1 &_var_b          # load address of variable "b"
+sw      r3 r1 0             # store variable "b" to data segment
+```

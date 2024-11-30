@@ -1,25 +1,43 @@
 using AnnaSim.TinyC;
 
-namespace AnnaSim.Test.CpuTests;
+namespace AnnaSim.Test.CompilerTests;
 
 [TestClass]
 public class ParsingTests
 {
-    private void Parse(string fname)
+    private void ParseFile(string fname)
     {
         Compiler.TryCompile(File.ReadAllText(fname), out var asm);
         Assert.IsNotNull(asm);
     }
 
-    [TestMethod]
-    public void TestParseComplexIf() => Parse("fixtures/complex_if.c");
+    private void Parse(string src)
+    {
+        Compiler.TryCompile(src, out var asm, showParseTree: true);
+        Assert.IsNotNull(asm);
+    }
 
     [TestMethod]
-    public void TestParseWhile() => Parse("fixtures/while.c");
+    public void TestParseComplexIf() => ParseFile("fixtures/complex_if.c");
 
     [TestMethod]
-    public void TestParseDoWhile() => Parse("fixtures/do-while.c");
+    public void TestParseWhile() => ParseFile("fixtures/while.c");
 
     [TestMethod]
-    public void TestParseFor() => Parse("fixtures/for.c");
+    public void TestParseDoWhile() => ParseFile("fixtures/do-while.c");
+
+    [TestMethod]
+    public void TestParseFor() => ParseFile("fixtures/for.c");
+
+    [TestMethod]
+    public void TestUnaryMinusOfConstant() => Parse("int a = -3;");
+
+    [TestMethod]
+    public void TestUnaryMinusOfHexConstant() => Parse("int a = -0x10;");
+
+    [TestMethod]
+    public void TestUnaryMinusOfBinaryConstant() => Parse("int a = -0b11110000;");
+
+    [TestMethod]
+    public void TestUnaryMinusOfExpression() => ParseFile("fixtures/unary_minus.c");
 }

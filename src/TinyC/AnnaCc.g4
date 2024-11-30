@@ -26,7 +26,10 @@ var_decl    : simple_decl ( '=' e=expr )? ;
 
 simple_decl : t=type name=ID ;
 
-assign      : ID '=' expr ;
+assign      : ID '=' expr
+            | ID '++'
+            | ID '--'
+            ;
 
 func_signature
             : type name=ID '(' param_list ')'
@@ -64,10 +67,13 @@ type        : 'char*'
             | 'void'
             ;
 
-expr        : lh = expr op = ( '&&' | '||' | '^') rh = expr
+expr        : op='+' unary=expr
+            | op='-' unary=expr
+            | op='*' unary=expr
+            | lh = expr op = ( '&&' | '||' | '^' ) rh = expr
             | lh = expr op = ( '>=' | '<=' | '>' | '<' | '==' ) rh = expr
-	          | lh = expr op = ('*' | '/') rh = expr
-	          | lh = expr op = ( '+' | '-') rh = expr
+	          | lh = expr op = ( '*' | '/' | '%' ) rh = expr
+	          | lh = expr op = ( '+' | '-' ) rh = expr
             | '(' inner=expr ')'
             | a=atom
             ;
@@ -81,7 +87,11 @@ atom        : func_call
 
 // lexer
 
-INT         : [0-9]+ ;
+INT         : '0x' [0-9]+
+            | '0b' [0-1]+
+            | [0-9]+
+            ;
+
 STRING      : '"' .*? '"' ;
 
 ID          : [a-zA-Z_][a-zA-Z0-9_]* ;
