@@ -1,7 +1,6 @@
 using AnnaSim.Assembler;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;
-using CommandLine;
 
 namespace AnnaSim.AsmParsing;
 

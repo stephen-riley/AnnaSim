@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
+using AnnaSim.AsmParsing;
 using AnnaSim.Assembler;
 using AnnaSim.Cpu;
+using AnnaSim.Cpu.Memory;
 using AnnaSim.Debugger;
 using AnnaSim.TinyC;
 using CommandLine;
@@ -8,7 +10,8 @@ using CommandLine;
 
 var assembly = Assembly.GetExecutingAssembly();
 var fullVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-Console.Error.WriteLine($"annasim {fullVersion}\n  ANNA+ assembler and simulator");
+Console.Error.WriteLine($"annasim {fullVersion} - ANNA+ simulator, assembler and C compiler");
+Console.Error.WriteLine();
 
 var cliParser = new Parser(with =>
 {
@@ -37,19 +40,24 @@ catch (Exception e)
 
 void ExecutionPipeline(AnnaSimContext opt)
 {
-    if (opt.InputFilename is not null && opt.InputFilename.EndsWith(".mem"))
-    {
-        throw new NotImplementedException(".mem files not yet supported");
-    }
-
     opt.Source = ReadInputFile(opt);
 
-    if (opt.Cc || (opt.InputFilename?.EndsWith(".c") ?? false))
+    if (opt.Source.StartsWith(MemoryFile.ImageFileHeader))
     {
-        Compile(opt);
+        opt.CstProgram = new CstProgram([], [])
+        {
+            MemoryImage = new MemoryFile().FromString(opt.Source)
+        };
     }
+    else
+    {
+        if (opt.Cc || (opt.InputFilename?.EndsWith(".c") ?? false))
+        {
+            Compile(opt);
+        }
 
-    Assemble(opt);
+        Assemble(opt);
+    }
 
     if (opt.Run)
     {

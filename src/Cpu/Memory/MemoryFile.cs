@@ -3,7 +3,7 @@ namespace AnnaSim.Cpu.Memory;
 public class MemoryFile
 {
     // At this point we don't care about image file versions
-    private const string ImageFileHeader = "# ANNA-IMG";
+    public const string ImageFileHeader = "# ANNA-IMG";
 
     internal MachineWord[] memory;
 
@@ -72,13 +72,18 @@ public class MemoryFile
         }
     }
 
-    public MemoryFile ReadMemFile(string path)
+    public MemoryFile FromString(string src)
     {
         var addr = 0u;
         var foundHeader = false;
 
-        foreach (var line in File.ReadAllLines(path))
+        foreach (var line in src.Split(["\r\n", "\r", "\n"], StringSplitOptions.None))
         {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
             if (!foundHeader)
             {
                 foundHeader = line.StartsWith(ImageFileHeader) ? true : throw new InvalidOperationException($".mem files must start with {ImageFileHeader}");
@@ -102,6 +107,8 @@ public class MemoryFile
 
         return this;
     }
+
+    public MemoryFile ReadMemFile(string path) => FromString(File.ReadAllText(path));
 
     public void WriteMemFile(string path, uint startAddr = 0u, int length = 65536, bool writeAll = false)
     {

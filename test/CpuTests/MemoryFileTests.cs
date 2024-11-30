@@ -76,4 +76,33 @@ public class MemoryFileTests
         memory.SetBreakpoint(0x1000);
         Assert.IsTrue(memory.Get32bits(0x1000).IsBreakpoint);
     }
+
+    [TestMethod]
+    public void TestStringParsingDefaultNewlines()
+    {
+        var str = File.ReadAllText("fixtures/simple.mem");
+        var memory = new MemoryFile().FromString(str);
+        var array = new Word[] { 1, 2, 3, 4, 5, 6 };
+        Assert.AreEqual(-1, memory.Compare(array));
+    }
+
+    [TestMethod]
+    public void TestStringParsingWindowsNewlines()
+    {
+        var lines = File.ReadAllLines("fixtures/simple.mem");
+        var asStr = string.Join("\r\n", lines);
+        var memory = new MemoryFile().FromString(asStr);
+        var array = new Word[] { 1, 2, 3, 4, 5, 6 };
+        Assert.AreEqual(-1, memory.Compare(array));
+    }
+
+    [TestMethod]
+    public void TestStringParsingUnixNewlines()
+    {
+        var lines = File.ReadAllLines("fixtures/simple.mem");
+        var asStr = string.Join("\n", lines);
+        var memory = new MemoryFile().FromString(asStr);
+        var array = new Word[] { 1, 2, 3, 4, 5, 6 };
+        Assert.AreEqual(-1, memory.Compare(array));
+    }
 }
