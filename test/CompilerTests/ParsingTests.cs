@@ -46,4 +46,13 @@ public class ParsingTests
 
     [TestMethod]
     public void TestOpEqualAssignments() => ParseFile("fixtures/op_equal.c");
+
+    [TestMethod]
+    public void TestForLoop() => ParseFile("fixtures/for.c");
+
+    [TestMethod]
+    public void TestForLoopAlt1() => ParseFile("fixtures/for_alt1.c");
+
+    [TestMethod]
+    public void TestForLoopAlt2() => ParseFile("fixtures/for_alt2.c");
 }

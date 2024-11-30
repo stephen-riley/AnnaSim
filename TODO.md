@@ -43,7 +43,7 @@
 - [X] add out() intrinsic
 - [X] add in() intrinsic
 - [X] postfix increment/decrement
-- [ ] for loop
+- [X] for loop
 - [ ] #include in C
 - [ ] link (really include) .mem files
 - [ ] optimize back to back sw-lw to same var (see Note 1, below)

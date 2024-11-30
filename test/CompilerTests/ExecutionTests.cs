@@ -51,4 +51,13 @@ public class ExecutionTests
 
     [TestMethod]
     public void TestInIntrinsic() => RunFile([6], "fixtures/simple_fibonacci.c", [8]);
+
+    [TestMethod]
+    public void TestNormalFor() => RunFile([6], "fixtures/for.c", ZeroToNine);
+
+    [TestMethod]
+    public void TestNormalForAlt1() => RunFile([6], "fixtures/for_alt1.c", ZeroToNine);
+
+    [TestMethod]
+    public void TestNormalForAlt2() => RunFile([6], "fixtures/for_alt2.c", ZeroToNine);
 }

@@ -69,6 +69,51 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     // This skips the EOF token in the input stream
     public override bool VisitEntrypoint([NotNull] AnnaCcParser.EntrypointContext context) => Visit(context.children[0]);
 
+    public override bool VisitFor_stat([NotNull] AnnaCcParser.For_statContext context)
+    {
+        var condLabel = GetNextLabel("fcon");
+        var exitLabel = GetNextLabel("forx");
+
+        if (context.init is not null)
+        {
+            EmitComment("for loop init");
+            VisitVar_decl(context.init);
+        }
+        else
+        {
+            EmitComment("for loop with no init");
+        }
+
+        EmitComment("for loop condition");
+        EmitLabel(condLabel);
+        VisitExpr(context.cond);
+        EmitInstruction("pop", ["rSP", "r3"]);
+        EmitInstruction("beq", ["r3", "&" + exitLabel], "exit on false");
+        EmitBlankLine();
+
+        EmitComment("block");
+        VisitBlock(context.block());
+        EmitBlankLine();
+
+        if (context.update is not null)
+        {
+            EmitComment("for loop update");
+            VisitAssign(context.update);
+        }
+        else
+        {
+            EmitComment("no for loop update given");
+        }
+
+        EmitInstruction("br", ["&" + condLabel]);
+        EmitBlankLine();
+
+        EmitComment("exit for loop");
+        EmitLabel(exitLabel);
+
+        return true;
+    }
+
     public override bool VisitWhile_stat([NotNull] AnnaCcParser.While_statContext context)
     {
         var condLabel = GetNextLabel("whcon");
