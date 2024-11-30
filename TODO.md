@@ -47,6 +47,8 @@
 - [ ] postfix increment/decrement
 - [ ] add in() intrinsic
 - [ ] optimize back to back sw-lw to same var (see Note 1, below)
+- [ ] optimize `l*i rX ...` followed by `mov rY rX` to just `l*i rY ...` (see Note 2, below)
+- [ ] don't constantly load the same value into a register if that register hasn't changed (see Note 3, below)
 
 ### Note 1
 
@@ -66,4 +68,31 @@ should simply become
 ```
 lwi     r1 &_var_b          # load address of variable "b"
 sw      r3 r1 0             # store variable "b" to data segment
+```
+
+### Note 2
+
+In this case, we should have just loaded constant `2` into `r2`.
+
+```
+lli     r3 2                # load constant 2 -> r3
+mov     r2 r3               # transfer r3 to r2
+```
+
+### Note 3
+
+In this case, we don't need to load `&_var_a` into `r1` the second and third times
+since r1 hasn't changed at all since the first assignment.  Note that any branching
+instructions in between would negate this optimization.
+
+```
+lli     r3 2                # load constant 2 -> r3
+mov     r2 r3               # transfer r3 to r2
+lwi     r1 &_var_a          # load address of variable a
+lw      r3 r1 0             # load variable "a" from data segment
+add     r3 r3 r2            # execute +=
+lwi     r1 &_var_a          # load address of variable "a"
+sw      r3 r1 0             # store variable "a" to data segment
+lwi     r1 &_var_a          # load address of variable "a"
+sw      r3 r1 0             # store variable "a" to data segment
 ```

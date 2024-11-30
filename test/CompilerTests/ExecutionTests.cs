@@ -41,4 +41,10 @@ public class ExecutionTests
 
     // [TestMethod]
     // public void TestFor() => RunFile("fixtures/for.c", ZeroToNine);
+
+    [TestMethod]
+    public void TestPostfixOperators() => RunFile("fixtures/postfix_operators.c", [2, 9]);
+
+    [TestMethod]
+    public void TestOpEqualAssignments() => RunFile("fixtures/op_equal.c", [3, 8, 15, 8]);
 }

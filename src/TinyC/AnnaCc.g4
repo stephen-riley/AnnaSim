@@ -27,8 +27,9 @@ var_decl    : simple_decl ( '=' e=expr )? ;
 simple_decl : t=type name=ID ;
 
 assign      : ID '=' expr
-            | ID '++'
-            | ID '--'
+            | ID opeq=OP_EQUAL expr
+            | ID op='++'
+            | ID op='--'
             ;
 
 func_signature
@@ -93,6 +94,8 @@ INT         : '0x' [0-9]+
             ;
 
 STRING      : '"' .*? '"' ;
+
+OP_EQUAL    : ( '+' | '-' | '*' | '/' ) '=';
 
 ID          : [a-zA-Z_][a-zA-Z0-9_]* ;
 

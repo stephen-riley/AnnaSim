@@ -7,7 +7,7 @@ public class ParsingTests
 {
     private void ParseFile(string fname)
     {
-        Compiler.TryCompile(File.ReadAllText(fname), out var asm);
+        Compiler.TryCompile(File.ReadAllText(fname), out var asm, showParseTree: true);
         Assert.IsNotNull(asm);
     }
 
@@ -39,5 +39,11 @@ public class ParsingTests
     public void TestUnaryMinusOfBinaryConstant() => Parse("int a = -0b11110000;");
 
     [TestMethod]
-    public void TestUnaryMinusOfExpression() => ParseFile("fixtures/unary_minus.c");
+    public void TestUnaryMinusOfExpression() => ParseFile("fixtures/unary.c");
+
+    [TestMethod]
+    public void TestPostfixAssignments() => ParseFile("fixtures/postfix_operators.c");
+
+    [TestMethod]
+    public void TestOpEqualAssignments() => ParseFile("fixtures/op_equal.c");
 }

@@ -308,11 +308,55 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     public override bool VisitAssign([NotNull] AnnaCcParser.AssignContext context)
     {
         var id = context.ID().GetText();
-        VisitExpr(context.expr());
-        EmitInstruction("pop", ["rSP", "r3"], "load value from stack");
-
         if (Cc.CurrentScope.TryGetByName(id, out var scopeVar))
         {
+            if (context.op is not null)
+            {
+                foreach (var (op, operands, comment) in Cc.CurrentScope.GetLoadIntructions(scopeVar.Name))
+                {
+                    EmitInstruction(op, operands, comment);
+                }
+                var val = context.op.Text switch
+                {
+                    "++" => "1",
+                    "--" => "-1",
+                    _ => throw new InvalidOperationException($"unknown postfix operator ${context.op.Text}")
+                };
+                var desc = context.op.Text == "++" ? "increment" : "decrement";
+                EmitInstruction("addi", ["r3", "r3", val], $"{desc} {id}");
+            }
+            else if (context.opeq is not null)
+            {
+                var opcode = context.opeq.Text switch
+                {
+                    "+=" => "add",
+                    "-=" => "sub",
+                    "*=" => "mul",
+                    "/=" => "div",
+                    _ => throw new InvalidOperationException($"unknown operator {context.opeq.Text}")
+                };
+
+                VisitExpr(context.expr());
+                EmitInstruction("pop", ["rSP", "r2"], $"set up r2 as rhs of {context.opeq.Text}");
+
+                foreach (var (op, operands, comment) in Cc.CurrentScope.GetLoadIntructions(scopeVar.Name))
+                {
+                    EmitInstruction(op, operands, comment);
+                }
+
+                EmitInstruction(opcode, ["r3", "r3", "r2"], $"execute {context.opeq.Text}");
+
+                foreach (var (op, operands, comment) in Cc.CurrentScope.GetStoreIntructions(scopeVar.Name))
+                {
+                    EmitInstruction(op, operands, comment);
+                }
+            }
+            else
+            {
+                VisitExpr(context.expr());
+                EmitInstruction("pop", ["rSP", "r3"], "load value from stack");
+            }
+
             foreach (var (op, operands, comment) in Cc.CurrentScope.GetStoreIntructions(scopeVar.Name))
             {
                 EmitInstruction(op, operands, comment);
