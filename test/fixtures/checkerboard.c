@@ -1,7 +1,7 @@
 int row;
 int col;
 
-char* addr = 32768;
+char* addr = 0xc000;
 
 for( int row=0; row<25; row = row+1 ) {
     if( row % 2 == 1 ) {
@@ -12,6 +12,6 @@ for( int row=0; row<25; row = row+1 ) {
 
     for( int col=0; col<40; col = col+1 ) {
         *addr = 'X';
-        addr = addr + 2;
+        addr += 2;
     }
 }

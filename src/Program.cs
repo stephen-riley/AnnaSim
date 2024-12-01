@@ -80,7 +80,7 @@ void ExecutionPipeline(AnnaSimContext opt)
 
 void Compile(AnnaSimContext opt)
 {
-    if (Compiler.TryCompile(opt.Source, out var asmSource, opt.InputFilename, optimization: opt.OptimizationLevel))
+    if (Compiler.TryCompile(opt.Source, out var asmSource, opt.InputFilename, optimization: opt.OptimizationLevel, showParseTree: opt.ShowParseTree))
     {
         opt.AsmSource = asmSource;
         opt.Source = asmSource;

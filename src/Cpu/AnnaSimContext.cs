@@ -49,6 +49,9 @@ public class AnnaSimContext
     [Value(0, MetaName = "InputFilename", HelpText = "Input filename (if not specified, uses STDIN)")]
     public string? InputFilename { get; set; }
 
+    [Option("show-parse-tree", Default = false, HelpText = "Show ANTLR parse tree information")]
+    public bool ShowParseTree { get; set; }
+
     public string Source { get; set; } = null!;
     public string? AsmSource { get; set; }
     public string? CSource { get; set; }
