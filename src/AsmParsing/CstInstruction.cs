@@ -40,6 +40,7 @@ public class CstInstruction : ICstComponent
     public InstructionDefinition Def { get; set; } = null!;
 
     private Operand[] cachedOperands = null!;
+
     public Operand[] Operands
     {
         get
@@ -206,4 +207,14 @@ public class CstInstruction : ICstComponent
 
         return string.Join(' ', operands);
     }
+
+    public static bool operator ==(CstInstruction a, CstInstruction b)
+        => a.Mnemonic == b.Mnemonic && Enumerable.SequenceEqual(a.Operands, b.Operands);
+
+    public static bool operator !=(CstInstruction a, CstInstruction b) => !(a == b);
+
+    public override bool Equals(object? a)
+        => a is not null && a.GetType() == typeof(CstInstruction) && (CstInstruction)a == this;
+
+    public override int GetHashCode() => throw new NotImplementedException();
 }

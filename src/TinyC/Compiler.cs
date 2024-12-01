@@ -79,9 +79,9 @@ public class Compiler
         {
             if (showParseTree)
             {
-                Console.WriteLine();
-                Console.WriteLine($"# parse tree: {compiler.GetStringTree()}");
-                Console.WriteLine();
+                Console.Error.WriteLine();
+                Console.Error.WriteLine($"# parse tree: {compiler.GetStringTree()}");
+                Console.Error.WriteLine();
             }
 
             var sa = SemanticAnalyzer.Evaluate(compiler.ParseTree);

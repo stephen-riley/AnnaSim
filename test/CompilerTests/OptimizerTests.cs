@@ -143,4 +143,53 @@ public class OptimizerTests
         Assert.AreEqual(0, count);
         Assert.AreEqual(2, opt.Instructions.Count);
     }
+
+    [TestMethod]
+    public void TestLoadMov()
+    {
+        // l*i  r3 2    # load constant 2 -> r3
+        // mov  r2 r3   # transfer r3 to r2
+        //  to:
+        // l*i  r2 2
+
+        var instructions = CstParser.ParseSource("""
+                    # Leading comment
+            label1: lwi r3 r2
+            label2: mov r2 r3
+                    # Trailing comment
+        """);
+
+        var opt = new Opt(instructions) { AddComments = true };
+        var count = opt.Run();
+        Assert.AreEqual(1, count);
+        Assert.AreEqual(1, opt.Instructions.Count);
+        Assert.AreEqual("r2", opt.Instructions.Peek().Operand1);
+    }
+
+    [TestMethod]
+    public void TestRedundantVarStoreLoadLwi()
+    {
+        // lwi     r1 &_var_b          # load address of variable "b"
+        // sw      r3 r1 0             # store variable "b" to data segment
+        // lwi     r1 &_var_b          # load address of variable b
+        // lw      r3 r1 0             # load variable "b" from data segment
+        //  to:
+        // lwi     r1 &_var_b          # load address of variable "b"
+        // sw      r3 r1 0             # store variable "b" to data segment
+        // # r3 still has the original value
+
+        var instructions = CstParser.ParseSource("""
+                    # Leading comment
+            lwi     r1 &_var_b          # load address of variable "b"
+            sw      r3 r1 0             # store variable "b" to data segment
+            lwi     r1 &_var_b          # load address of variable b
+            lw      r3 r1 0             # load variable "b" from data segment
+                    # Trailing comment
+        """);
+
+        var opt = new Opt(instructions) { AddComments = true };
+        var count = opt.Run();
+        Assert.AreEqual(2, count);
+        Assert.AreEqual(2, opt.Instructions.Count);
+    }
 }

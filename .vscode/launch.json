@@ -13,7 +13,7 @@
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
             "args": [
                 "-r",
-                "../test/fixtures/fibonacci_all.mem",
+                "../test/fixtures/simple_fibonacci.c",
                 "-i",
                 "6",
             ],

@@ -44,40 +44,11 @@
 - [X] add in() intrinsic
 - [X] postfix increment/decrement
 - [X] for loop
+- [X] optimize `l*i rX ...` followed by `mov rY rX` to just `l*i rY ...`
+- [X] optimize back to back sw-lw to same var
 - [ ] #include in C
 - [ ] link (really include) .mem files
-- [ ] optimize back to back sw-lw to same var (see Note 1, below)
-- [ ] optimize `l*i rX ...` followed by `mov rY rX` to just `l*i rY ...` (see Note 2, below)
 - [ ] don't constantly load the same value into a register if that register hasn't changed (see Note 3, below)
-
-### Note 1
-
-In this case, the second half (`lwi` of `&_var_b` and then the `lw`) should be
-optimized away.
-
-```
-lwi     r1 &_var_b          # load address of variable "b"
-sw      r3 r1 0             # store variable "b" to data segment
-
-lwi     r1 &_var_b          # load address of variable b
-lw      r3 r1 0             # load variable "b" from data segment
-```
-
-should simply become
-
-```
-lwi     r1 &_var_b          # load address of variable "b"
-sw      r3 r1 0             # store variable "b" to data segment
-```
-
-### Note 2
-
-In this case, we should have just loaded constant `2` into `r2`.
-
-```
-lli     r3 2                # load constant 2 -> r3
-mov     r2 r3               # transfer r3 to r2
-```
 
 ### Note 3
 

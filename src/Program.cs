@@ -35,7 +35,7 @@ catch (Exception e)
     {
         Console.Error.Write($" ({e.InnerException.Message})");
     }
-    Console.WriteLine();
+    Console.Error.WriteLine();
 }
 
 void ExecutionPipeline(AnnaSimContext opt)

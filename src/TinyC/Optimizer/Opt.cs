@@ -20,7 +20,7 @@ public class Opt
         {
             Instructions.Push(i);
         }
-        Optimizers.AddRange([OptPushPop, OptBranchToNextByLabel, OptBranchToNextByOffset, OptBackToBackJumps]);
+        Optimizers.AddRange([OptPushPop, OptBranchToNextByLabel, OptBranchToNextByOffset, OptBackToBackJumps, OptLoadMov, OptRedundantVarStoreLoadLwi]);
     }
 
     public int Run()
@@ -203,5 +203,103 @@ public class Opt
         pass.Push(prev);
         pass.Push(cur);
         return 0;
+    }
+
+    internal int OptLoadMov()
+    {
+        // l*i  r3 2    # load constant 2 -> r3
+        // mov  r2 r3   # transfer r3 to r2
+        //  to:
+        // l*i  r2 2
+
+        var cur = pass.Pop();
+        var prev = pass.Pop();
+
+        var (prevLabels, prevOpcode, prevOp1, prevOp2, _) = prev;
+        var (curLabels, curOpcode, curOp1, curOp2, _) = cur;
+
+        if (prevOpcode is Lli or Lwi && prevOp1 is not null && prevOp2 is not null)
+        {
+            if (curOpcode is Mov && curOp1 is not null)
+            {
+                if (prevOp1 == curOp2)
+                {
+                    var leadingTrivia = prev.LeadingTrivia;
+                    if (AddComments)
+                    {
+                        leadingTrivia = [.. leadingTrivia, new InlineComment { Comment = $"OPTIMIZATION: removed unnecessary mov and loaded directly to target register" }];
+                    }
+                    pass.Push(new CstInstruction
+                    {
+                        LeadingTrivia = leadingTrivia,
+                        Labels = [.. prevLabels, .. curLabels],
+                        Opcode = prevOpcode,
+                        OperandStrings = [curOp1, prevOp2],
+                        Comment = $"transfer {prevOp2} to {curOp2}",
+                        TrailingTrivia = cur.TrailingTrivia
+                    });
+                    return 1;
+                }
+            }
+        }
+
+        pass.Push(prev);
+        pass.Push(cur);
+        return 0;
+    }
+
+    internal int OptRedundantVarStoreLoadLwi()
+    {
+        // lwi     r1 &_var_b          # load address of variable "b"
+        // sw      r3 r1 0             # store variable "b" to data segment
+        // lwi     r1 &_var_b          # load address of variable b
+        // lw      r3 r1 0             # load variable "b" from data segment
+        //  to:
+        // lwi     r1 &_var_b          # load address of variable "b"
+        // sw      r3 r1 0             # store variable "b" to data segment
+        // # r3 still has the original value
+
+        if (pass.Count() < 4)
+        {
+            return 0;
+        }
+
+        var i4 = pass.Pop();
+        var i3 = pass.Pop();
+        var i2 = pass.Pop();
+        var i1 = pass.Pop();
+
+        var instrMatch = i1.Opcode == Lwi && i2.Opcode == Sw && i3.Opcode == Lwi && i4.Opcode == Lw;
+        var operandMatch = Enumerable.SequenceEqual(i1.Operands, i3.Operands) && Enumerable.SequenceEqual(i2.Operands, i4.Operands);
+        if (instrMatch && operandMatch)
+        {
+            var leadingTrivia = i1.LeadingTrivia;
+            if (AddComments)
+            {
+                leadingTrivia = [.. leadingTrivia, new InlineComment { Comment = "OPTIMIZATION: removed redundant lw" }];
+            }
+            pass.Push(new CstInstruction
+            {
+                LeadingTrivia = leadingTrivia,
+                Labels = i1.Labels,
+                Opcode = i1.Opcode,
+                OperandStrings = i1.OperandStrings,
+                Comment = i1.Comment,
+                TrailingTrivia = i1.TrailingTrivia
+            });
+            pass.Push(i2);
+            return 2;
+        }
+
+        pass.Push(i1);
+        pass.Push(i2);
+        pass.Push(i3);
+        pass.Push(i4);
+        return 0;
+    }
+
+    internal int OptRedundantVarStoreLoadLliLui()
+    {
+        throw new NotImplementedException();
     }
 }

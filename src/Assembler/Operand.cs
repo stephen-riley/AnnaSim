@@ -136,4 +136,13 @@ public class Operand
         OperandType.Label or OperandType.Register => Str,
         _ => throw new InvalidOperationException("ToString() on an Operand of type Unknown")
     };
+
+    public static bool operator ==(Operand a, Operand b) => a.ToString() == b.ToString();
+
+    public static bool operator !=(Operand a, Operand b) => !(a == b);
+
+    public override bool Equals(object? a)
+        => a is not null && a.GetType() == typeof(Operand) && (Operand)a == this;
+
+    public override int GetHashCode() => throw new NotImplementedException();
 }
