@@ -12,7 +12,7 @@ public class CompilerContext
 
     public static bool InFuncDecl { get; set; }
 
-    public bool TracingComments { get; set; } = true;
+    public bool TracingComments { get; set; } = false;
 
     public CompilerContext()
     {
