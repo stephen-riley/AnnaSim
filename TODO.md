@@ -9,6 +9,7 @@
 - ~~[ ] Prebuilt single-file executables?~~
 - [ ] add interrupt support, eg. `syscall` (add function code to `in`)
 - [ ] add `out` variant to put char to screen
+- [ ] fix order of `push` and `pop` operands (SP should be Rs1, not Rd) (breaking change!)
 
 ## Assembler
 
