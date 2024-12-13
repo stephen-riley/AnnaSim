@@ -29,6 +29,7 @@ public class ExecutionTests
         runner.Run();
 
         CollectionAssert.AreEqual(expected, runner.Outputs);
+        Assert.AreEqual(0x8000u, (uint)runner.Cpu.Registers[7]);
     }
 
     [TestMethod]
@@ -60,4 +61,7 @@ public class ExecutionTests
 
     [TestMethod]
     public void TestNormalForAlt2() => RunFile([6], "fixtures/for_alt2.c", ZeroToNine);
+
+    [TestMethod]
+    public void TestDerefOperator() => RunFile([], "fixtures/deref.c", [0x58]);
 }

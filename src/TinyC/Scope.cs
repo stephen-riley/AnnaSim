@@ -53,13 +53,13 @@ public class Scope
         }
     }
 
-    public List<(string op, string[] operands, string comment)> GetLoadIntructions(string name)
+    public List<(string op, string[] operands, string comment)> GetLoadIntructions(string name, string targetRegister = "r1")
     {
         if (IsGlobal)
         {
             return [
-                ("lwi", ["r1", $"&_var_{name}"], $"load address of variable {name}"),
-                ("lw", ["r3", "r1", "0"], $"load variable \"{name}\" from data segment")
+                ("lwi", [targetRegister, $"&_var_{name}"], $"load address of variable {name}"),
+                ("lw", ["r3", targetRegister, "0"], $"load variable \"{name}\" from data segment")
             ];
         }
         else
@@ -77,13 +77,13 @@ public class Scope
         }
     }
 
-    public List<(string op, string[] operands, string comment)> GetStoreIntructions(string name)
+    public List<(string op, string[] operands, string comment)> GetStoreIntructions(string name, string targetRegister = "r1")
     {
         if (IsGlobal)
         {
             return [
-                ("lwi", ["r1", $"&_var_{name}"], $"load address of variable \"{name}\""),
-                ("sw", ["r3", "r1", "0"], $"store variable \"{name}\" to data segment")
+                ("lwi", [targetRegister, $"&_var_{name}"], $"load address of variable \"{name}\""),
+                ("sw", ["r3", targetRegister, "0"], $"store variable \"{name}\" to data segment")
             ];
         }
         else

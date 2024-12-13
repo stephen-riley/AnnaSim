@@ -26,8 +26,8 @@ var_decl    : simple_decl ( '=' e=expr )? ;
 
 simple_decl : t=type name=ID ;
 
-assign      : ID '=' expr
-            | ID opeq=OP_EQUAL expr
+assign      : lval=lexpr '=' rhs=expr
+            | ID opeq=OP_EQUAL opexpr=expr
             | ID op='++'
             | ID op='--'
             ;
@@ -71,10 +71,10 @@ type        : 'char*'
 expr        : op='+' unary=expr
             | op='-' unary=expr
             | op='*' unary=expr
-            | lh = expr op = ( '&&' | '||' | '^' ) rh = expr
-            | lh = expr op = ( '>=' | '<=' | '>' | '<' | '==' ) rh = expr
-	          | lh = expr op = ( '*' | '/' | '%' ) rh = expr
-	          | lh = expr op = ( '+' | '-' ) rh = expr
+            | lh=expr op = ( '&&' | '||' | '^' ) rh=expr
+            | lh=expr op = ( '>=' | '<=' | '>' | '<' | '==' ) rh=expr
+	          | lh=expr op = ( '*' | '/' | '%' ) rh=expr
+	          | lh=expr op = ( '+' | '-' ) rh=expr
             | '(' inner=expr ')'
             | a=atom
             ;
@@ -84,6 +84,20 @@ atom        : func_call
             | INT
             | CHAR
             | STRING 
+            ;
+
+lexpr       : op='+' unary=lexpr
+            | op='-' unary=lexpr
+            | op='*' unary=lexpr
+	          | lh=lexpr op=( '*' | '/' | '%' ) rh=lexpr
+	          | lh=lexpr op=( '+' | '-' ) rh=lexpr
+            | '(' inner=lexpr ')'
+            | a=latom
+            ;
+
+latom       : ID
+            | INT
+            | func_call
             ;
 
 

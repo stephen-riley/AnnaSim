@@ -66,6 +66,49 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         Cc.Functions["out"] = new Scope { Name = "out", Type = "void" };
     }
 
+    internal void EmitLoadVariable(string id)
+    {
+        if (Cc.CurrentScope.TryGetByName(id, out var scopeVar))
+        {
+            foreach (var (op, operands, comment) in Cc.CurrentScope.GetLoadIntructions(scopeVar.Name))
+            {
+                EmitInstruction(op, operands, comment);
+            }
+        }
+        else
+        {
+            throw new InvalidOperationException($"can't find variable {id} in {Cc.CurrentScope}");
+        }
+    }
+
+    internal void EmitStoreVariable(string id, string targetRegister = "r1")
+    {
+        if (Cc.CurrentScope.TryGetByName(id, out var scopeVar))
+        {
+            foreach (var (op, operands, comment) in Cc.CurrentScope.GetStoreIntructions(scopeVar.Name, targetRegister))
+            {
+                EmitInstruction(op, operands, comment);
+            }
+        }
+        else
+        {
+            throw new InvalidOperationException($"can't find variable {id} in {Cc.CurrentScope}");
+        }
+    }
+
+    internal void EmitLoadVariableAddress(string id, string targetRegister = "r1")
+    {
+        if (Cc.CurrentScope.TryGetByName(id, out var scopeVar))
+        {
+            var (op, operands, _) = Cc.CurrentScope.GetLoadIntructions(scopeVar.Name, targetRegister).First();
+            EmitInstruction(op, operands, $"load addr of variable {id} for lval");
+        }
+        else
+        {
+            throw new InvalidOperationException($"can't find variable {id} in {Cc.CurrentScope}");
+        }
+    }
+
     // This skips the EOF token in the input stream
     public override bool VisitEntrypoint([NotNull] AnnaCcParser.EntrypointContext context) => Visit(context.children[0]);
 
@@ -131,7 +174,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitLabel(blockLabel);
         VisitBlock(context.block());
 
-        EmitInstruction("beq", ["r0", "&" + condLabel]);
+        // EmitInstruction("beq", ["r0", "&" + condLabel]);
+        EmitInstruction("br", ["&" + condLabel]);
         EmitBlankLine();
 
         EmitComment("exit while loop");
@@ -250,10 +294,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             VisitExpr(context.e);
             EmitInstruction("pop", ["rSP", "r3"], "load value from stack");
 
-            foreach (var (op, operands, comment) in Cc.CurrentScope.GetStoreIntructions(name))
-            {
-                EmitInstruction(op, operands, comment);
-            }
+            EmitStoreVariable(name);
 
             EmitBlankLine();
         }
@@ -357,15 +398,13 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     public override bool VisitAssign([NotNull] AnnaCcParser.AssignContext context)
     {
-        var id = context.ID().GetText();
-        if (Cc.CurrentScope.TryGetByName(id, out var scopeVar))
+        if (context.ID() is not null)
         {
+            var id = context.ID().GetText();
+
             if (context.op is not null)
             {
-                foreach (var (op, operands, comment) in Cc.CurrentScope.GetLoadIntructions(scopeVar.Name))
-                {
-                    EmitInstruction(op, operands, comment);
-                }
+                EmitLoadVariable(id);
                 var val = context.op.Text switch
                 {
                     "++" => "1",
@@ -374,6 +413,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 };
                 var desc = context.op.Text == "++" ? "increment" : "decrement";
                 EmitInstruction("addi", ["r3", "r3", val], $"{desc} {id}");
+                EmitStoreVariable(id);
             }
             else if (context.opeq is not null)
             {
@@ -386,37 +426,26 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                     _ => throw new InvalidOperationException($"unknown operator {context.opeq.Text}")
                 };
 
-                VisitExpr(context.expr());
+                VisitExpr(context.opexpr);
                 EmitInstruction("pop", ["rSP", "r2"], $"set up r2 as rhs of {context.opeq.Text}");
 
-                foreach (var (op, operands, comment) in Cc.CurrentScope.GetLoadIntructions(scopeVar.Name))
-                {
-                    EmitInstruction(op, operands, comment);
-                }
-
+                EmitLoadVariable(id);
                 EmitInstruction(opcode, ["r3", "r3", "r2"], $"execute {context.opeq.Text}");
-
-                foreach (var (op, operands, comment) in Cc.CurrentScope.GetStoreIntructions(scopeVar.Name))
-                {
-                    EmitInstruction(op, operands, comment);
-                }
+                EmitStoreVariable(id);
             }
-            else
-            {
-                VisitExpr(context.expr());
-                EmitInstruction("pop", ["rSP", "r3"], "load value from stack");
-            }
-
-            foreach (var (op, operands, comment) in Cc.CurrentScope.GetStoreIntructions(scopeVar.Name))
-            {
-                EmitInstruction(op, operands, comment);
-            }
-
-            EmitBlankLine();
         }
         else
         {
-            throw new InvalidOperationException($"can't find variable {id} in {Cc.CurrentScope}");
+            // We'll use r2 to store the lhs and r3 the rhs.  r2 will have the address
+            //  at which to store the value in r3.
+            VisitLexpr(context.lval);
+            VisitExpr(context.rhs);
+
+            EmitInstruction("pop", ["rSP", "r3"], "load lexpr rh");
+            EmitInstruction("pop", ["rSP", "r2"], "load lexpr lh");
+
+            EmitInstruction("sw", ["r3", "r2", "0"], "assign r3 to lval r2");
+            EmitBlankLine();
         }
 
         return true;
@@ -424,14 +453,18 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     public override bool VisitExpr([NotNull] AnnaCcParser.ExprContext context)
     {
+        // EmitComment($"ENTERING {nameof(VisitExpr)}");
+
         if (context.unary is not null)
         {
             if (context.op.Text == "*")
             {
-                throw new InvalidOperationException($"unary operator {context.op.Text} not yet supported");
+                VisitExpr(context.unary);
+                EmitInstruction("pop", ["rSP", "r3"], "loading address to deref");
+                EmitInstruction("lw", ["r3", "r3", "0"], "deref r3");
+                EmitInstruction("push", ["rSP", "r3"], "store derefed value");
             }
-
-            if (context.unary.Start.Type == AnnaCcLexer.INT)
+            else if (context.unary.Start.Type == AnnaCcLexer.INT)
             {
                 var strValue = context.unary.GetText();
                 var intValue = (int)AnnaMachine.ParseMachineInputs([strValue]).First();
@@ -439,9 +472,9 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 var opcode = (signedValue is >= -128 and <= 127) ? "lli" : "lwi";
                 if (context.op.Text == "-")
                 {
-                    EmitInstruction(opcode, ["r3", signedValue.ToString()], $"load constant {signedValue} -> r3");
+                    EmitInstruction(opcode, ["r3", signedValue.ToString()], $"load constant r3={signedValue}");
                 }
-                EmitInstruction(opcode, ["r3", strValue], $"load constant {strValue} -> r3");
+                EmitInstruction(opcode, ["r3", strValue], $"load constant r3={strValue}");
                 EmitInstruction("push", ["rSP", "r3"]);
             }
             else
@@ -533,6 +566,10 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 EmitInstruction("pop", ["rSP", "r3"], $"pop arg1 (lhs) for op \"{op}\"");
                 EmitInstruction(instr, ["r3", "r3", "r2"], $"perform \"{op}\" on r2, r3");
             }
+            else
+            {
+                EmitComment($"why are we here? {nameof(VisitExpr)}");
+            }
 
             EmitInstruction("push", ["rSP", "r3"], $"push result of \"{context.GetText()}\"");
             EmitBlankLine();
@@ -543,55 +580,148 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     public override bool VisitAtom([NotNull] AnnaCcParser.AtomContext context)
     {
+        // EmitComment($"ENTERING {nameof(VisitAtom)}");
+
         if (context.func_call() is not null)
+        {
+            VisitFunc_call(context.func_call());
+        }
+        else if (context.INT() is not null)
+        {
+            var strValue = context.INT().GetText();
+            var value = (int)AnnaMachine.ParseMachineInputs([strValue]).First();
+            if (value is >= -128 and <= 127)
+            {
+                // save an instruction if it's an 8-bit value
+                EmitInstruction("lli", ["r3", strValue], $"load constant r3={strValue}");
+            }
+            else
+            {
+                EmitInstruction("lwi", ["r3", strValue], $"load constant r3={strValue}");
+            }
+            EmitInstruction("push", ["rSP", "r3"], "push result");
+        }
+        else if (context.CHAR() is not null)
+        {
+            var strValue = context.CHAR().GetText();
+            var value = (byte)strValue[1];
+            EmitInstruction("lli", ["r3", $"{value}"], $"load constant '{strValue[1]}'");
+            EmitInstruction("push", ["rSP", "r3"], "push result");
+        }
+        else if (context.ID() is not null)
+        {
+            var id = context.ID().GetText();
+
+            EmitLoadVariable(id);
+            EmitInstruction("push", ["rSP", "r3"], "push result");
+        }
+        else if (context.STRING() is not null)
+        {
+            var strLabel = GetInternedStringLabel(context.STRING().GetText()[1..^1]);
+            EmitInstruction("lwi", ["r3", $"&{strLabel}"]);
+            EmitInstruction("push", ["rSP", "r3"], "push result");
+        }
+        else
+        {
+            EmitComment($"why are we here? {nameof(VisitAtom)}");
+        }
+
+        // EmitInstruction("push", ["rSP", "r3"], "push result");
+        EmitBlankLine();
+
+        return true;
+    }
+
+    public override bool VisitLexpr([NotNull] AnnaCcParser.LexprContext context)
+    {
+        // EmitComment($"ENTERING {nameof(VisitLexpr)}");
+
+        if (context.inner is not null)
+        {
+            return VisitLexpr(context.inner);
+        }
+        else if (context.unary is not null)
+        {
+            var op = context.op.Text;
+            VisitLexpr(context.unary);
+
+            if (op == "+")
+            {
+                EmitComment($"redundant unary + ignored in expression {context.GetText()} [optimizer can remove]");
+            }
+            else if (op == "-")
+            {
+                EmitInstruction("pop", ["rSP", "r3"], "pop value to invert it");
+                EmitInstruction("sub", ["r3", "r0", "r3"], "invert r3");
+                EmitInstruction("push", ["rSP", "r3"], "push inverted value onto stack");
+            }
+            else if (op == "*")
+            {
+                EmitComment("*** VisitLexpr() deref");
+                EmitHeaderComment("pre-deref");
+                VisitLexpr(context.unary);
+                EmitHeaderComment("post-deref");
+            }
+            else
+            {
+                throw new InvalidOperationException($"unknown unary operator {context.op.Text}");
+            }
+        }
+        else if (context.a is not null)
+        {
+            VisitLatom(context.a);
+        }
+        else if (context.op is not null)
+        {
+            // We'll use r2 to store the lhs and r3 the rhs.  r2 will have the address
+            //  at which to store the value in r3.
+            VisitLexpr(context.lh);
+            VisitLexpr(context.rh);
+
+            EmitInstruction("pop", ["rSP", "r3"], "load lexpr rh");
+            EmitInstruction("pop", ["rSP", "r2"], "load lexpr lh");
+
+            EmitInstruction("sw", ["r3", "r2", "0"], "store r3 to lval");
+        }
+
+        return true;
+    }
+
+    public override bool VisitLatom([NotNull] AnnaCcParser.LatomContext context)
+    {
+        // EmitComment($"ENTERING {nameof(VisitLatom)}");
+
+        if (context.INT() is not null)
+        {
+            var strValue = context.INT().GetText();
+            var value = (int)AnnaMachine.ParseMachineInputs([strValue]).First();
+            if (value is >= -128 and <= 127)
+            {
+                // save an instruction if it's an 8-bit value
+                EmitInstruction("lli", ["r3", strValue], $"load constant r3={strValue}");
+            }
+            else
+            {
+                EmitInstruction("lwi", ["r3", strValue], $"load constant r3={strValue}");
+            }
+        }
+        else if (context.ID() is not null)
+        {
+            var id = context.ID().GetText();
+
+            EmitLoadVariableAddress(id, "r3");
+        }
+        else if (context.func_call() is not null)
         {
             VisitFunc_call(context.func_call());
         }
         else
         {
-            if (context.INT() is not null)
-            {
-                var strValue = context.INT().GetText();
-                var value = (int)AnnaMachine.ParseMachineInputs([strValue]).First();
-                if (value is >= -128 and <= 127)
-                {
-                    // save an instruction if it's an 8-bit value
-                    EmitInstruction("lli", ["r3", strValue], $"load constant {strValue} -> r3");
-                }
-                else
-                {
-                    EmitInstruction("lwi", ["r3", strValue], $"load constant {strValue} -> r3");
-                }
-            }
-            else if (context.ID() is not null)
-            {
-                var id = context.ID().GetText();
-
-                if (Cc.CurrentScope.TryGetByName(id, out var scopeVar))
-                {
-                    foreach (var (op, operands, comment) in Cc.CurrentScope.GetLoadIntructions(scopeVar.Name))
-                    {
-                        EmitInstruction(op, operands, comment);
-                    }
-                }
-                else
-                {
-                    throw new InvalidOperationException($"can't find variable {id} in {Cc.CurrentScope}");
-                }
-            }
-            else if (context.STRING() is not null)
-            {
-                var strLabel = GetInternedStringLabel(context.STRING().GetText()[1..^1]);
-                EmitInstruction("lwi", ["r3", $"&{strLabel}"]);
-            }
-            else if (context.func_call() is not null)
-            {
-                VisitFunc_call(context.func_call());
-            }
-
-            EmitInstruction("push", ["rSP", "r3"], "push result");
-            EmitBlankLine();
+            EmitComment($"why are we here? {nameof(VisitLatom)}");
         }
+
+        EmitInstruction("push", ["rSP", "r3"], "push result");
+        EmitBlankLine();
 
         return true;
     }

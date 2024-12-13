@@ -52,6 +52,9 @@ public class AnnaSimContext
     [Option("show-parse-tree", Default = false, HelpText = "Show ANTLR parse tree information")]
     public bool ShowParseTree { get; set; }
 
+    [Option("dump-asm", HelpText = "Return assembly, not memory image, when compiling C")]
+    public bool DumpAsm { get; set; }
+
     public string Source { get; set; } = null!;
     public string? AsmSource { get; set; }
     public string? CSource { get; set; }

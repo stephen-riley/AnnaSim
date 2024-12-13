@@ -74,7 +74,14 @@ void ExecutionPipeline(AnnaSimContext opt)
     }
     else
     {
-        opt.CstProgram.MemoryImage?.WriteMemFile("-");
+        if (opt.DumpAsm)
+        {
+            WriteOutputString("-", opt.AsmSource ?? "");
+        }
+        else
+        {
+            opt.CstProgram.MemoryImage?.WriteMemFile("-");
+        }
     }
 }
 
@@ -148,4 +155,29 @@ string ReadInputFile(AnnaSimContext opt)
     {
         throw new InvalidOperationException("Must specify an input file or redirect STDIN (did you mean to say --help?)");
     }
+}
+
+void WriteOutputString(string path, string s)
+{
+    StreamWriter sw;
+    var cachedConsoleOut = Console.Out;
+
+    if (path == "-")
+    {
+        sw = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
+        Console.SetOut(sw);
+    }
+    else
+    {
+        sw = new(path) { AutoFlush = true };
+    }
+
+    sw.WriteLine(s);
+
+    if (path == "-")
+    {
+        Console.SetOut(cachedConsoleOut);
+    }
+
+    sw.Dispose();
 }

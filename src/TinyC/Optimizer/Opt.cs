@@ -212,6 +212,9 @@ public class Opt
         //  to:
         // l*i  r2 2
 
+        // NOTE: this optimization will screw up the main prolog where
+        //  rSP and rFP are set up, so skip those.
+
         var cur = pass.Pop();
         var prev = pass.Pop();
 
@@ -222,7 +225,7 @@ public class Opt
         {
             if (curOpcode is Mov && curOp1 is not null)
             {
-                if (prevOp1 == curOp2)
+                if (prevOp1 == curOp2 && prevOp1 != "rSP")
                 {
                     var leadingTrivia = prev.LeadingTrivia;
                     if (AddComments)

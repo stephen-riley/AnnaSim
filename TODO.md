@@ -7,7 +7,7 @@
 - [ ] ~~switch to $ for hex?~~ just remove 0x in advanced debugger
 - [ ] build annalib.asm
 - ~~[ ] Prebuilt single-file executables?~~
-- [ ] add interrupt support (add function code to `in`)
+- [ ] add interrupt support, eg. `syscall` (add function code to `in`)
 - [ ] add `out` variant to put char to screen
 
 ## Assembler
@@ -46,8 +46,12 @@
 - [X] for loop
 - [X] optimize `l*i rX ...` followed by `mov rY rX` to just `l*i rY ...`
 - [X] optimize back to back sw-lw to same var
+- [ ] add deref operator
+- [ ] add array support
 - [ ] #include in C
 - [ ] link (really include) .mem files
+- [ ] put C code line numbers in asm (new directive?)
+- [ ] put the line of code from C into asm comments
 - [ ] don't constantly load the same value into a register if that register hasn't changed (see Note 3, below)
 
 ### Note 3
