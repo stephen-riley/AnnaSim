@@ -4,6 +4,7 @@ using Antlr4.Runtime.Misc;
 using AnnaSim.TinyC.Antlr;
 using AnnaSim.TinyC.Scheduler;
 using AnnaSim.Cpu;
+using System.Runtime.CompilerServices;
 
 namespace AnnaSim.TinyC;
 
@@ -16,6 +17,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     public CompilerContext Cc { get; internal set; } = new();
 
     private readonly Dictionary<string, int> labels = [];
+
+    private static string CurrentMethodName([CallerMemberName] string methodName = null!) => methodName;
 
     public Emitter(CompilerContext cc) : base()
     {
@@ -453,7 +456,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     public override bool VisitExpr([NotNull] AnnaCcParser.ExprContext context)
     {
-        // EmitComment($"ENTERING {nameof(VisitExpr)}");
+        EmitComment(Cc.TracingComments ? $"ENTERING {CurrentMethodName()}: «{context.GetText()}»" : "");
 
         if (context.unary is not null)
         {
@@ -580,7 +583,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     public override bool VisitAtom([NotNull] AnnaCcParser.AtomContext context)
     {
-        // EmitComment($"ENTERING {nameof(VisitAtom)}");
+        EmitComment(Cc.TracingComments ? $"ENTERING {CurrentMethodName()}: «{context.GetText()}»" : "");
 
         if (context.func_call() is not null)
         {
@@ -634,7 +637,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     public override bool VisitLexpr([NotNull] AnnaCcParser.LexprContext context)
     {
-        // EmitComment($"ENTERING {nameof(VisitLexpr)}");
+        EmitComment(Cc.TracingComments ? $"ENTERING {CurrentMethodName()}: «{context.GetText()}»" : "");
 
         if (context.inner is not null)
         {
@@ -657,15 +660,16 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             }
             else if (op == "*")
             {
-                EmitComment("*** VisitLexpr() deref");
-                EmitHeaderComment("pre-deref");
-                VisitLexpr(context.unary);
-                EmitHeaderComment("post-deref");
+                EmitInstruction("pop", ["rSP", "r3"], "pop value to deref it");
+                EmitInstruction("lw", ["r3", "r3", "0"], "deref r3");
+                EmitInstruction("push", ["rSP", "r3"], "push derefed value onto stack");
             }
             else
             {
                 throw new InvalidOperationException($"unknown unary operator {context.op.Text}");
             }
+
+            EmitBlankLine();
         }
         else if (context.a is not null)
         {
@@ -689,7 +693,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     public override bool VisitLatom([NotNull] AnnaCcParser.LatomContext context)
     {
-        // EmitComment($"ENTERING {nameof(VisitLatom)}");
+        EmitComment(Cc.TracingComments ? $"ENTERING {CurrentMethodName()}: «{context.GetText()}»" : "");
 
         if (context.INT() is not null)
         {

@@ -83,7 +83,7 @@ public class Scope
         {
             return [
                 ("lwi", [targetRegister, $"&_var_{name}"], $"load address of variable \"{name}\""),
-                ("sw", ["r3", targetRegister, "0"], $"store variable \"{name}\" to data segment")
+                ("sw", ["r3", targetRegister, "0"], $"write r3 to variable \"{name}\" in data segment")
             ];
         }
         else
@@ -91,7 +91,7 @@ public class Scope
             if (TryGetByName(name, out var varInfo))
             {
                 var offsetDisplay = varInfo.Offset >= 0 ? $"+{varInfo.Offset}" : varInfo.Offset.ToString();
-                return [("sw", ["r3", "rFP", varInfo.Offset.ToString()], $"store \"{name}\" to FP{offsetDisplay}")];
+                return [("sw", ["r3", "rFP", varInfo.Offset.ToString()], $"write \"{name}\" to FP{offsetDisplay}")];
             }
             else
             {

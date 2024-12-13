@@ -12,6 +12,8 @@ public class CompilerContext
 
     public static bool InFuncDecl { get; set; }
 
+    public bool TracingComments { get; set; } = true;
+
     public CompilerContext()
     {
         CurrentScope = GlobalScope;

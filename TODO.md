@@ -4,7 +4,7 @@
 
 - [X] ...or dotnet tool?
 - [X] add URL to reference docs in --help
-- [ ] ~~switch to $ for hex?~~ just remove 0x in advanced debugger
+- ~~[ ] switch to $ for hex?~~ just remove 0x in advanced debugger
 - [ ] build annalib.asm
 - ~~[ ] Prebuilt single-file executables?~~
 - [ ] add interrupt support, eg. `syscall` (add function code to `in`)
@@ -46,7 +46,7 @@
 - [X] for loop
 - [X] optimize `l*i rX ...` followed by `mov rY rX` to just `l*i rY ...`
 - [X] optimize back to back sw-lw to same var
-- [ ] add deref operator
+- [X] add deref operator
 - [ ] add array support
 - [ ] #include in C
 - [ ] link (really include) .mem files

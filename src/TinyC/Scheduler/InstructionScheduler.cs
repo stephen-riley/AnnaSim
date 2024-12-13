@@ -14,7 +14,13 @@ public class InstructionScheduler
 
     public void BlankLine() => Schedule(new BlankLine());
 
-    public void InlineComment(string comment) => Schedule(new InlineComment { Comment = comment });
+    public void InlineComment(string comment)
+    {
+        if (!string.IsNullOrWhiteSpace(comment))
+        {
+            Schedule(new InlineComment { Comment = comment });
+        }
+    }
 
     public void HeaderComment(string comment) => Schedule(new HeaderComment { Comment = comment });
 
