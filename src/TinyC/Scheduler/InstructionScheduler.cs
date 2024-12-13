@@ -37,26 +37,39 @@ public class InstructionScheduler
 
         // Console.WriteLine($"got {piece.GetType().Name}; top is {Instructions.Peek().GetType().Name}, IsDefined={Instructions.Peek().IsDefined}");
 
-        if (Instructions.Peek().IsDefined == true && piece is BlankLine)
+        var peeked = Instructions.Peek();
+
+        if (peeked.IsDefined == true && piece is BlankLine)
         {
-            Instructions.Peek().TrailingTrivia.Add(piece);
+            if (peeked.TrailingTrivia.Any())
+            {
+                // we don't want multiple blank lines in a row
+                if (peeked.TrailingTrivia.Last().GetType() != typeof(BlankLine))
+                {
+                    peeked.TrailingTrivia.Add(piece);
+                }
+            }
+            else
+            {
+                peeked.TrailingTrivia.Add(piece);
+            }
         }
-        else if (Instructions.Peek().IsDefined)
+        else if (peeked.IsDefined)
         {
             Instructions.Push(new CstInstruction());
             Schedule(piece);
         }
         else if (piece is CstInstruction si)
         {
-            Instructions.Peek().CopyInstructionDataFrom(si);
+            peeked.CopyInstructionDataFrom(si);
         }
         else if (piece is LabelComponent l)
         {
-            Instructions.Peek().Labels.Add(l.Label);
+            peeked.Labels.Add(l.Label);
         }
         else
         {
-            Instructions.Peek().LeadingTrivia.Add(piece);
+            peeked.LeadingTrivia.Add(piece);
         }
     }
 

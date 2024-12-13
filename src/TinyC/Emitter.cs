@@ -115,6 +115,12 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     // This skips the EOF token in the input stream
     public override bool VisitEntrypoint([NotNull] AnnaCcParser.EntrypointContext context) => Visit(context.children[0]);
 
+    public override bool VisitStat([NotNull] AnnaCcParser.StatContext context)
+    {
+        EmitHeaderComment($".line {context.Start.Line}: {context.GetText()}");
+        return base.VisitStat(context);
+    }
+
     public override bool VisitFor_stat([NotNull] AnnaCcParser.For_statContext context)
     {
         var condLabel = GetNextLabel("fcon");
