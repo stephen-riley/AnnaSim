@@ -47,12 +47,12 @@
 - [X] optimize `l*i rX ...` followed by `mov rY rX` to just `l*i rY ...`
 - [X] optimize back to back sw-lw to same var
 - [X] add deref operator
+- [X] put C code line numbers in asm (new directive?)
+- [X] put the line of code from C into asm comments (not pretty, but it's there)
 - [ ] add array support
 - [ ] #include in C
 - [ ] link (really include) .mem files
-- [ ] put C code line numbers in asm (new directive?)
-- [ ] put the line of code from C into asm comments
-- [ ] don't constantly load the same value into a register if that register hasn't changed (see Note 3, below)
+- ~~[ ] don't constantly load the same value into a register if that register hasn't changed (see Note 3, below)~~ Better handle this when ported to a 3AC optimizer
 
 ### Note 3
 
