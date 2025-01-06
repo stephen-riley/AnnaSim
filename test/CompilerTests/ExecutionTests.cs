@@ -40,7 +40,7 @@ public class ExecutionTests
         Assert.AreEqual(0x8000u, (uint)runner.Cpu.Registers[7]);
     }
 
-    private void RunForException(List<Word> inputs, string src, string errorFragment)
+    private static void RunForException(List<Word> inputs, string src, string errorFragment)
     {
         try
         {

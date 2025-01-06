@@ -80,7 +80,7 @@ public class SemanticAnalyzer : AnnaCcBaseVisitor<bool>
             arrayDeclaredSize = int.Parse(context.simple_decl().size.Text);
         }
 
-        if (context.a is not null)
+        if (context.a is not null && context.a.sz is null && context.a.fn is null)
         {
             Cc.CurrentScope.UpdateVar(scopeVar with { DefaultValue = context.a.GetText() });
         }

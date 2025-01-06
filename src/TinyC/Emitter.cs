@@ -298,13 +298,19 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         var name = context.simple_decl().name.Text;
 
-        if (context.e is not null)
+        if (context.a is not null || context.e is not null)
         {
-            VisitExpr(context.e);
+            if (context.e is not null)
+            {
+                VisitExpr(context.e);
+            }
+            else if (context.a is not null)
+            {
+                VisitAtom(context.a);
+            }
+
             EmitInstruction("pop", ["rSP", "r3"], "load value from stack");
-
             EmitStoreVariable(name);
-
             EmitBlankLine();
         }
 

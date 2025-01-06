@@ -86,7 +86,7 @@ array_literal
             ;
 
 atom        : sz=sizeof_atom
-            | func_call
+            | fn=func_call
             | ID
             | INT
             | CHAR

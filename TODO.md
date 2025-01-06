@@ -24,6 +24,7 @@
 - [X] test frame pointer activation -- sometimes it's not recognizing the frame region
 - [X] allow labels on their own line
 - [ ] .include directive
+- [ ] Turn `.line` comments into an actual directive
 
 ## Debugger
 
