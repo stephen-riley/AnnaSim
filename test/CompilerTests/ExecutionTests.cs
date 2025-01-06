@@ -122,12 +122,8 @@ public class ExecutionTests
     public void TestArrayElementAssignmentComplex() => RunFile([], "fixtures/array_element_assignment_complex.c", [314, 3]);
 
     [TestMethod]
-    public void TestScalarGlobalInitialization()
-    {
-        var asm = Compile(File.ReadAllText("fixtures/global_var_init_scalar.c"));
-        foreach (var line in asm)
-        {
+    public void TestAllInitialization() => RunFile([], "fixtures/all_initialization.c", [12, 'b', 'e', 3]);
 
-        }
-    }
+    [TestMethod]
+    public void TestScalarGlobalInitialization() => RunFile([], "fixtures/global_var_init_scalar.c", [5]);
 }

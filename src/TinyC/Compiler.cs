@@ -80,9 +80,9 @@ public class Compiler
         {
             if (showParseTree)
             {
-                var prettyTree = compiler.GetStringTree().ToPrettyParseTree();
+                // var prettyTree = compiler.GetStringTree().ToPrettyParseTree();
                 Console.Error.WriteLine();
-                Console.Error.WriteLine($"# parse tree: {prettyTree}");
+                Console.Error.WriteLine($"# parse tree: {compiler.GetStringTree()}");
                 Console.Error.WriteLine();
             }
 

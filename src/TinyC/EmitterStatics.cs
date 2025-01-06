@@ -113,18 +113,29 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         foreach (var v in e.Cc.GlobalScope.Vars.Values)
         {
             string[] operands = ["0"];
+            var mnemonic = ".fill";
+
             if (v.DefaultValue is not null)
             {
                 if (v.DefaultValue.Contains('{'))
                 {
                     operands = v.DefaultValue.Replace("{", "").Replace("}", "").Replace(" ", "").Split(',');
                 }
+                else if (v.DefaultValue.StartsWith('\'') && v.DefaultValue.EndsWith('\'') && v.DefaultValue.Length == 3)
+                {
+                    operands = ["0x" + ((int)v.DefaultValue[1]).ToString("x2")];
+                }
+                else if (v.DefaultValue.StartsWith('"') && v.DefaultValue.EndsWith('"'))
+                {
+                    operands = [v.DefaultValue];
+                    mnemonic = ".cstr";
+                }
                 else
                 {
                     operands = [v.DefaultValue];
                 }
             }
-            EmitInstruction(label: $"_var_{v.Name}", op: ".fill", operands: operands, $"global variable {v.Name}");
+            EmitInstruction(label: $"_var_{v.Name}", op: mnemonic, operands: operands, $"global variable {v.Name}");
         }
     }
 
