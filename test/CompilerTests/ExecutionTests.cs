@@ -15,7 +15,7 @@ public class ExecutionTests
 
     private static string[] Compile(string src)
     {
-        Compiler.TryCompile(src, out var asm, optimization: 0);
+        Compiler.TryCompile(src, out var asm, optimization: 2, showParseTree: true);
         if (asm is null)
         {
             throw new NullReferenceException($"ExecutionTests.RunFile() returned no assembly source");
@@ -114,6 +114,12 @@ public class ExecutionTests
 
     [TestMethod]
     public void TestArraySimpleAccess() => RunFile([], "fixtures/array_simple_access.c", [3]);
+
+    [TestMethod]
+    public void TestArrayElementAssignment() => RunFile([], "fixtures/array_element_assignment.c", [314, 3]);
+
+    [TestMethod]
+    public void TestArrayElementAssignmentComplex() => RunFile([], "fixtures/array_element_assignment_complex.c", [314, 3]);
 
     [TestMethod]
     public void TestScalarGlobalInitialization()

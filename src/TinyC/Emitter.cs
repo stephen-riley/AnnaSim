@@ -771,6 +771,15 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
             EmitInstruction("sw", ["r3", "r2", "0"], "store r3 to lval");
         }
+        else if (context.arryderef is not null)
+        {
+            VisitLexpr(context.arryderef);
+            VisitExpr(context.index);
+            EmitInstruction("pop", ["rSP", "r3"], "load offset for array access");
+            EmitInstruction("pop", ["rSP", "r2"], "load base addr for array access");
+            EmitInstruction("add", ["r3", "r2", "r3"], "calculate address of element");
+            EmitInstruction("push", ["rSP", "r3"], "push element");
+        }
 
         return true;
     }

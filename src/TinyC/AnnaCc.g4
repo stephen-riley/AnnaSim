@@ -101,6 +101,7 @@ lexpr       : op='+' unary=lexpr
 	          | lh=lexpr op=( '*' | '/' | '%' ) rh=lexpr
 	          | lh=lexpr op=( '+' | '-' ) rh=lexpr
             | '(' inner=lexpr ')'
+            | arryderef=lexpr '[' index=expr ']'
             | a=latom
             ;
 
