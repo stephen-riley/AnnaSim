@@ -78,21 +78,21 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     private void EmitStackFrameComments(Scope scope)
     {
-        var argList = string.Join(", ", scope.Args.Select(a => $"{a.Type} {a.Name}"));
+        var argList = string.Join(", ", scope.Args.Values.Select(a => $"{a.Type} {a.Name}"));
         EmitHeaderComment($"function `{scope.Type} {scope.Name}({argList})`");
 
         var frameDef = scope.Name;
-        foreach (var a in scope.Args)
+        foreach (var a in scope.Args.Values)
         {
             frameDef += $"|{a.Offset}~{a.Name}";
         }
         frameDef += "|0~prev FP|-1~ret addr";
-        foreach (var v in scope.Vars)
+        foreach (var v in scope.Vars.Values)
         {
             frameDef += $"|{v.Offset}~{v.Name}";
         }
 
-        foreach (var a in scope.Args)
+        foreach (var a in scope.Args.Values)
         {
             EmitHeaderComment($" FP+{a.Offset}  {a.Name}");
         }
@@ -100,7 +100,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitHeaderComment(" FP+0  previous FP");
         EmitHeaderComment(" FP-1  return addr");
 
-        foreach (var v in scope.Vars)
+        foreach (var v in scope.Vars.Values)
         {
             EmitHeaderComment($" FP{v.Offset}  {v.Name}");
         }
@@ -110,9 +110,21 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
     private void EmitGlobalVars(Emitter e)
     {
-        foreach (var v in e.Cc.GlobalScope.Vars)
+        foreach (var v in e.Cc.GlobalScope.Vars.Values)
         {
-            EmitInstruction(label: $"_var_{v.Name}", op: ".fill", operands: ["0"], $"global variable {v.Name}");
+            string[] operands = ["0"];
+            if (v.DefaultValue is not null)
+            {
+                if (v.DefaultValue.Contains('{'))
+                {
+                    operands = v.DefaultValue.Replace("{", "").Replace("}", "").Replace(" ", "").Split(',');
+                }
+                else
+                {
+                    operands = [v.DefaultValue];
+                }
+            }
+            EmitInstruction(label: $"_var_{v.Name}", op: ".fill", operands: operands, $"global variable {v.Name}");
         }
     }
 

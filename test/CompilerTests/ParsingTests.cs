@@ -55,4 +55,31 @@ public class ParsingTests
 
     [TestMethod]
     public void TestForLoopAlt2() => ParseFile("fixtures/for_alt2.c");
+
+    [TestMethod]
+    public void TestStaticArrayAccess() => ParseFile("fixtures/static_array_access.c");
+
+    [TestMethod]
+    public void TestArrayDecl() => ParseFile("fixtures/array_decl.c");
+
+    [TestMethod]
+    public void TestLiteralArrayDecl() => ParseFile("fixtures/literal_array_decl.c");
+
+    [TestMethod]
+    public void TestLiteralArrayDeclNoSize() => ParseFile("fixtures/literal_array_decl2.c");
+
+    [TestMethod]
+    public void TestSizeofScalar() => ParseFile("fixtures/sizeof_scalar.c");
+
+    [TestMethod]
+    public void TestSizeofArray() => ParseFile("fixtures/sizeof_array.c");
+
+    [TestMethod]
+    public void TestSizeofType() => ParseFile("fixtures/sizeof_type.c");
+
+    [TestMethod]
+    public void TestLoopOnSizeofArray() => ParseFile("fixtures/literal_array_loop.c");
+
+    [TestMethod]
+    public void TestArraySimpleAccess() => ParseFile("fixtures/array_simple_access.c");
 }

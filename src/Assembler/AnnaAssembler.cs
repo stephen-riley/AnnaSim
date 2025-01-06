@@ -41,12 +41,7 @@ public partial class AnnaAssembler
         Program = Assemble(src);
     }
 
-    public CstProgram Assemble(string src)
-    {
-        var program = Assemble(src.Split(["\r\n", "\r", "\n"], StringSplitOptions.None));
-        program.MemoryImage = MemoryImage;
-        return program;
-    }
+    public CstProgram Assemble(string src) => Assemble(src.Split(["\r\n", "\r", "\n"], StringSplitOptions.None));
 
     public CstProgram Assemble(IEnumerable<string> lines)
     {
@@ -93,7 +88,7 @@ public partial class AnnaAssembler
             });
         }
 
-        return new CstProgram(instructions, FrameDefs.Values);
+        return new CstProgram(instructions, FrameDefs.Values) { MemoryImage = MemoryImage };
     }
 
     internal void ResolveLabels(IEnumerable<CstInstruction> instructions)

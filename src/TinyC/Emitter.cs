@@ -466,13 +466,28 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         if (context.unary is not null)
         {
-            if (context.op.Text == "*")
+            // array deref
+            if (context.index is not null)
+            {
+                // get the base address, push it onto the stack
+                VisitExpr(context.unary);
+                // calculate the offset, push it onto the stack
+                VisitExpr(context.index);
+                EmitInstruction("pop", ["rSP", "r2"], "load array offset into r2");
+                EmitInstruction("pop", ["rSP", "r3"], "load array base into r3");
+                EmitInstruction("add", ["r3", "r2", "r3"], "calculate address of array offset");
+                EmitInstruction("lw", ["r3", "r3", "0"], "load contents of array at offset");
+                EmitInstruction("push", ["rSP", "r3"], "push contents");
+            }
+            // deref operator
+            else if (context.op.Text == "*")
             {
                 VisitExpr(context.unary);
                 EmitInstruction("pop", ["rSP", "r3"], "loading address to deref");
                 EmitInstruction("lw", ["r3", "r3", "0"], "deref r3");
                 EmitInstruction("push", ["rSP", "r3"], "store derefed value");
             }
+            // optimization for int literals
             else if (context.unary.Start.Type == AnnaCcLexer.INT)
             {
                 var strValue = context.unary.GetText();
@@ -486,6 +501,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 EmitInstruction(opcode, ["r3", strValue], $"load constant r3={strValue}");
                 EmitInstruction("push", ["rSP", "r3"]);
             }
+            // unary +/- on expression
             else
             {
                 VisitExpr(context.unary);
@@ -513,6 +529,16 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         {
             VisitAtom(context.a);
         }
+        else if (context.arryderef is not null)
+        {
+            VisitLexpr(context.arryderef);
+            VisitExpr(context.index);
+            EmitInstruction("pop", ["rSP", "r3"], "load offset for array access");
+            EmitInstruction("pop", ["rSP", "r2"], "load base addr for array access");
+            EmitInstruction("add", ["r3", "r2", "r3"], "calculate address of element");
+            EmitInstruction("lw", ["r3", "r3", "0"], "load array element");
+            EmitInstruction("push", ["rSP", "r3"], "push element");
+        }
         else
         {
             // It's a binary expression.  By the end of this, r3 contians the lhs,
@@ -526,9 +552,20 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 EmitInstruction("lwi", ["r2", context.rh.GetText()], "directly load rhs constant");
                 constRhs = true;
             }
-            else
+            // If the rhs is just a constant int, then load it into r2
+            else if (context.rh?.a?.sz is not null)
+            {
+                // EmitComment("OPTMIZATION: don't push rhs constant onto stack");
+                EmitSizeofAtom(context.rh.a.sz, "r2");
+                constRhs = true;
+            }
+            else if (context.rh is not null)
             {
                 VisitExpr(context.rh);
+            }
+            else
+            {
+                throw new InvalidOperationException("unknown alternative for rule expr");
             }
 
             VisitExpr(context.lh);
@@ -587,11 +624,52 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         return true;
     }
 
+    public override bool VisitSizeof_atom([NotNull] AnnaCcParser.Sizeof_atomContext context)
+    {
+        EmitSizeofAtom(context);
+        EmitInstruction("push", ["rSP", "r3"], $"push {context.GetText()}");
+        return true;
+    }
+
+    private bool EmitSizeofAtom([NotNull] AnnaCcParser.Sizeof_atomContext context, string destRegister = "r3")
+    {
+        if (context.id is not null)
+        {
+            if (Cc.CurrentScope.TryGetByName(context.id.Text, out var scopeVar))
+            {
+                var size = 1;
+                if (scopeVar.Type.Contains('['))
+                {
+                    size = int.Parse(scopeVar.Type.Split('[', ']')[1]);
+                }
+
+                EmitInstruction("lli", [destRegister, size.ToString()], $"load {context.GetText()}");
+            }
+            else
+            {
+                throw new InvalidOperationException($"can't find variable {context.id.Text}");
+            }
+        }
+        else if (context.t is not null)
+        {
+            EmitInstruction("lli", [destRegister, "1"], $"load {context.GetText()}");
+        }
+        else
+        {
+            throw new InvalidOperationException($"don't know how to get {context.GetText()}");
+        }
+        return true;
+    }
+
     public override bool VisitAtom([NotNull] AnnaCcParser.AtomContext context)
     {
         EmitComment(Cc.TracingComments ? $"ENTERING {CurrentMethodName()}: «{context.GetText()}»" : "");
 
-        if (context.func_call() is not null)
+        if (context.sz is not null)
+        {
+            VisitSizeof_atom(context.sz);
+        }
+        else if (context.func_call() is not null)
         {
             VisitFunc_call(context.func_call());
         }

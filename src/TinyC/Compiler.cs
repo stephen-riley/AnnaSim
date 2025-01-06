@@ -1,6 +1,7 @@
 using AnnaSim.TinyC.Antlr;
 using Antlr4.Runtime;
 using AnnaSim.TinyC.Errors;
+using AnnaSim.TinyC.Extensions;
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
 
@@ -79,8 +80,9 @@ public class Compiler
         {
             if (showParseTree)
             {
+                var prettyTree = compiler.GetStringTree().ToPrettyParseTree();
                 Console.Error.WriteLine();
-                Console.Error.WriteLine($"# parse tree: {compiler.GetStringTree()}");
+                Console.Error.WriteLine($"# parse tree: {prettyTree}");
                 Console.Error.WriteLine();
             }
 

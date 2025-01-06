@@ -53,7 +53,7 @@
 - [ ] add array support
 - [ ] #include in C
 - [ ] link (really include) .mem files
-- ~~[ ] don't constantly load the same value into a register if that register hasn't changed (see Note 3, below)~~ Better handle this when ported to a 3AC optimizer
+- ~~[ ] don't constantly load the same value into a register if that register hasn't changed (see Note 3, below)~~ Better handle this when ported to an SSA optimizer
 
 ### Note 3
 

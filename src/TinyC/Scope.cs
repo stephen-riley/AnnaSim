@@ -11,8 +11,8 @@ public class Scope
     public BlockContext? Body { get; set; }
     public bool HasBody { get => Body is not null; }
 
-    public List<Var> Args { get; } = [];
-    public List<Var> Vars { get; } = [];
+    public Dictionary<string, Var> Args { get; } = [];
+    public Dictionary<string, Var> Vars { get; } = [];
 
     public int FrameSize
     {
@@ -22,21 +22,16 @@ public class Scope
 
     public override string ToString() => $"{(IsGlobal ? "global" : "function")} scope {(IsGlobal ? "" : Name)}";
 
-    public void AddVar(string name, string type) => Vars.Add(new Var(name, type, -(Vars.Count + 2)));
+    public void AddVar(string name, string type) => Vars.Add(name, new Var(name, type, -(Vars.Count + 2)));
 
-    public void AddArg(string name, string type) => Args.Add(new Var(name, type, Args.Count + 1));
+    public void UpdateVar(Var v) => Vars[v.Name] = v;
+
+    public void AddArg(string name, string type) => Args.Add(name, new Var(name, type, Args.Count + 1));
+
+    public void UpdateArg(Var v) => Args[v.Name] = v;
 
     public Var? GetByName(string name)
-    {
-        var a = Args.Where(a => a.Name == name).FirstOrDefault();
-        if (a != null)
-        {
-            return a;
-        }
-        var v = Vars.Where(a => a.Name == name).FirstOrDefault();
-
-        return v;
-    }
+        => Args.GetValueOrDefault(name) ?? Vars.GetValueOrDefault(name);
 
     public bool TryGetByName(string name, [NotNullWhen(true)] out Var? scopeVar)
     {
@@ -102,8 +97,8 @@ public class Scope
     }
 
     // done in the Antlr style when calling .GetText() on a rule (no spaces)
-    public string VarsString => string.Join(",", Vars.Select(v => $"{v.Type}{v.Name}"));
-    public string ArgsString => string.Join(",", Args.Select(v => $"{v.Type}{v.Name}"));
+    public string VarsString => string.Join(",", Vars.Values.Select(v => $"{v.Type}{v.Name}"));
+    public string ArgsString => string.Join(",", Args.Values.Select(v => $"{v.Type}{v.Name}"));
 
-    public record Var(string Name, string Type, int Offset);
+    public record Var(string Name, string Type, int Offset, string? DefaultValue = null);
 }

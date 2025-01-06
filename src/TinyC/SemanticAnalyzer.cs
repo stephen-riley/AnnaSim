@@ -37,6 +37,17 @@ public class SemanticAnalyzer : AnnaCcBaseVisitor<bool>
     // This skips the EOF token in the input stream
     public override bool VisitEntrypoint([NotNull] AnnaCcParser.EntrypointContext context) => Visit(context.children[0]);
 
+    private static string FullSimpleDeclType(AnnaCcParser.Simple_declContext context)
+    {
+        var baseType = context.type().GetText();
+        if (context.arry is not null)
+        {
+            var size = context.size is not null ? context.size.Text : "";
+            baseType += $"[{size}]";
+        }
+        return baseType;
+    }
+
     public override bool VisitSimple_decl([NotNull] AnnaCcParser.Simple_declContext context)
     {
         var name = context.name.Text;
@@ -48,7 +59,50 @@ public class SemanticAnalyzer : AnnaCcBaseVisitor<bool>
         }
         else
         {
-            Cc.CurrentScope.AddVar(name, type);
+            var declType = FullSimpleDeclType(context);
+            Cc.CurrentScope.AddVar(name, declType);
+        }
+
+        return true;
+    }
+
+    public override bool VisitVar_decl([NotNull] AnnaCcParser.Var_declContext context)
+    {
+        VisitSimple_decl(context.simple_decl());
+        var varName = context.simple_decl().name.Text;
+
+        var scopeVar = Cc.CurrentScope.GetByName(varName) ?? throw new InvalidOperationException($"cannot find variable {varName}");
+
+        var arrayDeclaredSize = -1;
+
+        if (context.simple_decl().size is not null)
+        {
+            arrayDeclaredSize = int.Parse(context.simple_decl().size.Text);
+        }
+
+        if (context.a is not null)
+        {
+            Cc.CurrentScope.UpdateVar(scopeVar with { DefaultValue = context.a.GetText() });
+        }
+        if (context.e is not null)
+        {
+            VisitExpr(context.e);
+        }
+        else if (context.al is not null)
+        {
+            VisitArray_literal(context.al);
+            Cc.CurrentScope.UpdateVar(scopeVar with { DefaultValue = context.al.GetText() });
+            var elementCount = context.al.GetText().Split(',').Length;
+            if (arrayDeclaredSize == -1)
+            {
+                // update the scope var entry with the array literal's size
+                var newType = scopeVar.Type.Replace("[]", $"[{elementCount}]");
+                Cc.CurrentScope.UpdateVar(scopeVar with { Type = newType, DefaultValue = context.al.GetText() });
+            }
+            else if (elementCount != arrayDeclaredSize)
+            {
+                throw new InvalidOperationException($"declared array size {context.GetText()} does not match element count in array literal {context.al.GetText()}");
+            }
         }
 
         return true;

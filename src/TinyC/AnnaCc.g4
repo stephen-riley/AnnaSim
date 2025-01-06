@@ -22,9 +22,10 @@ flow_ctl    : if_stat
 
 block       : '{' stat* '}' ;
 
-var_decl    : simple_decl ( '=' e=expr )? ;
+var_decl    : simple_decl ( '=' ( a=atom | e=expr | al=array_literal ) )?
+            ;
 
-simple_decl : t=type name=ID ;
+simple_decl : t=type name=ID ( arry='[' ( size=INT )? ']' )? ;
 
 assign      : lval=lexpr '=' rhs=expr
             | ID opeq=OP_EQUAL opexpr=expr
@@ -68,23 +69,31 @@ type        : 'char*'
             | 'void'
             ;
 
-expr        : op='+' unary=expr
-            | op='-' unary=expr
-            | op='*' unary=expr
+expr        : op='+' unary=expr   // unary +
+            | op='-' unary=expr   // unary -
+            | op='*' unary=expr   // deref operator
             | lh=expr op = ( '&&' | '||' | '^' ) rh=expr
             | lh=expr op = ( '>=' | '<=' | '>' | '<' | '==' ) rh=expr
 	          | lh=expr op = ( '*' | '/' | '%' ) rh=expr
 	          | lh=expr op = ( '+' | '-' ) rh=expr
             | '(' inner=expr ')'
+            | arryderef=lexpr '[' index=expr ']'
             | a=atom
             ;
 
-atom        : func_call
+array_literal
+            : '{' aa+=atom  ( ',' aa+=atom )* '}'
+            ;
+
+atom        : sz=sizeof_atom
+            | func_call
             | ID
             | INT
             | CHAR
             | STRING 
             ;
+
+sizeof_atom : SIZEOF '(' ( id=ID | t=type ) ')' ;
 
 lexpr       : op='+' unary=lexpr
             | op='-' unary=lexpr
@@ -107,6 +116,8 @@ INT         : '0x' [0-9a-fA-F]+
             | '0b' [0-1]+
             | [0-9]+
             ;
+
+SIZEOF      : 'sizeof' ;
 
 CHAR        : '\'' . '\'' ;
 
