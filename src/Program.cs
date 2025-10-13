@@ -130,7 +130,7 @@ void Assemble(AnnaSimContext opt)
 
 void Run(AnnaSimContext opt)
 {
-    var runner = new Runner(opt.CstProgram, opt.Inputs.ToArray(), trace: opt.Trace) { MaxCycles = opt.MaxCycles };
+    var runner = new Runner(opt.CstProgram, [.. opt.Inputs], trace: opt.Trace) { MaxCycles = opt.MaxCycles };
     runner.Run(opt.DumpScreen);
 }
 

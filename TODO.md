@@ -4,13 +4,13 @@
 
 - [X] ...or dotnet tool?
 - [X] add URL to reference docs in --help
-- ~~[ ] switch to $ for hex?~~ just remove 0x in advanced debugger
-- [ ] build annalib.asm
-- ~~[ ] Prebuilt single-file executables?~~
-- [ ] add interrupt support, eg. `syscall` (add function code to `in`)
-- [ ] add `out` variant to put char to screen (function code 011)
+- [X] add `out` variant to put char to screen (function code 011)
 - [X] fix order of `push` and `pop` operands (SP should be Rs1, not Rd) (breaking change!)
+- [ ] add interrupt support, eg. `syscall` (add function code to `in`)
 - [ ] for I8-type instructions, collapse duals (eg. `lui` and `lli`, `bge` and `blt`) into one opcode and use bit 8 to differentiate (opens up a bunch of opcodes)
+- [ ] build annalib.asm
+- ~~[ ] switch to $ for hex?~~ just remove 0x in advanced debugger
+- ~~[ ] Prebuilt single-file executables?~~
 
 ## Assembler
 

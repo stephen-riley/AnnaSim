@@ -278,4 +278,36 @@ public class RTypeInstructionExecutionTests
 
         Assert.IsTrue(Enumerable.SequenceEqual(testStrs, queue));
     }
+
+    [TestMethod]
+    public void TestOutputCharStringInstruction()
+    {
+        var tests = new Dictionary<uint, char>
+        {
+            [10] = 'h',
+            [20] = 'e',
+            [30] = 'l',
+            [40] = 'l',
+            [50] = 'o',
+        };
+
+        var queue = new Queue<char>();
+
+        var cpu = new AnnaMachine
+        {
+            OutputCharCallback = queue.Enqueue
+        };
+
+        tests.ForEach(kvp => cpu.Memory.Initialize(kvp.Key, kvp.Value));
+
+        var idef = ISA.Lookup["outc"];
+        foreach (var (addr, _) in tests)
+        {
+            cpu.Registers[1] = addr;
+            var instruction = idef.ToInstruction(rd: 1);
+            idef.Execute(cpu, instruction);
+        }
+
+        Assert.IsTrue(Enumerable.SequenceEqual(tests.Values, queue));
+    }
 }

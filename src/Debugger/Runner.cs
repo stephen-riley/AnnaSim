@@ -28,6 +28,7 @@ public class Runner
         Cpu = new AnnaMachine(program, origInputs)
         {
             OutputCallback = Outputs.Add,
+            OutputCharCallback = (c) => outputString = c.ToString(),
             OutputStringCallback = (s) => outputString = s,
             PreInstructionExecutionCallback = () => outputString = null,
             PostInstructionExecutionCallback = () =>

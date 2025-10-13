@@ -7,6 +7,7 @@ using AnnaSim.Extensions;
 using AnnaSim.Instructions;
 
 namespace AnnaSim.Cpu;
+
 public class AnnaMachine
 {
     public Queue<Word> Inputs { get; internal set; } = [];
@@ -14,6 +15,7 @@ public class AnnaMachine
     public CstProgram Program { get; internal set; }
     public RegisterFile Registers { get; internal set; } = new();
     public Action<Word> OutputCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
+    public Action<char> OutputCharCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
     public Action<string> OutputStringCallback { get; set; } = (w) => Console.WriteLine($"out: {w}");
     public Action? PreInstructionExecutionCallback { get; set; }
     public Action? PostInstructionExecutionCallback { get; set; }

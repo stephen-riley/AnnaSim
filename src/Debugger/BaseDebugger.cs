@@ -41,7 +41,8 @@ public abstract class BaseDebugger
                 Outputs.Add(w);
                 TerminalWriteLine($"out: {w}");
             },
-            OutputStringCallback = TerminalWrite
+            OutputStringCallback = TerminalWrite,
+            OutputCharCallback = TerminalWrite,
         };
     }
 
@@ -364,6 +365,8 @@ public abstract class BaseDebugger
     }
 
     protected abstract void TerminalWrite(string s);
+
+    protected abstract void TerminalWrite(char c);
 
     protected void TerminalWrite() => TerminalWrite("");
 

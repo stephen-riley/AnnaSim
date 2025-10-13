@@ -12,10 +12,8 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
             "args": [
-                "../test/fixtures/deref.c",
+                "../test/fixtures/output_cstr_by_char.asm",
                 "--dump-asm",
-                "-g",
-                "0",
                 "-r"
             ],
             "cwd": "${workspaceFolder}/src",

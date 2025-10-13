@@ -25,6 +25,8 @@ public class ConsoleDebugger : BaseDebugger
 
     protected override void TerminalWrite(string s) => Console.WriteLine(s);
 
+    protected override void TerminalWrite(char c) => Console.Write(c);
+
     // protected override string ReadDebuggerCommand() => Console.ReadLine() ?? "";
 
     protected override string ReadDebuggerCommand()

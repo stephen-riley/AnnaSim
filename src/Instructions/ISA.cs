@@ -32,7 +32,7 @@ public static class ISA
         var defs = Lookup.Values.Where(id => id.Opcode == opcode).ToList();
         if (defs.Count > 1)
         {
-            defs = defs.Where(id => id.MathOp == (MathOperation)mathOp).ToList();
+            defs = [.. defs.Where(id => id.MathOp == (MathOperation)mathOp)];
         }
 
         if (defs.Count == 0)

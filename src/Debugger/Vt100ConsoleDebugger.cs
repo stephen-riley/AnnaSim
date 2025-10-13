@@ -239,6 +239,8 @@ public class Vt100ConsoleDebugger : BaseDebugger
 
     protected override void TerminalWrite(string s) => terminalBuffer.Add(s);
 
+    protected override void TerminalWrite(char c) => terminalBuffer.Add(c.ToString());
+
     private static void ConsoleClearEol()
     {
         var (col, row) = Console.GetCursorPosition();

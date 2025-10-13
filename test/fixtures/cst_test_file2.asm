@@ -37,14 +37,14 @@
 
               lwi     r1 &_var_i          # load address of variable i
               lw      r3 r1 0             # load variable "i" from data segment
-              outn   r3                  # print int at r3
+              outn   r3                   # print int at r3
 
               lwi     r3 &_cstr001        
               outs    r3                  # print string at r3
 
               lwi     r1 &_var_res        # load address of variable res
               lw      r3 r1 0             # load variable "res" from data segment
-              outn   r3                  # print int at r3
+              outn   r3                   # print int at r3
 
               lwi     r1 &__nl            # load addr of newline
               outs    r1                  # print newline
@@ -52,7 +52,7 @@
               lwi     r1 &__nl            # load addr of newline
               outs    r1                  # print newline
 
-              halt                       # end program
+              halt                        # end program
 
 # start of functions
 
