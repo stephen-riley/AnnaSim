@@ -1,8 +1,6 @@
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Exceptions;
 using AnnaSim.Assembler;
-using AnnaSim.Instructions;
-using AnnaSim.AsmParsing;
 
 namespace AnnaSim.Test.AssemblerTests;
 
@@ -236,7 +234,7 @@ public class AssemblerInternalsTests
     {
         var src = """
                 br      &dest       # at 0
-                push    r7 r0       # at 1 and 2
+                push    r0 r7       # at 1 and 2
                 lwi     r4 0x1234   # at 3 and 4
                 addi    r4 r0 -1    # at 5
         dest:   .halt               # at 6

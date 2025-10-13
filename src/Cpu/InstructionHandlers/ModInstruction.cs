@@ -1,6 +1,3 @@
-using AnnaSim.Cpu;
-using AnnaSim.Cpu.Memory;
-
 namespace AnnaSim.Instructions.Definitions;
 
 public partial class ModInstruction

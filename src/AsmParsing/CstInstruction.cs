@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using AnnaSim.Assembler;
 using AnnaSim.Cpu.Memory;
 using AnnaSim.Extensions;

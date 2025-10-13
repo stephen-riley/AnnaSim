@@ -1,7 +1,6 @@
 using AnnaSim.TinyC.Antlr;
 using Antlr4.Runtime;
 using AnnaSim.TinyC.Errors;
-using AnnaSim.TinyC.Extensions;
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
 

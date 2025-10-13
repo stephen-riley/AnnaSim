@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using AnnaSim.Extensions;
 
 namespace AnnaSim.TinyC.Extensions;
 
