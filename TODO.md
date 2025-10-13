@@ -8,8 +8,9 @@
 - [ ] build annalib.asm
 - ~~[ ] Prebuilt single-file executables?~~
 - [ ] add interrupt support, eg. `syscall` (add function code to `in`)
-- [ ] add `out` variant to put char to screen
-- [ ] fix order of `push` and `pop` operands (SP should be Rs1, not Rd) (breaking change!)
+- [ ] add `out` variant to put char to screen (function code 011)
+- [X] fix order of `push` and `pop` operands (SP should be Rs1, not Rd) (breaking change!)
+- [ ] for I8-type instructions, collapse duals (eg. `lui` and `lli`, `bge` and `blt`) into one opcode and use bit 8 to differentiate (opens up a bunch of opcodes)
 
 ## Assembler
 
@@ -51,7 +52,8 @@
 - [X] add deref operator
 - [X] put C code line numbers in asm (new directive?)
 - [X] put the line of code from C into asm comments (not pretty, but it's there)
-- [ ] add array support
+- [X] add array support
+- [ ] string literals are being put in assembly twice
 - [ ] #include in C
 - [ ] link (really include) .mem files
 - ~~[ ] don't constantly load the same value into a register if that register hasn't changed (see Note 3, below)~~ Better handle this when ported to an SSA optimizer

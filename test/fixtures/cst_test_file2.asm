@@ -24,7 +24,7 @@
 
               lwi     r1 &_var_i          # load address of variable i
               lw      r3 r1 0             # load variable "i" from data segment
-              push    r7 r3               # push result
+              push    r3 r7               # push result
 
               lwi     r1 &fib             # load address of "fib" -> r1
               jalr    r1 r5               # call function "fib"
@@ -62,9 +62,9 @@
 #  FP-1  return addr
 #  FP-2  res
 
-fib:          push    r7 r6               # cache FP
+fib:          push    r6 r7               # cache FP
               addi    r6 r7 1             # set up new FP
-              push    r7 r5               # push return address
+              push    r5 r7               # push return address
               addi    r7 r7 -1            # create space for stack frame
 
 fib_body:     lwi     r3 &_cstr002        
@@ -110,21 +110,21 @@ ifx01:
 ifb02:        lwi     r2 1                
               lw      r3 r6 1             # load "n" from FP+1
               sub     r3 r3 r2            # perform "-" on r2, r3
-              push    r7 r3               # push result of "n-1"
+              push    r3 r7               # push result of "n-1"
 
               lwi     r1 &fib             # load address of "fib" -> r1
               jalr    r1 r5               # call function "fib"
-              push    r7 r4               # push fib(...)'s result
+              push    r4 r7               # push fib(...)'s result
 
               lwi     r2 2                
               lw      r3 r6 1             # load "n" from FP+1
               sub     r3 r3 r2            # perform "-" on r2, r3
-              push    r7 r3               # push result of "n-2"
+              push    r3 r7               # push result of "n-2"
 
               lwi     r1 &fib             # load address of "fib" -> r1
               jalr    r1 r5               # call function "fib"
               mov     r2 r4               # transfer r4 to r2
-              pop     r7 r3               # pop arg1 (lhs) for op "+"
+              pop     r3 r7               # pop arg1 (lhs) for op "+"
               add     r3 r3 r2            # perform "+" on r2, r3
               sw      r3 r6 -2            # store "res" to FP-2
 

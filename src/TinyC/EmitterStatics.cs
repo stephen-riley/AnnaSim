@@ -50,9 +50,9 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             EmitLabel(name);
             // TODO: put SP and return address onto the stack using sw's,
             //  and then bump SP 2 + #locals
-            EmitInstruction("push", ["rSP", "rFP"], "cache FP");
+            EmitInstruction("push", ["rFP", "rSP"], "cache FP");
             EmitInstruction("addi", ["rFP", "rSP", "1"], "set up new FP");
-            EmitInstruction("push", ["rSP", "r5"], "push return address");
+            EmitInstruction("push", ["r5", "rSP"], "push return address");
 
             if (scope.Vars.Count > 0)
             {

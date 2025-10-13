@@ -10,13 +10,13 @@ public class PseudoOpTests
     public void TestPushPseudoOpAssemble()
     {
         var src = """
-            push    r7 r1
+            push    r1 r7
         """.Split('\n');
 
         var asm = new AnnaAssembler();
         asm.Assemble(src);
 
-        // sw r7 r1 0
+        // sw r1 r7 0
         Assert.AreEqual(0b0111_001_111_000000, asm.MemoryImage[0]);
 
         // addi r7 r7 -1
@@ -27,7 +27,7 @@ public class PseudoOpTests
     public void TestPopPseudoOpAssemble()
     {
         var src = """
-            pop    r7 r1
+            pop    r1 r7
         """.Split('\n');
 
         var asm = new AnnaAssembler();
@@ -36,7 +36,7 @@ public class PseudoOpTests
         // addi r7 r7 1
         Assert.AreEqual(0b0100_111_111_000001, asm.MemoryImage[0]);
 
-        // sw r7 r1 0
+        // sw r1 r7 0
         Assert.AreEqual(0b0110_001_111_000000, asm.MemoryImage[1]);
     }
 
@@ -124,18 +124,18 @@ public class PseudoOpTests
             lli     r1 1
             lli     r2 8
 
-            push    r7 r0       # 0x8000: 0
-            push    r7 r0       # 0x7fff: 0
-            push    r7 r2       # 0x7ffe: 8
-            push    r7 r1       # 0x7ffd: 1
-            push    r7 r0       # 0x7ffc: 0
-            push    r7 r1       # 0x7ffb: 1
+            push    r0 r7       # 0x8000: 0
+            push    r0 r7       # 0x7fff: 0
+            push    r2 r7       # 0x7ffe: 8
+            push    r1 r7       # 0x7ffd: 1
+            push    r0 r7       # 0x7ffc: 0
+            push    r1 r7       # 0x7ffb: 1
 
             out     r7          # should be 0x7ffa
 
             lwi     r1 0
 
-            push    r7 r1       # 0x7ffa should be 0
+            push    r1 r7       # 0x7ffa should be 0
             out     r7          # should be 0x7ff9
 
             lw      r3 r7 +1

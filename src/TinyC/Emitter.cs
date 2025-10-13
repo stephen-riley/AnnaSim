@@ -139,7 +139,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitComment("for loop condition");
         EmitLabel(condLabel);
         VisitExpr(context.cond);
-        EmitInstruction("pop", ["rSP", "r3"]);
+        EmitInstruction("pop", ["r3", "rSP"]);
         EmitInstruction("beq", ["r3", "&" + exitLabel], "exit on false");
         EmitBlankLine();
 
@@ -175,7 +175,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitComment("begin while loop condition");
         EmitLabel(condLabel);
         VisitExpr(context.expr());
-        EmitInstruction("pop", ["rSP", "r3"]);
+        EmitInstruction("pop", ["r3", "rSP"]);
         EmitInstruction("beq", ["r3", "&" + exitLabel], "exit on false");
         EmitBlankLine();
 
@@ -206,7 +206,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         EmitComment("do-while loop condition");
         EmitLabel(condLabel);
         VisitExpr(context.expr());
-        EmitInstruction("pop", ["rSP", "r3"]);
+        EmitInstruction("pop", ["r3", "rSP"]);
         EmitInstruction("beq", ["r3", "&" + exitLabel], "exit on false");
         EmitBlankLine();
 
@@ -236,7 +236,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         // handle if block
         EmitComment($"{start} test condition");
         VisitExpr(context.ifx);
-        EmitInstruction("pop", ["rSP", "r2"]);
+        EmitInstruction("pop", ["r2", "rSP"]);
 
         if (degenerateIf)
         {
@@ -264,7 +264,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 EmitComment($"{oldNextLabel} elseif condition");
                 EmitLabel(oldNextLabel);
                 VisitExpr(context._elseifx[i]);
-                EmitInstruction("pop", ["rSP", "r3"]);
+                EmitInstruction("pop", ["r3", "rSP"]);
                 EmitInstruction("beq", ["r3", "&" + next], "condition failed, goto next condition");
                 EmitComment($"{oldNextLabel} block");
                 EmitLabel(GetNextLabel("ifb"));
@@ -309,7 +309,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 VisitAtom(context.a);
             }
 
-            EmitInstruction("pop", ["rSP", "r3"], "load value from stack");
+            EmitInstruction("pop", ["r3", "rSP"], "load value from stack");
             EmitStoreVariable(name);
             EmitBlankLine();
         }
@@ -320,7 +320,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     public override bool VisitReturn_stat([NotNull] AnnaCcParser.Return_statContext context)
     {
         VisitExpr(context.expr());
-        EmitInstruction("pop", ["rSP", "r4"], "load function result -> r4");
+        EmitInstruction("pop", ["r4", "rSP"], "load function result -> r4");
         EmitInstruction("beq", ["r0", $"&{Cc.CurrentScope.Name}_exit"], "return (jump to func exit)");
 
         return true;
@@ -335,26 +335,26 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         {
             case "in":
                 EmitInstruction("in", ["r3"]);
-                EmitInstruction("push", ["rSP", "r3"], "push input onto stack");
+                EmitInstruction("push", ["r3", "rSP"], "push input onto stack");
                 return true;
 
             case "out":
                 VisitExpr(args[0]);
-                EmitInstruction("pop", ["rSP", "r3"], "pop value for output");
+                EmitInstruction("pop", ["r3", "rSP"], "pop value for output");
                 EmitInstruction("out", ["r3"], "output r3");
                 EmitBlankLine();
                 return true;
 
             case "print":
                 VisitExpr(args[0]);
-                EmitInstruction("pop", ["rSP", "r3"], "pop value for output");
+                EmitInstruction("pop", ["r3", "rSP"], "pop value for output");
                 EmitInstruction("outs", ["r3"], "print string at r3");
                 EmitBlankLine();
                 return true;
 
             case "printn":
                 VisitExpr(args[0]);
-                EmitInstruction("pop", ["rSP", "r3"], "pop value for output");
+                EmitInstruction("pop", ["r3", "rSP"], "pop value for output");
                 EmitInstruction("outn", ["r3"], "print int at r3");
                 EmitBlankLine();
                 return true;
@@ -397,7 +397,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
 
         if (Cc.Functions[funcName].Type != "void")
         {
-            EmitInstruction("push", ["rSP", "r4"], $"push {funcName}(...)'s result");
+            EmitInstruction("push", ["r4", "rSP"], $"push {funcName}(...)'s result");
         }
 
         EmitBlankLine();
@@ -442,7 +442,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 };
 
                 VisitExpr(context.opexpr);
-                EmitInstruction("pop", ["rSP", "r2"], $"set up r2 as rhs of {context.opeq.Text}");
+                EmitInstruction("pop", ["r2", "rSP"], $"set up r2 as rhs of {context.opeq.Text}");
 
                 EmitLoadVariable(id);
                 EmitInstruction(opcode, ["r3", "r3", "r2"], $"execute {context.opeq.Text}");
@@ -456,8 +456,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             VisitLexpr(context.lval);
             VisitExpr(context.rhs);
 
-            EmitInstruction("pop", ["rSP", "r3"], "load lexpr rh");
-            EmitInstruction("pop", ["rSP", "r2"], "load lexpr lh");
+            EmitInstruction("pop", ["r3", "rSP"], "load lexpr rh");
+            EmitInstruction("pop", ["r2", "rSP"], "load lexpr lh");
 
             EmitInstruction("sw", ["r3", "r2", "0"], "assign r3 to lval r2");
             EmitBlankLine();
@@ -479,19 +479,19 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 VisitExpr(context.unary);
                 // calculate the offset, push it onto the stack
                 VisitExpr(context.index);
-                EmitInstruction("pop", ["rSP", "r2"], "load array offset into r2");
-                EmitInstruction("pop", ["rSP", "r3"], "load array base into r3");
+                EmitInstruction("pop", ["r2", "rSP"], "load array offset into r2");
+                EmitInstruction("pop", ["r3", "rSP"], "load array base into r3");
                 EmitInstruction("add", ["r3", "r2", "r3"], "calculate address of array offset");
                 EmitInstruction("lw", ["r3", "r3", "0"], "load contents of array at offset");
-                EmitInstruction("push", ["rSP", "r3"], "push contents");
+                EmitInstruction("push", ["r3", "rSP"], "push contents");
             }
             // deref operator
             else if (context.op.Text == "*")
             {
                 VisitExpr(context.unary);
-                EmitInstruction("pop", ["rSP", "r3"], "loading address to deref");
+                EmitInstruction("pop", ["r3", "rSP"], "loading address to deref");
                 EmitInstruction("lw", ["r3", "r3", "0"], "deref r3");
-                EmitInstruction("push", ["rSP", "r3"], "store derefed value");
+                EmitInstruction("push", ["r3", "rSP"], "store derefed value");
             }
             // optimization for int literals
             else if (context.unary.Start.Type == AnnaCcLexer.INT)
@@ -505,7 +505,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                     EmitInstruction(opcode, ["r3", signedValue.ToString()], $"load constant r3={signedValue}");
                 }
                 EmitInstruction(opcode, ["r3", strValue], $"load constant r3={strValue}");
-                EmitInstruction("push", ["rSP", "r3"]);
+                EmitInstruction("push", ["r3", "rSP"]);
             }
             // unary +/- on expression
             else
@@ -517,9 +517,9 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 }
                 else if (context.op.Text == "-")
                 {
-                    EmitInstruction("pop", ["rSP", "r3"], "pop value to invert it");
+                    EmitInstruction("pop", ["r3", "rSP"], "pop value to invert it");
                     EmitInstruction("sub", ["r3", "r0", "r3"], "invert r3");
-                    EmitInstruction("push", ["rSP", "r3"], "push inverted value onto stack");
+                    EmitInstruction("push", ["r3", "rSP"], "push inverted value onto stack");
                 }
                 else
                 {
@@ -539,11 +539,11 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         {
             VisitLexpr(context.arryderef);
             VisitExpr(context.index);
-            EmitInstruction("pop", ["rSP", "r3"], "load offset for array access");
-            EmitInstruction("pop", ["rSP", "r2"], "load base addr for array access");
+            EmitInstruction("pop", ["r3", "rSP"], "load offset for array access");
+            EmitInstruction("pop", ["r2", "rSP"], "load base addr for array access");
             EmitInstruction("add", ["r3", "r2", "r3"], "calculate address of element");
             EmitInstruction("lw", ["r3", "r3", "0"], "load array element");
-            EmitInstruction("push", ["rSP", "r3"], "push element");
+            EmitInstruction("push", ["r3", "rSP"], "push element");
         }
         else
         {
@@ -600,9 +600,9 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             {
                 if (!constRhs)
                 {
-                    EmitInstruction("pop", ["rSP", "r2"], $"pop arg2 for op \"{op}\"");
+                    EmitInstruction("pop", ["r2", "rSP"], $"pop arg2 for op \"{op}\"");
                 }
-                EmitInstruction("pop", ["rSP", "r3"], $"pop arg1 for op \"{op}\"");
+                EmitInstruction("pop", ["r3", "rSP"], $"pop arg1 for op \"{op}\"");
                 EmitInstruction("sub", ["r2", "r3", "r2"], "compare r2 and r3");
                 EmitInstruction("lli", ["r3", "1"], "assume true preemptively");
                 EmitInstruction(instr, ["r2", "1"], $"jump past the next instruction if \"{op}\" is true");
@@ -613,9 +613,9 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 // TODO: fold constants if both sides are constant
                 if (!constRhs)
                 {
-                    EmitInstruction("pop", ["rSP", "r2"], $"pop arg2 for op \"{op}\"");
+                    EmitInstruction("pop", ["r2", "rSP"], $"pop arg2 for op \"{op}\"");
                 }
-                EmitInstruction("pop", ["rSP", "r3"], $"pop arg1 (lhs) for op \"{op}\"");
+                EmitInstruction("pop", ["r3", "rSP"], $"pop arg1 (lhs) for op \"{op}\"");
                 EmitInstruction(instr, ["r3", "r3", "r2"], $"perform \"{op}\" on r2, r3");
             }
             else
@@ -623,7 +623,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
                 EmitComment($"why are we here? {nameof(VisitExpr)}");
             }
 
-            EmitInstruction("push", ["rSP", "r3"], $"push result of \"{context.GetText()}\"");
+            EmitInstruction("push", ["r3", "rSP"], $"push result of \"{context.GetText()}\"");
             EmitBlankLine();
         }
 
@@ -633,7 +633,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
     public override bool VisitSizeof_atom([NotNull] AnnaCcParser.Sizeof_atomContext context)
     {
         EmitSizeofAtom(context);
-        EmitInstruction("push", ["rSP", "r3"], $"push {context.GetText()}");
+        EmitInstruction("push", ["r3", "rSP"], $"push {context.GetText()}");
         return true;
     }
 
@@ -692,34 +692,34 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             {
                 EmitInstruction("lwi", ["r3", strValue], $"load constant r3={strValue}");
             }
-            EmitInstruction("push", ["rSP", "r3"], "push result");
+            EmitInstruction("push", ["r3", "rSP"], "push result");
         }
         else if (context.CHAR() is not null)
         {
             var strValue = context.CHAR().GetText();
             var value = (byte)strValue[1];
             EmitInstruction("lli", ["r3", $"{value}"], $"load constant '{strValue[1]}'");
-            EmitInstruction("push", ["rSP", "r3"], "push result");
+            EmitInstruction("push", ["r3", "rSP"], "push result");
         }
         else if (context.ID() is not null)
         {
             var id = context.ID().GetText();
 
             EmitLoadVariable(id);
-            EmitInstruction("push", ["rSP", "r3"], "push result");
+            EmitInstruction("push", ["r3", "rSP"], "push result");
         }
         else if (context.STRING() is not null)
         {
             var strLabel = GetInternedStringLabel(context.STRING().GetText()[1..^1]);
             EmitInstruction("lwi", ["r3", $"&{strLabel}"]);
-            EmitInstruction("push", ["rSP", "r3"], "push result");
+            EmitInstruction("push", ["r3", "rSP"], "push result");
         }
         else
         {
             EmitComment($"why are we here? {nameof(VisitAtom)}");
         }
 
-        // EmitInstruction("push", ["rSP", "r3"], "push result");
+        // EmitInstruction("push", ["r3", "rSP"], "push result");
         EmitBlankLine();
 
         return true;
@@ -744,15 +744,15 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             }
             else if (op == "-")
             {
-                EmitInstruction("pop", ["rSP", "r3"], "pop value to invert it");
+                EmitInstruction("pop", ["r3", "rSP"], "pop value to invert it");
                 EmitInstruction("sub", ["r3", "r0", "r3"], "invert r3");
-                EmitInstruction("push", ["rSP", "r3"], "push inverted value onto stack");
+                EmitInstruction("push", ["r3", "rSP"], "push inverted value onto stack");
             }
             else if (op == "*")
             {
-                EmitInstruction("pop", ["rSP", "r3"], "pop value to deref it");
+                EmitInstruction("pop", ["r3", "rSP"], "pop value to deref it");
                 EmitInstruction("lw", ["r3", "r3", "0"], "deref r3");
-                EmitInstruction("push", ["rSP", "r3"], "push derefed value onto stack");
+                EmitInstruction("push", ["r3", "rSP"], "push derefed value onto stack");
             }
             else
             {
@@ -772,8 +772,8 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             VisitLexpr(context.lh);
             VisitLexpr(context.rh);
 
-            EmitInstruction("pop", ["rSP", "r3"], "load lexpr rh");
-            EmitInstruction("pop", ["rSP", "r2"], "load lexpr lh");
+            EmitInstruction("pop", ["r3", "rSP"], "load lexpr rh");
+            EmitInstruction("pop", ["r2", "rSP"], "load lexpr lh");
 
             EmitInstruction("sw", ["r3", "r2", "0"], "store r3 to lval");
         }
@@ -781,10 +781,10 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
         {
             VisitLexpr(context.arryderef);
             VisitExpr(context.index);
-            EmitInstruction("pop", ["rSP", "r3"], "load offset for array access");
-            EmitInstruction("pop", ["rSP", "r2"], "load base addr for array access");
+            EmitInstruction("pop", ["r3", "rSP"], "load offset for array access");
+            EmitInstruction("pop", ["r2", "rSP"], "load base addr for array access");
             EmitInstruction("add", ["r3", "r2", "r3"], "calculate address of element");
-            EmitInstruction("push", ["rSP", "r3"], "push element");
+            EmitInstruction("push", ["r3", "rSP"], "push element");
         }
 
         return true;
@@ -823,7 +823,7 @@ public partial class Emitter : AnnaCcBaseVisitor<bool>
             EmitComment($"why are we here? {nameof(VisitLatom)}");
         }
 
-        EmitInstruction("push", ["rSP", "r3"], "push result");
+        EmitInstruction("push", ["r3", "rSP"], "push result");
         EmitBlankLine();
 
         return true;

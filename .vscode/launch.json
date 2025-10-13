@@ -12,10 +12,11 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/bin/Debug/net8.0/AnnaSim.dll",
             "args": [
-                "../test/fixtures/for_alt1.c",
+                "../test/fixtures/deref.c",
                 "--dump-asm",
                 "-g",
                 "0",
+                "-r"
             ],
             "cwd": "${workspaceFolder}/src",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
