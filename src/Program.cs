@@ -40,6 +40,11 @@ catch (Exception e)
 
 void ExecutionPipeline(AnnaSimContext opt)
 {
+    if (opt.Quiet)
+    {
+        Console.SetError(TextWriter.Null);
+    }
+
     opt.Source = ReadInputFile(opt);
 
     if (opt.Source.StartsWith(MemoryFile.ImageFileHeader))

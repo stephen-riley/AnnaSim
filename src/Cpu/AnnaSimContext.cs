@@ -55,6 +55,9 @@ public class AnnaSimContext
     [Option("dump-asm", HelpText = "Return assembly, not memory image, when compiling C")]
     public bool DumpAsm { get; set; }
 
+    [Option('q', "quiet", HelpText = "Turn off all STDERR output")]
+    public bool Quiet { get; set; }
+
     public string Source { get; set; } = null!;
     public string? AsmSource { get; set; }
     public string? CSource { get; set; }

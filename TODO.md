@@ -35,6 +35,7 @@
 - [X] Allow debugging of .mem files
 - [X] Add stack display to VT100 dbg
 - [X] Trace mode w/ register and stack dumps
+- [X] Add "quiet" mode that turns off all STDERR output
 - [ ] Fix print w/out newline in V100 dbg
 - [ ] Be able to label stack elements per PDB stack frames
 

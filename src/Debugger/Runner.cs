@@ -56,22 +56,22 @@ public class Runner
 
         Status = Cpu.Execute(MaxCycles);
 
-        Console.WriteLine($"{Status} at PC: 0x{Cpu.Pc:x4} ({Cpu.CyclesExecuted} cycles)");
+        Console.Error.WriteLine($"{Status} at PC: 0x{Cpu.Pc:x4} ({Cpu.CyclesExecuted} cycles)");
 
         if (dumpScreen)
         {
             DumpScreen();
         }
 
-        Console.Write("Outputs: ");
+        Console.Error.Write("Outputs: ");
 
         if (Outputs.Count > 0)
         {
-            Console.WriteLine(string.Join(" ", Outputs.Select(o => $"{o:x4}")));
+            Console.Error.WriteLine(string.Join(" ", Outputs.Select(o => $"{o:x4}")));
         }
         else
         {
-            Console.WriteLine("(none)");
+            Console.Error.WriteLine("(none)");
         }
 
         return Outputs;
